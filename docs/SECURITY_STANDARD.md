@@ -14,13 +14,17 @@ All säkerhetskritisk input, identitet, behörighet och dataåtkomst ska verifie
 
 Authentication fastställer vem aktören är. Authorization fastställer vad den identifierade aktören får göra. Kontrollerna ska vara separata, explicita och utföras för varje skyddad operation.
 
+I version 1 ska authentication ske med e-post och lösenord via Supabase Auth. Authorization ska separat verifiera att det enda tillåtna kontot har aktiv `owner`-behörighet. Behörighet får inte hämtas från klientstyrd metadata.
+
 ### Minsta privilegium
 
 Användare, tjänster, API-nycklar och processer ska endast få den minsta behörighet som krävs för den aktuella uppgiften, under kortast möjliga tid och inom minsta möjliga datamängd.
 
 ### MFA
 
-Intern åtkomst till Control Center ska skyddas med MFA. Återställning och reservmetoder ska hålla motsvarande säkerhetsnivå och vara auditerbara.
+Intern åtkomst till Control Center ska alltid kräva TOTP-MFA med Microsoft Authenticator. Alla skyddade routes och serveroperationer ska verifiera den aktuella MFA-nivån på servern. SMS-MFA ska inte användas.
+
+Control Center ska inte skapa egna recovery codes. Förlorad MFA-åtkomst ska hanteras genom en dokumenterad manuell rutin via Supabase. Rutinen ska verifiera ägarens identitet, återkalla berörda sessioner och vara auditerbar. En extra registrerad TOTP-enhet kan senare övervägas som reserv, men ingår inte som krav i version 1.
 
 ### RLS
 
@@ -50,17 +54,31 @@ Secrets får aldrig lagras i källkod, dokumentation, klientkod eller loggar. De
 
 ### Sessioner
 
-Sessioner ska vara tidsbegränsade, säkert lagrade och möjliga att återkalla. Förnyelse, utloggning, inaktivitet och känsliga operationer ska hanteras explicit. En sessions existens innebär inte automatiskt behörighet till en operation.
+Sessioner ska vara cookiebaserade, serverhanterade och använda PKCE. De ska vara tidsbegränsade, säkert lagrade och möjliga att återkalla. Förnyelse, utloggning, inaktivitet och känsliga operationer ska hanteras explicit.
+
+En sessions existens innebär inte automatiskt behörighet till en operation. Varje skyddad route och serveroperation ska på servern verifiera identitet, MFA-nivå och aktiv `owner`-behörighet.
 
 ### Bootstrap-principer
 
-Initial etablering av administrativ åtkomst ska vara avgränsad, engångsbetonad och auditerbar. Bootstrap får inte skapa permanenta bakdörrar eller generella standardcredentials. Efter etablering ska bootstrap-vägen stängas eller göras obrukbar, och den första administratören ska omfattas av MFA och ordinarie auktorisering.
+Initial etablering av det enda `owner`-kontot ska vara avgränsad, engångsbetonad och auditerbar. Bootstrap får inte skapa permanenta bakdörrar, generella standardcredentials, självregistrering eller en dold väg för att skapa ytterligare konton. Efter etablering ska bootstrap-vägen stängas eller göras obrukbar, och ägaren ska omfattas av obligatorisk TOTP-MFA och ordinarie server-side auktorisering.
+
+## Omfattning och framtida utbyggnad
+
+Version 1 omfattar ett konto och rollen `owner`. Användaradministration, invitationer, SSO och rollerna `admin` och `super_admin` ska inte implementeras.
+
+En framtida modell med flera interna administratörer kan analyseras separat. Den kräver nya beslut om invitationer, livscykelhantering, separation of duties, recovery och rollbehörigheter innan implementation.
 
 ## Efterlevnad
 
-Avvikelser kräver dokumenterad riskbedömning, tydlig ägare, tidsgräns och godkännande innan implementation. En modul får inte låsas förrän dess Security Pass är godkänd.
+Säkerhetskontroller ska identifieras innan varje ny funktion implementeras. Avvikelser kräver dokumenterad riskbedömning, tydlig ägare, tidsgräns och godkännande innan implementation. En modul får inte låsas förrän dess Security Pass är godkänd.
 
 ## Relaterade dokument
 
 - [Projektbeslut](PROJECT_DECISIONS.md)
 - [Modulstatus](MODULE_STATUS.md)
+
+Verifierat:
+- SSR-session etableras korrekt efter lyckad autentisering.
+- Ingen känslig information loggas vid misslyckad inloggning.
+- Generiska felmeddelanden används mot klient.
+- Nästa steg är serverbaserad owner-verifiering följt av MFA.

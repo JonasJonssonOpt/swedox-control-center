@@ -12,7 +12,11 @@ Etablera den minimala tekniska baslinjen, dokumentationsstrukturen och verifierb
 
 ### Fas 1 – Intern autentisering
 
-Etablera säker intern inloggning, MFA, sessionshantering och kontrollerad bootstrap för behöriga interna användare.
+Etablera version 1 för ägaren med exakt ett konto och rollen `owner`: e-post och lösenord via Supabase Auth, obligatorisk TOTP-MFA med Microsoft Authenticator samt cookiebaserade, serverhanterade PKCE-sessioner.
+
+Fasen ska även omfatta avstängd självregistrering, kontrollerad bootstrap, server-side verifiering av identitet, MFA-nivå och aktiv `owner`-behörighet samt en dokumenterad manuell recoveryrutin via Supabase. Ingen användaradministration, invitation, SMS-MFA eller egna recovery codes ska införas.
+
+SSO, flera interna administratörer, invitationer och roller som `admin` och `super_admin` är en möjlig framtida utbyggnad efter en separat analys. De är inte en del av fas 1 eller ett krav för version 1.
 
 ### Fas 2 – Kundregister
 
@@ -48,7 +52,7 @@ Hantera avgränsad faktureringsinformation och relaterade interna arbetsflöden 
 
 ## Styrning
 
-Varje fas kräver analys före implementation, definierade verifieringskriterier och uppdaterad [modulstatus](MODULE_STATUS.md). Säkerhetskraven i [Security Standard](SECURITY_STANDARD.md) gäller genom hela roadmapen.
+Varje fas kräver analys före implementation, identifierade säkerhetskontroller, definierade verifieringskriterier och uppdaterad [modulstatus](MODULE_STATUS.md). Säkerhetskraven i [Security Standard](SECURITY_STANDARD.md) gäller genom hela roadmapen.
 
 ## Relaterade dokument
 

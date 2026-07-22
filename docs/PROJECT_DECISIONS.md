@@ -16,11 +16,32 @@ Detta dokument samlar bindande arkitektur- och arbetssättsbeslut för SweDox Co
 
 Besluten beskriver målarkitekturen. De innebär inte att Supabase, databas eller integration finns i den nuvarande tekniska baslinjen.
 
+## Autentisering och behörighet i version 1
+
+- Control Center är ett internt system som i version 1 endast används av ägaren.
+- Exakt ett användarkonto ska finnas initialt.
+- Den enda rollen är `owner`.
+- Ingen användaradministration eller inbjudningsfunktion ska implementeras.
+- Självregistrering ska vara avstängd.
+- Inloggning ska ske med e-post och lösenord via Supabase Auth.
+- TOTP-MFA med Microsoft Authenticator är obligatorisk. SMS-MFA ska inte användas.
+- Egna recovery codes ska inte skapas. Recovery ska ske genom en dokumenterad manuell rutin via Supabase.
+- En extra registrerad TOTP-enhet kan senare övervägas som reserv.
+- Sessioner ska vara cookiebaserade, serverhanterade och använda PKCE.
+- Varje skyddad route och serveroperation ska verifiera identitet, MFA-nivå och aktiv `owner`-behörighet på servern.
+- Behörighet får aldrig hämtas från klientstyrd metadata.
+
+Authentication och authorization ska hållas separerade även med en enda användare och roll. En giltig session bevisar inte i sig att kontot har aktiv `owner`-behörighet.
+
+SSO, flera användare, invitationer och roller som `admin` och `super_admin` är endast en möjlig framtida målbild. De ingår inte i version 1 och får inte införas utan en ny analys och ett nytt dokumenterat projektbeslut.
+
 ## Arbetssätt
 
 ### Analys före implementation
 
 Varje förändring ska börja med analys av syfte, avgränsning, dataflöden, behörigheter, risker och verifieringskriterier. Implementation får påbörjas först när analysen ger ett tillräckligt beslutsunderlag.
+
+Säkerhetskontroller ska identifieras och dokumenteras innan varje ny funktion implementeras.
 
 ### Små verifierbara implementationer
 
