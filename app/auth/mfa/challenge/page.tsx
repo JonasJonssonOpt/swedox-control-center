@@ -1,8 +1,12 @@
 import { redirect } from "next/navigation";
 
-import { getOwnerMfaState } from "@/lib/server/auth";
+import { getOwnerMfaState, requireAuthorizedOwner } from "@/lib/server/auth";
 
-export default async function AuthPendingPage() {
+import { ChallengeForm } from "./challenge-form";
+
+export default async function MfaChallengePage() {
+  await requireAuthorizedOwner();
+
   const state = await getOwnerMfaState();
 
   switch (state.status) {
@@ -13,7 +17,7 @@ export default async function AuthPendingPage() {
     case "mfa_enrollment_required":
       redirect("/auth/mfa/enroll");
     case "mfa_challenge_required":
-      redirect("/auth/mfa/challenge");
+      break;
     case "authorized":
       redirect("/auth/owner-check");
     case "invalid_mfa_state":
@@ -25,4 +29,10 @@ export default async function AuthPendingPage() {
       redirect("/auth/security-error");
     }
   }
+
+  return (
+    <main>
+      <ChallengeForm />
+    </main>
+  );
 }

@@ -1,8 +1,12 @@
 import { redirect } from "next/navigation";
 
-import { getOwnerMfaState } from "@/lib/server/auth";
+import { getOwnerMfaState, requireAuthorizedOwner } from "@/lib/server/auth";
 
-export default async function AuthPendingPage() {
+import { EnrollmentForm } from "./enrollment-form";
+
+export default async function MfaEnrollmentPage() {
+  await requireAuthorizedOwner();
+
   const state = await getOwnerMfaState();
 
   switch (state.status) {
@@ -11,7 +15,7 @@ export default async function AuthPendingPage() {
     case "not_owner":
       redirect("/auth/unauthorized");
     case "mfa_enrollment_required":
-      redirect("/auth/mfa/enroll");
+      break;
     case "mfa_challenge_required":
       redirect("/auth/mfa/challenge");
     case "authorized":
@@ -25,4 +29,10 @@ export default async function AuthPendingPage() {
       redirect("/auth/security-error");
     }
   }
+
+  return (
+    <main>
+      <EnrollmentForm />
+    </main>
+  );
 }

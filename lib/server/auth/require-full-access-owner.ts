@@ -1,8 +1,16 @@
+import "server-only";
+
 import { redirect } from "next/navigation";
 
-import { getOwnerMfaState } from "@/lib/server/auth";
+import { getOwnerMfaState } from "./get-owner-mfa-state";
 
-export default async function AuthPendingPage() {
+export type FullAccessOwner = Readonly<{
+  aal: "aal2";
+  role: "owner";
+  userId: string;
+}>;
+
+export async function requireFullAccessOwner(): Promise<FullAccessOwner> {
   const state = await getOwnerMfaState();
 
   switch (state.status) {
@@ -15,7 +23,11 @@ export default async function AuthPendingPage() {
     case "mfa_challenge_required":
       redirect("/auth/mfa/challenge");
     case "authorized":
-      redirect("/auth/owner-check");
+      return {
+        aal: "aal2",
+        role: "owner",
+        userId: state.userId,
+      };
     case "invalid_mfa_state":
     case "auth_unavailable":
       redirect("/auth/security-error");
