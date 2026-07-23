@@ -78,6 +78,7 @@ Säkerhetskontroller ska identifieras innan varje ny funktion implementeras. Avv
 - [Modulstatus](MODULE_STATUS.md)
 
 Verifierat:
+
 - SSR-session etableras korrekt efter lyckad autentisering.
 - Ingen känslig information loggas vid misslyckad inloggning.
 - Generiska felmeddelanden används mot klient.
