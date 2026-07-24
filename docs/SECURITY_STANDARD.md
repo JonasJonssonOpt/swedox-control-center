@@ -16,6 +16,8 @@ Authentication fastställer vem aktören är. Authorization fastställer vad den
 
 I version 1 ska authentication ske med e-post och lösenord via Supabase Auth. Authorization ska separat verifiera att det enda tillåtna kontot har aktiv `owner`-behörighet. Behörighet får inte hämtas från klientstyrd metadata.
 
+Självregistrering och anonymous sign-in ska vara avstängda. Den verifierade Auth-användarens UUID ska matcha det exakt konfigurerade, miljöspecifika owner-ID:t. En annan authenticated användare får aldrig behandlas som owner.
+
 ### Minsta privilegium
 
 Användare, tjänster, API-nycklar och processer ska endast få den minsta behörighet som krävs för den aktuella uppgiften, under kortast möjliga tid och inom minsta möjliga datamängd.
@@ -30,9 +32,20 @@ Control Center ska inte skapa egna recovery codes. Förlorad MFA-åtkomst ska ha
 
 När en databas senare införs ska Row Level Security användas som ett obligatoriskt skyddslager för exponerade tabeller. Policies ska utgå från nekad åtkomst och öppna endast dokumenterade operationer. RLS ersätter inte server-side auktorisering.
 
+Tenant Management ska dessutom följa dessa krav:
+
+- varje skyddad route och mutation kräver `requireFullAccessOwner()` och `aal2`
+- RLS jämför framtida tenantåtkomst mot samma owneridentitet genom en skyddad DB-singleton
+- mismatch mellan environment och databas stoppar modulen fail-closed
+- browserklienten utför inte tenant-CRUD
+- actorfält som `created_by`, `updated_by` och `archived_by` får inte styras av klienten
+- permanent delete ska nekas
+
 ### Service Role
 
 Service Role eller motsvarande privilegierad credential får aldrig exponeras i klientkod, webbläsare, mobilklient eller annan opålitlig miljö. Privilegierade operationer får endast utföras i kontrollerad servermiljö.
+
+Service Role får inte användas för normal tenant-CRUD eller för att kringgå RLS. Miljöspecifik bootstrap och recovery är separata, avgränsade och auditerade driftoperationer.
 
 ### Kundinstallationernas databaser
 
@@ -48,9 +61,20 @@ Kommunikation med kundinstallationer ska ske genom verifierade server-API:er. An
 
 Säkerhetsrelevanta händelser ska ge spårbara audit-poster med aktör, operation, mål, tidpunkt och resultat. Audit-data ska skyddas mot manipulation och får inte innehålla secrets eller onödig affärsdata.
 
+Tekniska loggar och generell audit får inte innehålla kontaktuppgifter, organisationsnummer, administrativ notering, credentials eller råa Auth- och databasfel. Beständig och atomisk tenant-audit krävs före första pilot med verkliga kunddata.
+
 ### Secrets
 
 Secrets får aldrig lagras i källkod, dokumentation, klientkod eller loggar. De ska hanteras i en avsedd secret-hantering, roteras, kunna återkallas och avgränsas per miljö och ändamål.
+
+### Lokal databas- och CLI-säkerhet
+
+- Repositoryts Supabase-scripts ska vara local-only och använda explicit lokal target när CLI-kommandot kan välja target.
+- Normalt utvecklings- och CI-flöde får inte innehålla remote project reference, access token, produktionsecrets eller Service Role.
+- Länkade destruktiva kommandon är förbjudna utan separat godkännande och verifierad target.
+- Lokala Auth-users, owneridentiteter och testdata ska vara syntetiska.
+- Lokalt genererade credentials får inte skrivas till CI-logg eller versionshanteras.
+- Den lokala stacken får endast köras på en betrodd maskin med aktivt brandväggsskydd och ska stoppas när den inte används.
 
 ### Sessioner
 
@@ -61,6 +85,8 @@ En sessions existens innebär inte automatiskt behörighet till en operation. Va
 ### Bootstrap-principer
 
 Initial etablering av det enda `owner`-kontot ska vara avgränsad, engångsbetonad och auditerbar. Bootstrap får inte skapa permanenta bakdörrar, generella standardcredentials, självregistrering eller en dold väg för att skapa ytterligare konton. Efter etablering ska bootstrap-vägen stängas eller göras obrukbar, och ägaren ska omfattas av obligatorisk TOTP-MFA och ordinarie server-side auktorisering.
+
+Samma kontrollerade miljöinput ska etablera applikationens ownerkonfiguration och den framtida DB-singletonen. Saknad, ogiltig eller avvikande konfiguration ska neka tenantåtkomst utan fallback.
 
 ## Omfattning och framtida utbyggnad
 
@@ -76,10 +102,13 @@ Säkerhetskontroller ska identifieras innan varje ny funktion implementeras. Avv
 
 - [Projektbeslut](PROJECT_DECISIONS.md)
 - [Modulstatus](MODULE_STATUS.md)
+- [Owner-bootstrap](OWNER_BOOTSTRAP.md)
+- [Databas-recovery](DATABASE_RECOVERY.md)
 
 Verifierat:
 
 - SSR-session etableras korrekt efter lyckad autentisering.
 - Ingen känslig information loggas vid misslyckad inloggning.
 - Generiska felmeddelanden används mot klient.
-- Nästa steg är serverbaserad owner-verifiering följt av MFA.
+- Serverbaserad owner-verifiering och obligatorisk MFA är implementerade.
+- Databas, owner-singleton och Tenant Management är ännu inte implementerade.

@@ -12,7 +12,15 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "build": "next build"
+    "build": "next build",
+    "supabase:version": "supabase --version",
+    "supabase:start": "node scripts/supabase-local.mjs start",
+    "supabase:stop": "node scripts/supabase-local.mjs stop",
+    "supabase:status": "node scripts/supabase-local.mjs status",
+    "supabase:reset": "supabase db reset --local",
+    "supabase:lint": "supabase db lint --local --schema public --fail-on error",
+    "supabase:test": "supabase test db supabase/tests/database --local",
+    "supabase:types": "supabase gen types typescript --local --schema public | prettier --parser typescript > lib/supabase/database.types.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.3",
@@ -29,6 +37,7 @@
     "eslint": "9.39.5",
     "eslint-config-next": "16.2.11",
     "prettier": "3.9.6",
+    "supabase": "2.109.1",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3"
   }

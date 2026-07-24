@@ -35,6 +35,47 @@ Authentication och authorization ska hållas separerade även med en enda använ
 
 SSO, flera användare, invitationer och roller som `admin` och `super_admin` är endast en möjlig framtida målbild. De ingår inte i version 1 och får inte införas utan en ny analys och ett nytt dokumenterat projektbeslut.
 
+## Databas och migrationer
+
+- Versionshanterade migrationer under `supabase/migrations/` ska vara den auktoritativa schemakällan.
+- Supabase CLI ska installeras som en exakt versionspinnad lokal npm-devDependency och reproduceras genom lockfilen.
+- Lokal migrationskedja och genererade lokala databastyper är verifieringskällan före remote deployment.
+- Normalt utvecklings- och CI-flöde får inte länka till eller kontakta ett remote Supabase-projekt.
+- Delade databasmiljöer får inte ändras direkt vid sidan av migrationshistoriken.
+- Migrationer ska verifieras från en tom lokal testdatabas innan deployment.
+- Schema, seed, miljöspecifik bootstrap och recovery ska hållas separerade.
+- Verkliga owner-ID:n, credentials och andra miljöspecifika secrets får inte finnas i generella migrationer eller Git.
+
+Supabase CLI `2.109.1` och den tomma lokala migrationsmiljön är verifierade. Verksamhetsschema, owner-singleton och RLS är ännu inte implementerade. Standarden beskrivs i [Databas- och migrationsflöde](DATABASE_WORKFLOW.md).
+
+## Tenant Management
+
+Följande beslut gäller för den framtida Tenant Management-modulen:
+
+- UUID är tenantens enda permanenta identitet.
+- Inget kundnummer, tenantnummer eller slug ska införas.
+- Control Center och Tenant Management är endast avsedda för Sverige.
+- Tenantkategorierna i version 1 är `customer`, `pilot` och `internal`.
+- Tenantens operativa status är `active` eller `paused`; arkivering hanteras separat.
+- Ingen permanent delete ska införas.
+- Ett obligatoriskt positivt `revision`-fält ska användas för optimistic concurrency och ökas atomiskt vid varje genomförd mutation.
+- Strukturerad konsolaudit får endast användas lokalt och vid intern verifiering med syntetiska data.
+- Beständig och atomisk audit är ett hårt krav före första pilot med verkliga kunddata.
+
+Tenant Management är inte implementerad genom dessa beslut.
+
+## Owneridentitet och framtida RLS
+
+- Supabase Auth-owneranvändarens UUID är identitetsobjektet.
+- Samma kontrollerade, miljöspecifika input ska etablera både `CONTROL_CENTER_OWNER_USER_ID` och en framtida skyddad DB-singleton.
+- Environment och databas är två verkställande kopior av samma ownerbeslut och får inte administreras oberoende.
+- Mismatch eller unavailable integritetskontroll ska stoppa Tenant Management fail-closed.
+- Befintlig applikationsauktorisering och `requireFullAccessOwner()` ska behållas.
+- Framtida RLS ska jämföra `auth.uid()` mot DB-singletonens owner-ID och fungera som defense in depth.
+- Singletonen får inte utvecklas till en generell rollmodell.
+
+Bootstrap och recovery regleras i [Owner-bootstrap](OWNER_BOOTSTRAP.md) och [Databas-recovery](DATABASE_RECOVERY.md).
+
 ## Arbetssätt
 
 ### Analys före implementation
@@ -62,3 +103,6 @@ En modul får inte låsas eller betraktas som färdig innan en dokumenterad Secu
 - [Control Center Roadmap](CONTROL_CENTER_ROADMAP.md)
 - [Module Status](MODULE_STATUS.md)
 - [Changelog](CHANGELOG.md)
+- [Databas- och migrationsflöde](DATABASE_WORKFLOW.md)
+- [Owner-bootstrap](OWNER_BOOTSTRAP.md)
+- [Databas-recovery](DATABASE_RECOVERY.md)

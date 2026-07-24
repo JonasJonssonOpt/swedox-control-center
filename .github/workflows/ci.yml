@@ -25,6 +25,30 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify pinned Supabase CLI
+        run: npm run supabase:version
+
+      - name: Start local Supabase
+        run: npm run supabase:start
+
+      - name: Verify local Supabase status
+        run: npm run supabase:status
+
+      - name: Rebuild local database from migrations
+        run: npm run supabase:reset
+
+      - name: Lint local database
+        run: npm run supabase:lint
+
+      - name: Test local database
+        run: npm run supabase:test
+
+      - name: Verify generated database types
+        shell: bash
+        run: |
+          npm run supabase:types
+          git diff --exit-code -- lib/supabase/database.types.ts
+
       - name: Check formatting
         run: npm run format:check
 
@@ -36,3 +60,7 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Stop local Supabase
+        if: always()
+        run: npm run supabase:stop

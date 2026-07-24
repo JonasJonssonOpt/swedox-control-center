@@ -24,3 +24,12 @@ yarn-error.log*
 
 # TypeScript
 *.tsbuildinfo
+
+# Supabase CLI local state
+/supabase/.temp/
+/supabase/.branches/
+
+# Local database dumps and backups
+/supabase/*.dump
+/supabase/*.backup
+/supabase/*.bak

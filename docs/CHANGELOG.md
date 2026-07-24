@@ -11,3 +11,5 @@ Formatet baseras på [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) oc
 - Låst autentiseringsmodellen för version 1 till ett internt `owner`-konto med e-post och lösenord via Supabase Auth, obligatorisk TOTP-MFA och serverhanterade PKCE-sessioner.
 - Avgränsat användaradministration, invitationer, SSO och ytterligare roller till en möjlig framtida utbyggnad.
 - Dokumenterat manuell recovery via Supabase samt förbud mot självregistrering, SMS-MFA och egna recovery codes.
+- Etablerat repositorystruktur och dokumentationsstandard för framtida Supabase-migrationer, owner-bootstrap och databas-recovery utan att införa databas- eller tenantschema.
+- Infört en versionspinnad lokal Supabase CLI-miljö med local-only scripts, tom migrationsverifiering, databaslint, pgTAP-smoketest, typgenerering och CI-grund.
