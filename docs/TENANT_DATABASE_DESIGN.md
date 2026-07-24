@@ -30,6 +30,13 @@ owner och AAL2, anropar RPC:n med användarens SSR-session och kräver allowlist
 `ok`. Missing, invalid, mismatch, null, okänd form och RPC-fel failar stängt.
 Ingen route använder guarden ännu; bootstrap och tenanttabell saknas fortfarande.
 
+Steg E1 har därefter implementerat och lokalverifierat `public.tenants` enligt
+detta dokuments låsta 17-kolumnskontrakt. Migrationen
+`20260724193158_create_tenants.sql` innehåller tabellen, den immutable och strict
+Luhnvalidatorn `public.is_valid_swedish_organization_number(text)`, namngivna
+constraints samt de två tidigare beslutade indexen. Tenant-RLS, policies, audit,
+mutationer, DAL, routes och UI är fortfarande inte implementerade.
+
 Scope omfattar owner-singleton, ownerintegritet, tenantdata, constraints, index,
 RLS, mutationer, audit, tester, migrationsordning, framtida DAL, felmodell och
 recovery. Låsta domän- och säkerhetsbeslut i `PROJECT_DECISIONS.md` gäller.
@@ -199,6 +206,10 @@ Tabellen heter exakt `tenants`. Endast normaliserat organisationsnummer lagras;
 råformat ger dubbla sanningar utan verksamhetsvärde. Presentationsformat med
 bindestreck genereras endast vid visning och lagras aldrig.
 
+Tabellen representerar den juridiska organisationen. Installationer, licenser,
+provisionering och support är separata framtida modeller och har inga kolumner i
+`tenants`.
+
 | Kolumn                | Typ           | Null/default                | Constraint                                 | Mutability/audit                     | Klient och känslighet                  |
 | --------------------- | ------------- | --------------------------- | ------------------------------------------ | ------------------------------------ | -------------------------------------- |
 | `id`                  | `uuid`        | not null, DB-genererad UUID | PK                                         | immutable; create-event              | Ja; intern identifierare               |
@@ -252,6 +263,12 @@ contacts, installations-, licens- eller supportfält.
 Luhn och format bevisar inte att organisationen existerar; juridisk verifiering
 är en separat verksamhetskontroll.
 
+Validatorn kräver exakt tio ASCII-siffror och korrekt Luhn-kontroll. Ingen regel
+om att tredje siffran måste vara minst två införs, eftersom den låsta modellen
+tillåter personnummerbaserat organisationsnummer för enskild firma och behandlar
+det som skyddsvärd personuppgift. Direkt insert av bindestreck, whitespace eller
+annan icke-canonical representation avvisas.
+
 ## Index
 
 Första versionen innehåller endast:
@@ -265,6 +282,15 @@ Första versionen innehåller endast:
 Separata status-, kategori-, `created_at`-, `updated_at`-, arkiv-, kombinations-
 och fuzzy/searchindex skjuts upp tills faktiska queryplaner och datamängder
 motiverar dem. Arkivlistans lilla första datamängd får använda PK/table scan.
+
+E1 implementerar exakt PK-indexet, det partiella unika indexet
+`idx_tenants_organization_number_unique` och det partiella listindexet
+`idx_tenants_active_legal_name`. Organisationsnummer kan inte återanvändas efter
+arkivering eftersom unikhetsindexet endast exkluderar null, inte arkiverade rader.
+
+Före det separata RLS-steget är RLS avstängt och inga policies finns. Tabellen är
+ändå fail-closed för applikationen eftersom samtliga tabellprivilegier är
+återkallade från `PUBLIC`, `anon`, `authenticated` och `service_role`.
 
 ## RLS och grants
 

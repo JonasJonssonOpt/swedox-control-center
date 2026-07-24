@@ -71,6 +71,14 @@ Följande beslut gäller för den framtida Tenant Management-modulen:
 
 Tenant Management är inte implementerad genom dessa beslut.
 
+Steg E1 implementerar tenantens databasgrund enligt det låsta kontraktet:
+`public.tenants` är den juridiska organisationen och är separerad från
+installationer, licenser, provisionering och support. Organisationsnummer lagras
+endast som canonical tio siffror, valideras med Luhn och är globalt unikt även
+efter arkivering. Status är det låsta textfältet `operational_status` med endast
+`active` och `paused`; arkivering lagras separat. Detta innebär inte att
+Tenant Management är verksamhetsklart.
+
 Steg C:s Security Pass och exakta databasdesign är låst i
 [Tenant Database Design](TENANT_DATABASE_DESIGN.md). Security Pass är godkänt med
 operativa blockerare; detta betyder inte att schema, RLS, mutationer, audit eller

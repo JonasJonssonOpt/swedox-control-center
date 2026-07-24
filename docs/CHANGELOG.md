@@ -2,6 +2,12 @@
 
 ## 2026-07-24
 
+- Implementerade E1:s tenantdatabasgrund enligt det låsta Steg C-kontraktet:
+  `public.tenants`, 17 kolumner, namngivna constraints, canonical
+  organisationsnummer, Luhnvalidator och två motiverade index.
+- Lade till 70 pgTAP-tester för tenantstruktur, giltiga och ogiltiga värden,
+  unikhet efter arkivering, validator, index och fail-closed grants. RLS, audit,
+  mutationer och applikationsfunktionalitet infördes inte.
 - Implementerade den server-only `requireOwnerIntegrity()` ovanpå befintlig
   owner-/AAL2-guard med environmentvalidering, allowlistad DB-RPC och fail-closed
   felmappning.

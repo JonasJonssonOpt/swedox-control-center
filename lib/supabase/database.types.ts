@@ -30,12 +30,76 @@ export type Database = {
         };
         Relationships: [];
       };
+      tenants: {
+        Row: {
+          administrative_note: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          category: string;
+          contact_email: string | null;
+          contact_name: string | null;
+          contact_phone: string | null;
+          country_code: string;
+          created_at: string;
+          created_by: string;
+          id: string;
+          legal_name: string;
+          operational_status: string;
+          organization_number: string | null;
+          revision: number;
+          updated_at: string;
+          updated_by: string;
+        };
+        Insert: {
+          administrative_note?: string | null;
+          archived_at?: string | null;
+          archived_by?: string | null;
+          category: string;
+          contact_email?: string | null;
+          contact_name?: string | null;
+          contact_phone?: string | null;
+          country_code?: string;
+          created_at?: string;
+          created_by: string;
+          id?: string;
+          legal_name: string;
+          operational_status?: string;
+          organization_number?: string | null;
+          revision?: number;
+          updated_at?: string;
+          updated_by: string;
+        };
+        Update: {
+          administrative_note?: string | null;
+          archived_at?: string | null;
+          archived_by?: string | null;
+          category?: string;
+          contact_email?: string | null;
+          contact_name?: string | null;
+          contact_phone?: string | null;
+          country_code?: string;
+          created_at?: string;
+          created_by?: string;
+          id?: string;
+          legal_name?: string;
+          operational_status?: string;
+          organization_number?: string | null;
+          revision?: number;
+          updated_at?: string;
+          updated_by?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
       get_owner_integrity_status: { Args: never; Returns: string };
+      is_valid_swedish_organization_number: {
+        Args: { value: string };
+        Returns: boolean;
+      };
     };
     Enums: {
       [_ in never]: never;

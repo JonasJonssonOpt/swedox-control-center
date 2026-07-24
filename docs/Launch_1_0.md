@@ -23,7 +23,8 @@ Följande krävs före release av Tenant Management:
 - [x] Den kategoriska owner-integritetsfunktionen är lokalt verifierad utan UUID-läckage.
 - [x] Server-side ownerintegritetsguard och environment-equality är verifierade.
 - [ ] Owner-bootstrap är implementerad och verifierad.
-- [ ] Tenanttabell finns; ingen tenantdata kan lagras ännu.
+- [x] Tenanttabell, constraints, organisationsnummervalidering och grundindex är lokalt verifierade.
+- [ ] Tenant-RLS, policies, audit och atomiska mutationer är implementerade och verifierade.
 
 ## Relaterade dokument
 

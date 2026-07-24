@@ -57,6 +57,13 @@ form och tekniskt fel failar stängt. Loggning får endast innehålla säker kat
 tidpunkt och correlation-id, aldrig UUID, raw environment, session eller raw
 Supabase-fel.
 
+Tenanttabellens E1-grund lämnas utan RLS och policies tills det separata
+RLS-steget är granskat. Under mellanläget är tabellåtkomst fail-closed genom att
+`PUBLIC`, `anon`, `authenticated` och `service_role` saknar tabellprivilegier.
+Ingen Service Role används av applikationen. Canonical format, Luhn, kategori,
+status, arkivmetadata, revision och textgränser verkställs i databasen som sista
+skyddslager även när framtida appvalidering finns.
+
 ### Service Role
 
 Service Role eller motsvarande privilegierad credential får aldrig exponeras i klientkod, webbläsare, mobilklient eller annan opålitlig miljö. Privilegierade operationer får endast utföras i kontrollerad servermiljö.
