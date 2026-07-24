@@ -17,3 +17,7 @@ export {
   requireAuthorizedOwner,
   type AuthorizedOwner,
 } from "./require-authorized-owner";
+export {
+  requireOwnerIntegrity,
+  type IntegrityVerifiedOwner,
+} from "./require-owner-integrity";

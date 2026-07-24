@@ -46,7 +46,14 @@ SSO, flera användare, invitationer och roller som `admin` och `super_admin` är
 - Schema, seed, miljöspecifik bootstrap och recovery ska hållas separerade.
 - Verkliga owner-ID:n, credentials och andra miljöspecifika secrets får inte finnas i generella migrationer eller Git.
 
-Supabase CLI `2.109.1` och den tomma lokala migrationsmiljön är verifierade. Verksamhetsschema, owner-singleton och RLS är ännu inte implementerade. Standarden beskrivs i [Databas- och migrationsflöde](DATABASE_WORKFLOW.md).
+Supabase CLI `2.109.1` och den lokala migrationsmiljön är verifierade. Den första
+verksamhetsmigrationen, `20260724184023_create_control_center_owner.sql`,
+implementerar lokalt `public.control_center_owner` med konstant
+primärnyckel/check på `singleton_key = 1`, unique owner-UUID, FK till
+`auth.users(id)` med delete restrict, tidsconstraints, FORCE RLS och utan direkta
+tabellgrants för normala API-roller. Migrationen skapar ingen ownerrad.
+Tenanttabell och övrigt verksamhetsschema är inte implementerade. Standarden
+beskrivs i [Databas- och migrationsflöde](DATABASE_WORKFLOW.md).
 
 ## Tenant Management
 
@@ -64,6 +71,11 @@ Följande beslut gäller för den framtida Tenant Management-modulen:
 
 Tenant Management är inte implementerad genom dessa beslut.
 
+Steg C:s Security Pass och exakta databasdesign är låst i
+[Tenant Database Design](TENANT_DATABASE_DESIGN.md). Security Pass är godkänt med
+operativa blockerare; detta betyder inte att schema, RLS, mutationer, audit eller
+DAL är implementerade.
+
 ## Owneridentitet och framtida RLS
 
 - Supabase Auth-owneranvändarens UUID är identitetsobjektet.
@@ -73,6 +85,15 @@ Tenant Management är inte implementerad genom dessa beslut.
 - Befintlig applikationsauktorisering och `requireFullAccessOwner()` ska behållas.
 - Framtida RLS ska jämföra `auth.uid()` mot DB-singletonens owner-ID och fungera som defense in depth.
 - Singletonen får inte utvecklas till en generell rollmodell.
+- Databasens kategoriska kontroll heter
+  `public.get_owner_integrity_status()` och returnerar text utan identitetsdata.
+  Den läser endast `auth.uid()` och singletonen.
+- Environmentvalidering, AAL2 och full equality ligger i serverapplikationen.
+  Resultatet får inte cachas mellan requests.
+- `requireOwnerIntegrity()` är den högre verksamhetsguarden ovanpå oförändrad
+  `requireFullAccessOwner()`. Appen bevisar environment/Auth equality; den
+  kategoriska RPC:n bevisar Auth/DB equality. Ingen direkt singleton-SELECT
+  används och ingen cache finns mellan requests.
 
 Bootstrap och recovery regleras i [Owner-bootstrap](OWNER_BOOTSTRAP.md) och [Databas-recovery](DATABASE_RECOVERY.md).
 
@@ -106,3 +127,4 @@ En modul får inte låsas eller betraktas som färdig innan en dokumenterad Secu
 - [Databas- och migrationsflöde](DATABASE_WORKFLOW.md)
 - [Owner-bootstrap](OWNER_BOOTSTRAP.md)
 - [Databas-recovery](DATABASE_RECOVERY.md)
+- [Tenant Database Design](TENANT_DATABASE_DESIGN.md)

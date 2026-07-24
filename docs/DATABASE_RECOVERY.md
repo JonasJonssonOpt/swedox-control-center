@@ -42,6 +42,30 @@ Login, MFA, logout och en säker felsida får fortsätta fungera när det inte �
 
 Normal tenant-CRUD får inte tillfälligt ges Service Role eller kringgå RLS under recovery.
 
+Den låsta designen använder FK från `control_center_owner.owner_user_id` till
+`auth.users(id)` med delete restrict. Vid ownerbyte ska därför ny Auth-user
+etableras och MFA-säkras innan singletonen byts; environment och singleton ska
+uppdateras från samma godkända input medan Tenant Management är stängt. Equality,
+positiva och negativa RLS-test ska vara godkända innan gamla sessioner betraktas
+som hanterade och den gamla Auth-usern kan tas bort.
+
+FK:n och delete restrict är implementerade och lokalverifierade i Steg D1. En
+refererad Auth-owner kan inte tas bort. Ownerbyte och recovery kräver fortfarande
+en separat godkänd driftprocess; ingen konkret remoteprocedur eller
+bootstrapfunktion har införts.
+
+Den lokalverifierade DB-kontrollen kan returnera `ok`, `unauthenticated`,
+`missing_database_owner`, `invalid_database_owner_state` och
+`authenticated_user_mismatch`. Tekniskt RPC- eller databasfel är inte en
+domänstatus och ska behandlas som `integrity_check_unavailable` av den framtida
+appen. Recovery måste verifiera både singletonens struktur och
+`get_owner_integrity_status()`. Operativa fel får aldrig exponera owner-UUID.
+
+Efter restore eller ownerbyte ska även serverns `requireOwnerIntegrity()` provas
+om. Tekniska RPC-fel mappas till `integrity_check_unavailable`; raw fel eller UUID
+får inte visas. Integritetsresultat cachas inte mellan requests. Gamla sessioner
+ska återkallas vid ownerbyte innan Tenant Management återöppnas.
+
 ## Backup och restore
 
 En restore kan återinföra:
@@ -52,6 +76,11 @@ En restore kan återinföra:
 - tidigare grants, funktioner, triggers eller RLS-policies
 
 Tenantåtkomst ska därför inte öppnas automatiskt efter restore. Equality, Auth-owner, migrationshistorik, schema och RLS måste verifieras först.
+
+Restoreverifieringen ska också kontrollera att tenantrevisioner och senaste
+beständiga auditevent är konsistenta. Audit eller revision får inte repareras
+genom direkt tabelländring. Genererade typer ska jämföras mot det återställda och
+fullständigt migrerade lokala schemat före applikationsdeployment.
 
 Remote rollback dokumenteras och godkänns per incident. Destruktiva kommandon ska inte anges som normalprocedur innan verktyg, targetskydd, backup och återställningsmetod har verifierats.
 
@@ -103,3 +132,4 @@ Loggen får inte innehålla:
 - [Databas- och migrationsflöde](DATABASE_WORKFLOW.md)
 - [Owner-bootstrap](OWNER_BOOTSTRAP.md)
 - [Security Standard](SECURITY_STANDARD.md)
+- [Tenant Database Design](TENANT_DATABASE_DESIGN.md)

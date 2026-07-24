@@ -9,13 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never;
+      control_center_owner: {
+        Row: {
+          created_at: string;
+          owner_user_id: string;
+          singleton_key: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          owner_user_id: string;
+          singleton_key?: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          owner_user_id?: string;
+          singleton_key?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      get_owner_integrity_status: { Args: never; Returns: string };
     };
     Enums: {
       [_ in never]: never;

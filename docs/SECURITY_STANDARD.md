@@ -41,6 +41,22 @@ Tenant Management ska dessutom följa dessa krav:
 - actorfält som `created_by`, `updated_by` och `archived_by` får inte styras av klienten
 - permanent delete ska nekas
 
+`public.control_center_owner` har RLS och FORCE RLS aktiverat utan tillåtande
+policies. `PUBLIC`, `anon`, `authenticated` och `service_role` saknar direkt
+tabellåtkomst. Därmed får inte heller en normal owner-session läsa singletonen
+direkt. `public.get_owner_integrity_status()` är en argumentlös
+`SECURITY DEFINER` med ägare `postgres`, fast `search_path = pg_catalog`,
+schema-kvalificerade objekt och kategorisk textretur utan UUID. `PUBLIC`, `anon`
+och `service_role` saknar EXECUTE medan `authenticated` får EXECUTE. Funktionen
+sväljer inte tekniska fel; framtida appintegration ska mappa dem till unavailable.
+
+Serverintegrationen ligger endast under `lib/server/auth/`, importerar
+`server-only` och använder den cookiebaserade SSR-klienten, aldrig browser- eller
+Service Role-klient. RPC-resultat allowlistas exakt; null, okänd status, oväntad
+form och tekniskt fel failar stängt. Loggning får endast innehålla säker kategori,
+tidpunkt och correlation-id, aldrig UUID, raw environment, session eller raw
+Supabase-fel.
+
 ### Service Role
 
 Service Role eller motsvarande privilegierad credential får aldrig exponeras i klientkod, webbläsare, mobilklient eller annan opålitlig miljö. Privilegierade operationer får endast utföras i kontrollerad servermiljö.
@@ -111,4 +127,5 @@ Verifierat:
 - Ingen känslig information loggas vid misslyckad inloggning.
 - Generiska felmeddelanden används mot klient.
 - Serverbaserad owner-verifiering och obligatorisk MFA är implementerade.
-- Databas, owner-singleton och Tenant Management är ännu inte implementerade.
+- Owner-singletonens struktur och fail-closed tabellskydd är implementerade
+  lokalt; bootstrap, equality och Tenant Management återstår.

@@ -26,7 +26,10 @@ supabase/
     database/
 ```
 
-`supabase/config.toml` är genererad med den pinnade CLI-versionen och versionshanteras. Den innehåller endast lokal konfiguration. Migrationskatalogen innehåller ännu ingen SQL.
+`supabase/config.toml` är genererad med den pinnade CLI-versionen och
+versionshanteras. Den innehåller endast lokal konfiguration. Den första
+verksamhetsmigrationen är
+`20260724184023_create_control_center_owner.sql`.
 
 ## Verifierade lokala scripts
 
@@ -55,6 +58,13 @@ Varje migration ska:
 - vara oföränderlig efter att den har distribuerats till en delad miljö
 
 Fel i en distribuerad migration rättas med en ny framåtriktad migration. Destruktiva rollbackkommandon är inte en normalprocedur. Återställning av delad miljö följer den separata recoveryrunbooken.
+
+Namngivning följer `snake_case`. Verksamhetstabeller är plural medan en faktisk
+singleton får vara singular. Funktioner använder `verb_noun`. Constraints
+använder `pk_<table>`, `fk_<table>_<column>`,
+`uq_<table>_<column_or_purpose>` och `ck_<table>_<purpose>`. Index använder
+`idx_<table>_<column_or_purpose>`, policies
+`<table>_<operation>_<purpose>` och auditobjekt innehåller tydligt `audit`.
 
 ## Lokal och länkad databas
 
@@ -159,6 +169,27 @@ Kända begränsningar:
 - Ingen remote link finns och ingen remote migrationsväg är verifierad.
 - RLS- och ownertester kan införas först när motsvarande schema finns.
 - Postgres-huvudversionen i det externa projektet är ännu inte verifierad mot lokal config.
+
+## Verifierat i Steg D1
+
+- `20260724184023_create_control_center_owner.sql` appliceras deterministiskt från
+  en tom lokal databas.
+- Reset, databaslint och 43 pgTAP-tester är godkända.
+- Genererade typer innehåller exakt singletonens fyra kolumner och är
+  deterministiska över två körningar.
+- Tabellen lämnas tom efter reset; bootstrap är en separat driftoperation.
+- Verifieringsflödet är start → status → reset → lint → test → types → status →
+  stop, följt av en andra start → reset → test → stop.
+
+## Verifierat i Steg D2
+
+- `20260724185819_create_owner_integrity_functions.sql` skapar den kategoriska
+  `public.get_owner_integrity_status()`.
+- `supabase/tests/database/owner_integrity_functions_test.sql` verifierar
+  funktionskontrakt, ägare, search path, grants, JWT-testkontext, samtliga normala
+  resultat och fortsatt nekad tabellåtkomst.
+- Två resets, databaslint, 74 pgTAP-tester och två deterministiska
+  typgenereringar är godkända.
 
 ## Owner-bootstrap
 

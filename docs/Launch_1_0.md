@@ -18,7 +18,12 @@ Följande krävs före release av Tenant Management:
 - [ ] Backup- och restore-runbook är verifierad.
 - [x] Tomma genererade databastyper är uppdaterade och har CI-kontroll mot lokal databas.
 - [ ] Ingen normal tenant-CRUD använder browserklient eller Service Role.
-- [ ] Security Pass för Tenant Management är godkänd.
+- [x] Kodfri Security Pass och tenantdatabasdesign är godkända med dokumenterade operativa blockerare.
+- [x] Owner-singletonens schema, constraints, FK, RLS och grants är lokalt verifierade.
+- [x] Den kategoriska owner-integritetsfunktionen är lokalt verifierad utan UUID-läckage.
+- [x] Server-side ownerintegritetsguard och environment-equality är verifierade.
+- [ ] Owner-bootstrap är implementerad och verifierad.
+- [ ] Tenanttabell finns; ingen tenantdata kan lagras ännu.
 
 ## Relaterade dokument
 
@@ -26,3 +31,4 @@ Följande krävs före release av Tenant Management:
 - [Owner-bootstrap](OWNER_BOOTSTRAP.md)
 - [Databas-recovery](DATABASE_RECOVERY.md)
 - [Security Standard](SECURITY_STANDARD.md)
+- [Tenant Database Design](TENANT_DATABASE_DESIGN.md)

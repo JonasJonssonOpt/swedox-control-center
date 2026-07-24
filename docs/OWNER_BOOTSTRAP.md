@@ -2,7 +2,11 @@
 
 ## Syfte
 
-Detta dokument definierar den kodfria säkerhets- och driftstandarden för att etablera Control Centers enda `owner`. Supabase CLI och lokal migrationsmiljö är verifierade, men exakt bootstrapverktyg och utförandemetod fastställs först tillsammans med owner-singletonens migrationsdesign och en godkänd deploymentmetod.
+Detta dokument definierar den kodfria säkerhets- och driftstandarden för att
+etablera Control Centers enda `owner`. Tabellen
+`public.control_center_owner` finns genom den lokalverifierade migrationen
+`20260724184023_create_control_center_owner.sql`, men migrationen skapar ingen
+ownerrad. Exakt bootstrapverktyg och utförandemetod återstår.
 
 ## Grundprincip
 
@@ -36,6 +40,10 @@ Bootstrap ska ske i följande ordning:
 
 Bootstrap får endast utföras av en uttryckligen behörig drift- eller databasadministrativ identitet. Operationen ska vara avgränsad, engångsbetonad och auditerad.
 
+Auth-usern måste finnas före ownerraden eftersom `owner_user_id` refererar
+`auth.users(id)` med delete restrict. Bootstrap får inte läggas i en generell
+migration, seed eller normal authenticated operation.
+
 ## Förbud
 
 - Inget verkligt owner-UUID får finnas i Git.
@@ -58,6 +66,17 @@ Bootstrap får endast utföras av en uttryckligen behörig drift- eller databasa
 En operatör ska verifiera både projektreferens och environment innan någon miljöspecifik ownerkonfiguration etableras. Projektreferenser och owner-ID:n ska inte skrivas i vanlig dokumentation eller logg.
 
 ## Equality och fail-closed
+
+`public.get_owner_integrity_status()` kan rapportera
+`missing_database_owner` men skapar, uppdaterar eller tar aldrig bort owner.
+Bootstrap är fortsatt en separat privilegierad process. Efter bootstrap ska
+funktionen ge `ok` endast när aktuell `auth.uid()` motsvarar singletonens owner;
+andra authenticated users får endast `authenticated_user_mismatch`.
+
+Serverguarden failar därför stängt med missing owner tills bootstrap har skett.
+Bootstrap får inte kringgå environment/Auth/DB-kedjan. Efter bootstrap kan
+`requireOwnerIntegrity()` endast lyckas för rätt environment-owner med verifierad
+Auth-identitet, AAL2 och DB-status `ok`.
 
 Tenant Management ska stoppas vid:
 

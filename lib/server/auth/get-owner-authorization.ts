@@ -3,9 +3,7 @@ import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { getVerifiedClaims } from "./get-verified-claims";
-
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+import { getOwnerEnvironment } from "./owner-integrity.contract";
 
 export type OwnerAuthorization =
   | Readonly<{ status: "unauthenticated" }>
@@ -18,13 +16,13 @@ export type OwnerAuthorization =
     }>;
 
 function getConfiguredOwnerUserId(): string | null {
-  const value = process.env.CONTROL_CENTER_OWNER_USER_ID?.trim();
+  const result = getOwnerEnvironment(process.env.CONTROL_CENTER_OWNER_USER_ID);
 
-  if (!value || !UUID_PATTERN.test(value)) {
+  if (!result.ok) {
     return null;
   }
 
-  return value.toLowerCase();
+  return result.userId;
 }
 
 export async function getOwnerAuthorization(): Promise<OwnerAuthorization> {
@@ -48,8 +46,8 @@ export async function getOwnerAuthorization(): Promise<OwnerAuthorization> {
     if (
       error ||
       typeof currentUserId !== "string" ||
-      !UUID_PATTERN.test(claims.subject) ||
-      !UUID_PATTERN.test(currentUserId) ||
+      !getOwnerEnvironment(claims.subject).ok ||
+      !getOwnerEnvironment(currentUserId).ok ||
       claims.subject.toLowerCase() !== currentUserId.toLowerCase()
     ) {
       return { status: "unauthenticated" };
