@@ -78,6 +78,20 @@ Bootstrap får inte kringgå environment/Auth/DB-kedjan. Efter bootstrap kan
 `requireOwnerIntegrity()` endast lyckas för rätt environment-owner med verifierad
 Auth-identitet, AAL2 och DB-status `ok`.
 
+Tenanttabellens E2-policy har samma fail-closed utgångsläge:
+`public.is_control_center_owner()` returnerar `false` och RLS visar inga
+tenantrader innan singletonen har bootstrappats. E2 skapar ingen ownerrad, seed,
+bootstrapfunktion eller operativ bootstrapväg.
+
+E4:s tenantmutationer använder samma DB-ownerkontroll och returnerar endast
+`unauthorized` före bootstrap eller vid mismatch/null auth. De skapar då varken
+tenant- eller auditdata. E4 skapar ingen ownerrad eller bootstrapväg.
+
+E5:s audit-read-funktion använder samma fail-closed kontroll och returnerar
+`unauthorized` innan tenant- eller cursoruppslag när singletonen saknas eller
+auth inte matchar. Därmed exponeras inte tenantexistens eller historik före
+bootstrap.
+
 Tenant Management ska stoppas vid:
 
 - saknat environmentvärde

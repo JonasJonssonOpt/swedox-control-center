@@ -50,6 +50,73 @@ Badges får inte användas för status. Status får inte förmedlas enbart med f
 - Viktiga avvikelser och begränsningar ska framgå före kompletterande information.
 - Navigation tillbaka till listan och mellan relaterade objekt ska vara förutsägbar.
 
+### Tenant read UI
+
+Tenantlistan finns på `/tenants` och detail på `/tenants/[tenantId]`. Initial
+data laddas i dynamiska Server Components direkt genom tenantservicen. Intern
+HTTP via API-routes, klienthämtning och cross-request cache används inte.
+
+Listan är en kompakt semantisk tabell med juridiskt namn som detail-länk,
+organisationsnummer, kategori, operativ status, kontaktperson och uppdateringstid.
+Servicens ordning bevaras. Sökning, filter, pagination, total count och
+mutationskontroller ingår inte i read-mönstret.
+
+Detail använder sektionerna Identitet, Kontakt, Operativ status, Administration
+och Metadata. Saknade nullable värden visas som `Saknas`. Actor-UUID visas inte;
+den databaskontrollerade actorrollen beskrivs som `Verifierad owner` tills ett
+separat säkert visningsnamnskontrakt finns.
+
+Operativ status och arkiveringsstatus visas med `StatusText` och entydig svensk
+text, aldrig badges eller enbart färg. Arkiverad tenant får dessutom en tydlig
+textförklaring före övriga uppgifter. Datum visas i svensk locale och
+Europe/Stockholm; canonical organisationsnummer formateras endast för
+presentation som `NNNNNN-NNNN`.
+
+### Tenant create och edit
+
+Create finns på `/tenants/new` och edit på `/tenants/[tenantId]/edit`.
+Serverpages skyddar initial åtkomst, medan en liten Client Component använder
+`useActionState` med E7B:s Server Actions. Formuläret får inte importera service,
+Supabase, repository eller RPC.
+
+Create visar kategori, organisationsnummer, juridiskt namn, kontaktfält och
+administrativ notering. Edit visar kategori och land skrivskyddat och redigerar
+endast de sex tillåtna verksamhetsfälten. Arkiverad tenant får ingen
+submitkontroll. Expected revision transporteras dolt men betraktas som opålitlig
+input och verifieras alltid server-side och i databasen.
+
+Serverresultatet kan innehålla allowlistade `fieldErrors`. Fältfel kopplas med
+`aria-invalid` och `aria-describedby`; formulärfelet har `role="alert"` och får
+fokus efter svar. Conflict visas som ett formulärfel med instruktion att lämna
+editvyn och läsa in aktuell detail igen. Automatisk overwrite eller retry är
+förbjuden.
+
+Kontrollerade inputvärden bevarar användarens data vid fel. Submit är disabled
+och visar `Sparar…` under requesten. Efter lyckad create/update revalideras endast
+tenantlistan och relevant detail, varefter servern redirectar till detail.
+
+### Tenant lifecycle controls
+
+Tenantdetail visar state-specifika livscykelkontroller. Aktiv tenant visar
+`Pausa` och `Arkivera`, pausad visar `Aktivera` och `Arkivera`, och arkiverad
+visar endast `Återställ`. Edit och övriga statuskontroller visas inte för
+arkiverad tenant.
+
+Varje åtgärd använder en native dialog med rubrik, konsekvensbeskrivning,
+Avbryt och explicit bekräftelse. Pause/activate är neutrala reversibla
+kontroller. Restore förklarar att tenant blir aktiv. Archive är visuellt
+separerad och destruktivt formgiven samt förklarar att tenant försvinner från
+aktiva listan men inte raderas.
+
+Varje kontroll har egen action- och pending-state. Knappen inaktiveras och visar
+operationsspecifik pågående text. Dialogen fokuserar Avbryt vid öppning, native
+Escape stänger den och fokus återgår till triggern.
+
+Conflict och invalid state visas som alerts med instruktion att stänga dialogen
+och läsa om detail. Efter success revalideras endast lista/detail och servern
+redirectar tillbaka till uppdaterad detail. Inga badges, target-statusfält eller
+audit history ingår i lifecyclemönstret.
+
 ## Relaterade dokument
 
 - [Projektbeslut](PROJECT_DECISIONS.md)

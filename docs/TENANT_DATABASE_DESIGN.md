@@ -37,6 +37,269 @@ Luhnvalidatorn `public.is_valid_swedish_organization_number(text)`, namngivna
 constraints samt de två tidigare beslutade indexen. Tenant-RLS, policies, audit,
 mutationer, DAL, routes och UI är fortfarande inte implementerade.
 
+Steg E2 aktiverar RLS och FORCE RLS på `public.tenants`. `authenticated` har
+endast SELECT och exakt en policy, `tenants_owner_select`, ger samtliga rader och
+kolumner till den verifierade singleton-ownern. Policyn filtrerar inte på
+arkiveringsstatus. Den argumentlösa booleska
+`public.is_control_center_owner()` är `STABLE SECURITY DEFINER`, har låst
+`search_path = pg_catalog` och lämnar aldrig ut owner-ID eller radantal.
+`PUBLIC`, `anon` och `service_role` saknar EXECUTE; endast `authenticated` har
+EXECUTE för policyutvärderingen. Saknad singleton, null `auth.uid()` och mismatch
+ger `false`. Inga INSERT-, UPDATE-, DELETE- eller ALL-policies och inga direkta
+skrivgrants finns.
+
+E2 skapar ingen ownerrad. Normal runtime förblir därför fail-closed före en
+separat framtida bootstrap. Audit, atomiska mutationer, DAL, routes, UI och
+koppling till `requireOwnerIntegrity()` återstår; Tenant Management är inte
+verksamhetsklart.
+
+Steg E3 implementerar den låsta append-only-tabellen
+`public.tenant_audit_events`. Den lagrar endast audit-id, tenantkoppling, en av
+sex allowlistade eventtyper, actor-UUID, databastid, revision före/efter, en
+sorterad allowlist av ändrade fältnamn och valfritt syntetiskt correlation-id.
+Inga snapshots, gamla/nya värden eller JSON-payloads lagras.
+
+Tenant-FK använder delete restrict, actor saknar avsiktligt Auth-FK och
+`(tenant_id, revision_after)` är unikt. UPDATE och DELETE blockeras av en
+append-only-trigger. RLS och FORCE RLS är aktiva utan policies, och samtliga
+tabellgrants är återkallade från `PUBLIC`, `anon`, `authenticated` och
+`service_role`. Owner kan därför ännu inte läsa audit direkt; den paginerade
+read-funktionen och alla atomiska audit-skrivande mutationer återstår till E4.
+
+Steg E4 implementerar sex separata `SECURITY DEFINER`-mutationer:
+`create_tenant`, `update_tenant`, `pause_tenant`, `activate_tenant`,
+`archive_tenant` och `restore_tenant`. Endast `authenticated` har EXECUTE; varje
+funktion omprövar den booleska DB-ownerkontrollen och binder actor till
+`auth.uid()`. `PUBLIC`, `anon` och `service_role` saknar EXECUTE.
+
+Create returnerar den skapade tenant-raden på revision ett. Övriga funktioner
+kräver positiv expected revision, låser tenant-raden, jämför revision före state,
+ökar exakt ett steg och returnerar den uppdaterade tenant-raden. Varje lyckad
+funktion skriver exakt ett metadata-only audit-event i samma transaktion.
+Kategoriska fel är `unauthorized`, `not_found`, `conflict`,
+`invalid_state_transition`, `validation_error` och `audit_failure`; inga
+identifierare eller råa databasfel ingår.
+
+AAL2 och environment/Auth/DB equality ligger fortsatt i
+`requireOwnerIntegrity()` på servern; databasen verifierar singleton-owner och
+actor men inför ingen separat AAL2-modell. Auditläsning, DAL, routes och UI
+återstår. Tenant Management är därför fortfarande inte verksamhetsklart.
+
+Steg E5 implementerar
+`public.list_tenant_audit_events(uuid, integer, timestamptz, uuid)` som den enda
+auditläsningen för framtida DAL. Funktionen är `STABLE SECURITY DEFINER`,
+omprövar singleton-owner och kräver tenant-ID. Default page size är 50 och
+maximum 100.
+
+Resultatet sorteras på `occurred_at DESC, id DESC` och använder samma typade par
+som cursor. Cursorparet måste tillhöra den efterfrågade tenanten. Funktionen
+använder limit plus ett och returnerar auditens nio metadatafält tillsammans med
+`has_more`, `next_cursor_occurred_at` och `next_cursor_id`. Nästa cursor är null
+på sista sidan. Ingen total count eller ytterligare filter införs.
+
+Audit-tabellen har fortsatt noll policies och inga direkta grants.
+`authenticated` får endast EXECUTE på read-funktionen; `PUBLIC`, `anon` och
+`service_role` nekas. Arkiverade tenants kan läsas, befintlig tenant utan events
+ger tom mängd och okänd tenant ger `not_found`. DAL, routes och UI återstår.
+
+## E6: server-only DAL och service
+
+E6 kapslar tenantdatabasen i ett repository och ett publikt servicelager under
+`lib/server/tenants`. Repositoryt använder den request-lokala Supabase
+SSR-klienten, gör owner-RLS-skyddad SELECT och anropar endast E4/E5:s RPC:er.
+Det innehåller ingen sessionspolicy, ownerlogik eller UI-formatering.
+
+Servicen anropar `requireOwnerIntegrity()` före varje repositoryåtkomst. Guarden
+returnerar owneridentiteten men inte en Supabase-klient; en separat SSR-klient
+skapas därför efter godkänd guard. Databasen omprövar owner via RLS/RPC och
+grants. Ingen Service Role eller cross-request cache används.
+
+Tenantlistan omfattar icke-arkiverade rader i deterministisk ordning
+`legal_name, id`; detail inkluderar arkiverad tenant. Sökning, filter,
+listpagination och total count väntar. Sex mutationer exponerar endast E4:s
+tillåtna inputfält, expected revision och valfritt correlation-ID.
+
+Råa tenant- och auditrows runtimevalideras och mappas centralt till immutable
+camelCase-typer. Audit-RPC:ns redundanta sidfält reduceras till
+`{ items, hasMore, nextCursor }`; nullable cursorpar och
+`revisionBefore`/`correlationId` valideras, och cross-tenant rows nekas.
+Stabila DB-fel mappas till typade servicefel medan okända fel failar stängt som
+`unexpected_error` utan rå PostgREST-/SQL-information.
+
+E6 skapar inga routes, server actions eller UI. Bootstrap, verksamhetskoppling,
+retention, export och backup återstår; Tenant Management är inte
+verksamhetsklart.
+
+## E7A: tenant read routes
+
+E7A kopplar E6-servicen till tre server-only App Router route handlers:
+
+- `GET /api/tenants`
+- `GET /api/tenants/[tenantId]`
+- `GET /api/tenants/[tenantId]/audit`
+
+Routes använder inga pages eller server components eftersom leveransen endast
+behöver typade JSON-readgränser och inget UI. De importerar aldrig Supabase,
+repository eller RPC. Ownerintegritet och AAL2 verkställs fortsatt av servicen
+genom `requireOwnerIntegrity()` innan inputvalidering och DAL-anrop; RLS och RPC
+omprövar owner i databasen.
+
+Listan returnerar endast icke-arkiverade tenants enligt servicens sortering.
+Detail validerar tenant-ID i servicen och kan returnera arkiverad tenant utan att
+automatiskt läsa audit. Audit accepterar valfri `pageSize` samt ett komplett
+`cursorOccurredAt`/`cursorId`-par och returnerar endast
+`items`, `hasMore` och `nextCursor`.
+
+Samtliga handlers är `force-dynamic`, har `revalidate = 0` och returnerar
+`Cache-Control: private, no-store, max-age=0`. Servicefel exponeras endast som
+stabil kod med 403, 404, 409, 422 eller 500. Authguardens framework-redirects
+bevaras. Inga POST-, PATCH- eller DELETE-routes, mutation actions eller
+UI-komponenter skapas i E7A.
+
+Owner-bootstrap, mutation actions, färdigt UI, retention, export och backup
+återstår. Tenant Management är inte verksamhetsklart.
+
+## E7B: tenant mutation Server Actions
+
+E7B kopplar E6:s sex mutationer till separata Server Actions:
+
+- `createTenantAction`
+- `updateTenantAction`
+- `pauseTenantAction`
+- `activateTenantAction`
+- `archiveTenantAction`
+- `restoreTenantAction`
+
+Actionfilerna använder `"use server"` och `server-only`. En injicerbar core
+normaliserar FormData och anropar endast motsvarande tenantservicefunktion.
+Servicen kör fortsatt `requireOwnerIntegrity()` med owner-equality och AAL2 före
+repositoryåtkomst; databasen omprövar owner och äger actor, revision och audit.
+
+Create accepterar endast kategori och de tillåtna verksamhetsfälten. Update
+kräver tenant-ID, positiv expected revision och full målbild för de sex
+redigerbara fälten. Livscykelactions accepterar endast tenant-ID och expected
+revision. Okända fält ignoreras men vidarebefordras aldrig, vilket blockerar
+klientstyrda systemfält, actor, event, archive metadata och target status.
+
+Tomma nullable textfält blir null och övriga strängar trimmas. E6:s validatorer
+kontrollerar UUID, kategori, organisationsnummer och textgränser.
+Correlation-ID tas inte från klienten utan genereras server-side som ett
+kryptografiskt UUID efter godkänd boundaryvalidering.
+
+Resultatet är `{ ok: true, tenantId, revision }` eller
+`{ ok: false, code, message }`. Samtliga servicekoder mappas till säker,
+allowlistad text. Råa service-, PostgREST- eller SQL-fel lämnar inte gränsen,
+och framework-redirects från auth-/säkerhetsguarden bevaras.
+
+E7B förlitar sig på Next Server Actions inbyggda same-origin/origin-skydd och
+skapar inga mutation route handlers. UI-paths är ännu inte låsta; därför görs
+ingen redirect eller revalidation i detta steg. Inga formulär eller andra
+UI-komponenter skapas.
+
+Owner-bootstrap, färdigt UI, retention, export och backup återstår. Tenant
+Management är inte verksamhetsklart.
+
+## E8A: tenant list- och detail-UI
+
+E8A inför de första verksamhetsvyerna:
+
+- `/tenants`
+- `/tenants/[tenantId]`
+
+Sidorna är dynamiska Server Components med `revalidate = 0`. Listan anropar
+`listTenants()` och detail anropar `getTenantById()` direkt. Ownerintegritet,
+AAL2 och request-lokal SSR ärvs från servicen. Ingen intern HTTP till E7A,
+Supabaseimport, repositoryimport, RPC eller browserklient används.
+
+Listan visar servicens icke-arkiverade och redan sorterade tenants i en
+semantisk tabell: juridiskt namn, organisationsnummer, kategori, operativ
+status, kontaktperson och uppdateringstid. Tom lista får ett neutralt tomläge.
+Ingen UI-sortering, sökning, filtrering, pagination eller total count införs.
+
+Detail stöder även arkiverad tenant och visar Identitet, Kontakt, Operativ
+status, Administration och Metadata. Nullable fält visas som `Saknas`.
+Canonical organisationsnummer presenteras med bindestreck utan att datavärdet
+ändras. Datum formateras med svensk locale och Europe/Stockholm.
+
+Status visas med vanlig text genom `StatusText`; badges används inte.
+Arkiverad tenant får en separat textförklaring. Actor-UUID visas inte utan
+beskrivs som `Verifierad owner`, eftersom databasen garanterar actor-binding men
+saknar ett visningsnamn.
+
+Modulintern navigation går från juridiskt namn till detail och tillbaka till
+listan. Global navigation väntar på ett separat informationsarkitekturbeslut.
+Loading, not-found och unexpected error har generiska, icke-läckande vyer.
+Inga formulär, mutationskontroller eller audit history ingår i E8A.
+
+Owner-bootstrap, E8B–E8D, installationer, licenser, provisionering, retention,
+export och backup återstår. Tenant Management är inte verksamhetsklart.
+
+## E8B: tenant create- och edit-formulär
+
+E8B inför:
+
+- `/tenants/new`
+- `/tenants/[tenantId]/edit`
+
+Create-sidan verifierar ownerintegritet före rendering. Edit laddar exakt en
+tenant genom `getTenantById()` och ärver därmed ownerguard och AAL2 genom
+servicen. Formulärkomponenten är den minsta nödvändiga Client Component-gränsen
+och importerar endast E7B:s create/update-actions.
+
+Create visar kategori, organisationsnummer, juridiskt namn, kontaktperson,
+e-post, telefon och administrativ notering. Customer/pilot kräver
+organisationsnummer medan internal tillåter tomt värde. Edit visar kategori och
+SE skrivskyddat och skickar endast full målbild för de sex redigerbara fälten
+samt tenant-ID och expected revision. Arkiverad tenant får ingen submitkontroll.
+
+Actionresultatet kan innehålla allowlistade `fieldErrors`. Server-side
+boundaryvalidering kopplar säkra fel till fälten och återanvänder därefter E6:s
+validatorer. Service-/DB-validation utan säker fältkoppling, no-op och övriga
+fel visas på formulärnivå. Conflict visar att data ändrats men aldrig aktuell
+DB-revision; ingen automatisk retry eller overwrite sker.
+
+Formuläret använder kontrollerade värden så att input bevaras vid fel.
+Felsammanfattningen annonseras och fokuseras, fält använder `aria-invalid` och
+`aria-describedby`, och submit inaktiveras med texten `Sparar…` under request.
+
+Efter lyckad create/update revalideras `/tenants` och skapad/aktuell detailpath,
+varefter servern redirectar till detail. Felresultat revaliderar eller
+redirectar aldrig. Inga livscykelkontroller eller audit history ingår.
+
+Owner-bootstrap, E8C–E8D, global navigation, installationer, licenser,
+provisionering, retention, export och backup återstår. Tenant Management är inte
+verksamhetsklart.
+
+## E8C: tenant lifecycle controls
+
+E8C kopplar E7B:s fyra livscykelactions till tenantdetail:
+
+- active: pause och archive
+- paused: activate och archive
+- archived: restore
+
+Kontrollerna ligger i en liten Client Component och skickar endast tenant-ID och
+den revision som serverdetail laddade. Hidden revision är opålitlig input;
+service och DB validerar den och DB äger statusövergång, revisionökning, actor
+och atomisk audit. Ingen target status eller auditmetadata skickas av UI.
+
+Varje operation använder en native dialog. Pause/activate beskrivs som
+reversibla statusändringar. Restore förklarar att status blir active. Archive är
+separerad med destruktiv styling och förklarar att tenant lämnar aktiva listan
+men inte fysiskt raderas.
+
+Conflict och invalid state visas i dialogen med instruktion att ladda om detail.
+Ingen faktisk DB-revision, retry eller overwrite exponeras. Varje kontroll har
+egen pending-state, disabled submit och operationsspecifik väntetext.
+
+Efter success revalideras `/tenants` och aktuell detailpath och servern
+redirectar till samma detail. Archive stannar därmed på arkiverad detail så
+restore förblir nåbar. Felresultat revaliderar eller redirectar aldrig.
+
+E8C skapar ingen audit history. Owner-bootstrap, E8D, global navigation,
+installationer, licenser, provisionering, retention, export och backup
+återstår. Tenant Management är inte verksamhetsklart.
+
 Scope omfattar owner-singleton, ownerintegritet, tenantdata, constraints, index,
 RLS, mutationer, audit, tester, migrationsordning, framtida DAL, felmodell och
 recovery. Låsta domän- och säkerhetsbeslut i `PROJECT_DECISIONS.md` gäller.
@@ -318,6 +581,12 @@ Alla funktioner har låst search path, minsta grants, ownerkontroll och en
 transaktion som både ändrar tenant och skapar audit. Servern kräver först
 `requireFullAccessOwner()` och equality. DB binder actor till `auth.uid()`.
 
+Kontraktet är implementerat i
+`20260727140000_create_tenant_mutations.sql`. Samtliga funktioner returnerar en
+enda `public.tenants`-rad och tar aldrig actor, systemfält, eventtyp,
+revision-after eller timestamp från klienten. Update använder en full, typad
+målbild för de sex redigerbara fälten och nekar no-op.
+
 | Operation | Tillåtna input/preconditions                                                         | Atomiskt resultat                                                                              |
 | --------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
 | Create    | category, normaliserbara verksamhetsfält och correlation-id; ingen expected revision | DB skapar UUID, SE, active, revision 1, actor/tider, inga arkivfält och `tenant_created`       |
@@ -344,6 +613,12 @@ Ingen revision eller dubbelt audit-event skapas vid misslyckat anrop.
 
 Tabellen heter `tenant_audit_events` och är en append-only verksamhetsaudit.
 
+Kontraktet är implementerat i
+`20260727130000_create_tenant_audit_foundation.sql`. E3 skapar tabell,
+constraints, tenant-FK, revisionsunikhet, kronologiskt tenantindex,
+append-only-trigger samt helt stängd RLS/grantmodell. Ingen insert- eller
+read-funktion skapas i E3.
+
 | Fält                      | Ansvar                                           |
 | ------------------------- | ------------------------------------------------ |
 | `id uuid`                 | DB-genererat audit-id                            |
@@ -366,6 +641,11 @@ INSERT/UPDATE/DELETE, och inga ändringsfunktioner finns. Audit och mutation del
 transaktion; failure på endera sidan rollbackar båda. Owner läser audit endast
 via en särskild serveranropad, ownerkontrollerad read-funktion med pagination;
 ingen browser- eller direkt tabellåtkomst.
+
+Read-funktionen är implementerad i
+`20260727150000_create_tenant_audit_read_api.sql`. E3-indexet
+`(tenant_id, occurred_at DESC, id DESC)` används utan ytterligare index.
+Cursorpaginationen är tenantbunden och returnerar endast befintlig auditmetadata.
 
 ## Testdesign
 

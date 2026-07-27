@@ -30,6 +30,50 @@ export type Database = {
         };
         Relationships: [];
       };
+      tenant_audit_events: {
+        Row: {
+          actor_user_id: string;
+          changed_fields: string[];
+          correlation_id: string | null;
+          event_type: string;
+          id: string;
+          occurred_at: string;
+          revision_after: number;
+          revision_before: number | null;
+          tenant_id: string;
+        };
+        Insert: {
+          actor_user_id: string;
+          changed_fields: string[];
+          correlation_id?: string | null;
+          event_type: string;
+          id?: string;
+          occurred_at?: string;
+          revision_after: number;
+          revision_before?: number | null;
+          tenant_id: string;
+        };
+        Update: {
+          actor_user_id?: string;
+          changed_fields?: string[];
+          correlation_id?: string | null;
+          event_type?: string;
+          id?: string;
+          occurred_at?: string;
+          revision_after?: number;
+          revision_before?: number | null;
+          tenant_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fk_tenant_audit_events_tenant_id";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       tenants: {
         Row: {
           administrative_note: string | null;
@@ -95,10 +139,236 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      activate_tenant: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_tenant_id: string;
+        };
+        Returns: {
+          administrative_note: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          category: string;
+          contact_email: string | null;
+          contact_name: string | null;
+          contact_phone: string | null;
+          country_code: string;
+          created_at: string;
+          created_by: string;
+          id: string;
+          legal_name: string;
+          operational_status: string;
+          organization_number: string | null;
+          revision: number;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "tenants";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      archive_tenant: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_tenant_id: string;
+        };
+        Returns: {
+          administrative_note: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          category: string;
+          contact_email: string | null;
+          contact_name: string | null;
+          contact_phone: string | null;
+          country_code: string;
+          created_at: string;
+          created_by: string;
+          id: string;
+          legal_name: string;
+          operational_status: string;
+          organization_number: string | null;
+          revision: number;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "tenants";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      create_tenant: {
+        Args: {
+          p_administrative_note?: string;
+          p_category: string;
+          p_contact_email?: string;
+          p_contact_name?: string;
+          p_contact_phone?: string;
+          p_correlation_id?: string;
+          p_legal_name: string;
+          p_organization_number: string;
+        };
+        Returns: {
+          administrative_note: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          category: string;
+          contact_email: string | null;
+          contact_name: string | null;
+          contact_phone: string | null;
+          country_code: string;
+          created_at: string;
+          created_by: string;
+          id: string;
+          legal_name: string;
+          operational_status: string;
+          organization_number: string | null;
+          revision: number;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "tenants";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       get_owner_integrity_status: { Args: never; Returns: string };
+      is_control_center_owner: { Args: never; Returns: boolean };
       is_valid_swedish_organization_number: {
         Args: { value: string };
         Returns: boolean;
+      };
+      list_tenant_audit_events: {
+        Args: {
+          p_cursor_id?: string;
+          p_cursor_occurred_at?: string;
+          p_page_size?: number;
+          p_tenant_id: string;
+        };
+        Returns: {
+          actor_user_id: string;
+          changed_fields: string[];
+          correlation_id: string;
+          event_type: string;
+          has_more: boolean;
+          id: string;
+          next_cursor_id: string;
+          next_cursor_occurred_at: string;
+          occurred_at: string;
+          revision_after: number;
+          revision_before: number;
+          tenant_id: string;
+        }[];
+      };
+      pause_tenant: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_tenant_id: string;
+        };
+        Returns: {
+          administrative_note: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          category: string;
+          contact_email: string | null;
+          contact_name: string | null;
+          contact_phone: string | null;
+          country_code: string;
+          created_at: string;
+          created_by: string;
+          id: string;
+          legal_name: string;
+          operational_status: string;
+          organization_number: string | null;
+          revision: number;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "tenants";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      restore_tenant: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_tenant_id: string;
+        };
+        Returns: {
+          administrative_note: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          category: string;
+          contact_email: string | null;
+          contact_name: string | null;
+          contact_phone: string | null;
+          country_code: string;
+          created_at: string;
+          created_by: string;
+          id: string;
+          legal_name: string;
+          operational_status: string;
+          organization_number: string | null;
+          revision: number;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "tenants";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      update_tenant: {
+        Args: {
+          p_administrative_note: string;
+          p_contact_email: string;
+          p_contact_name: string;
+          p_contact_phone: string;
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_legal_name: string;
+          p_organization_number: string;
+          p_tenant_id: string;
+        };
+        Returns: {
+          administrative_note: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          category: string;
+          contact_email: string | null;
+          contact_name: string | null;
+          contact_phone: string | null;
+          country_code: string;
+          created_at: string;
+          created_by: string;
+          id: string;
+          legal_name: string;
+          operational_status: string;
+          organization_number: string | null;
+          revision: number;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "tenants";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
     };
     Enums: {

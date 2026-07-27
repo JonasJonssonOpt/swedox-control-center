@@ -743,7 +743,6 @@ select is(
         ('anon', 'INSERT'),
         ('anon', 'UPDATE'),
         ('anon', 'DELETE'),
-        ('authenticated', 'SELECT'),
         ('authenticated', 'INSERT'),
         ('authenticated', 'UPDATE'),
         ('authenticated', 'DELETE'),
@@ -759,7 +758,7 @@ select is(
     )
   ),
   0,
-  'public and application roles have no tenant table privileges'
+  'public, anon, and service_role have no tenant privileges and authenticated has no writes'
 );
 select is(
   (
@@ -768,8 +767,8 @@ select is(
     where schemaname = 'public'
       and tablename = 'tenants'
   ),
-  0,
-  'no tenant policies exist before the RLS step'
+  1,
+  'the separately reviewed RLS step adds exactly one tenant policy'
 );
 select is(
   (
@@ -777,8 +776,8 @@ select is(
     from pg_class
     where oid = 'public.tenants'::regclass
   ),
-  false,
-  'tenant RLS remains disabled until its separately reviewed step'
+  true,
+  'tenant RLS is enabled by its separately reviewed step'
 );
 
 set local role anon;
@@ -805,11 +804,10 @@ select throws_ok(
 reset role;
 
 set local role authenticated;
-select throws_ok(
-  'select * from public.tenants',
-  '42501',
-  null,
-  'authenticated cannot select tenants'
+select is(
+  (select count(*)::integer from public.tenants),
+  0,
+  'authenticated without a matching owner reads no tenants'
 );
 select throws_ok(
   $$insert into public.tenants

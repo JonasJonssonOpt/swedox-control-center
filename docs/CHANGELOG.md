@@ -1,6 +1,108 @@
 # Changelog
 
+## 2026-07-27
+
+- Implementerade E8C:s state-specifika pause-, activate-, archive- och
+  restore-kontroller på tenantdetail ovanpå E7B-actions. Varje kontroll bär
+  tenant-ID och expected revision men inget klientstyrt target status.
+- Lade till proportionerliga native dialogs för samtliga operationer. Archive
+  är tydligt separerad och beskriver att tenant lämnar listan utan fysisk
+  radering; restore beskriver återgång till active.
+- Livscykelsuccess revaliderar endast lista/detail och serverredirectar till
+  färsk detail. Conflict/invalid state stannar i dialogen. Lade till nio
+  lifecycle-kontraktstest; ingen audit history infördes.
+
+- Implementerade E8B:s createform på `/tenants/new` och editform på
+  `/tenants/[tenantId]/edit` med en minimal Client Component ovanpå E7B:s
+  create/update-actions. List/detail har nu fungerande create/edit-länkar.
+- Utökade actionresultatet bakåtkompatibelt med allowlistade field errors,
+  server-side fältmappning och särskild conflict-hantering. Formvärden bevaras,
+  fel kopplas till fält och submit blockeras under pending.
+- Efter lyckad create/update revalideras endast `/tenants` och relevant detail
+  innan serverredirect till detail. Arkiverad tenant saknar edit-submit. Inga
+  livscykelkontroller eller audit history infördes.
+
+- Implementerade E8A:s owner-skyddade tenantlista på `/tenants` och tenantdetail
+  på `/tenants/[tenantId]` som dynamiska Server Components med direkt
+  tenantserviceåtkomst och utan intern HTTP eller klienthämtning.
+- Lade till kompakt semantisk tabell, sektionerad detail, svensk presentation,
+  `StatusText` utan badges, arkiveringstext, neutralt tomläge samt loading-,
+  not-found- och maskerad error-vy. Actor-UUID exponeras inte.
+- Lade till sju UI-kontraktstest. Inga create/edit-formulär,
+  livscykelkontroller, mutation submissions eller audit history infördes.
+
+- Implementerade E7B:s sex separata tenant Server Actions för create, update,
+  pause, activate, archive och restore. Actions använder endast E6-servicen och
+  ärver ownerintegritet, AAL2, SSR, RLS och atomisk audit genom den.
+- Lade till en injicerbar action-core med strikt FormData-normalisering,
+  servergenererat correlation-ID och ett stabilt resultatkontrakt. Klientstyrda
+  systemfält, actor, event, revision-after och target status vidarebefordras inte.
+- Låste Next Server Actions same-origin/origin-skydd som CSRF-gräns. Inga
+  mutation route handlers, redirects eller revalidations infördes eftersom
+  framtida UI-paths ännu inte är låsta. Lade till åtta actionkontraktstest.
+
+- Implementerade E7A:s tre dynamiska, server-only JSON `GET`-routes för
+  tenantlista, tenantdetail och tenant-audit. Routes anropar endast E6-servicen,
+  returnerar dess typade modeller och har explicit `private, no-store`.
+- Låste audittransporten till valfri `pageSize` och ett valfritt komplett
+  `cursorOccurredAt`/`cursorId`-par. Servicefel mappas till stabila HTTP-statusar
+  och JSON-koder utan råa DB-, auth- eller implementationsdetaljer.
+- Lade till sju routekontraktstest för arkitektur, list/detail/audit,
+  felmapping, cursorvalidering och request-lokal exekvering. Inga mutationsvägar
+  eller färdigt UI infördes.
+
+- Implementerade E6:s strikt server-only tenant-DAL och servicelager ovanpå
+  cookie-baserad Supabase SSR. Alla nio publika operationer anropar
+  `requireOwnerIntegrity()` innan repositoryåtkomst; ingen Service Role,
+  browserklient, route, server action eller UI infördes.
+- Låste camelCase-applikationstyper, input- och outputvalidering, exakt
+  DB/RPC-mapping samt typade servicefel. Okända databasfel och felaktiga
+  DB-svar stoppas som `unexpected_error` med metadata-only loggning.
+- Kapslade owner-only tenantlista, tenantdetail inklusive arkiverad tenant, sex
+  atomiska mutations-RPC:er och auditpagination som
+  `{ items, hasMore, nextCursor }`. Lade till kontraktstester för servergräns,
+  guard, reads, mutationer, mapping, validering, fel och cross-tenant-skydd.
+
 ## 2026-07-24
+
+- Implementerade E5:s `list_tenant_audit_events` med ownerkontroll, obligatoriskt
+  tenant-scope och stabil cursorpagination på `occurred_at DESC, id DESC`.
+- Låste default page size 50, maximum 100, tenantbunden typad cursor och ett
+  strikt returkontrakt utan verksamhetsfält, total count eller spekulativa filter.
+  Direkt audit-SELECT och auditpolicies förblir blockerade.
+- Lade till 42 pgTAP-kontroller för metadata, grants, ownerkontroll,
+  cross-tenant-isolering, sortering, flersidig pagination, cursorvalidering och
+  fortsatt stängd tabellåtkomst; 383 pgTAP-tester passerar totalt.
+
+- Implementerade E4:s sex ownerkontrollerade `SECURITY DEFINER`-mutationer för
+  create, update, pause, activate, archive och restore med actor-binding,
+  radlåsning, optimistic concurrency och kategoriska, icke-läckande fel.
+- Kopplade varje lyckad mutation atomiskt till exakt ett append-only
+  tenant-audit-event. Tenantändring rollbackar vid auditfel och misslyckad
+  tenantändring skapar ingen audit.
+- Lade till 79 pgTAP-kontroller för funktionskontrakt, grants, ownerkontroll,
+  create/update/livscykel, concurrency, atomicitet och fortsatt nekad direkt
+  tabellskrivning; 341 pgTAP-tester passerar totalt.
+
+- Implementerade E3:s tenantspecifika append-only auditgrund med nio låsta
+  kolumner, sex eventtyper, tenant-FK med delete restrict, revisionsunikhet,
+  metadata-only changed-fields, kronologiskt tenantindex och blockerad
+  UPDATE/DELETE.
+- Aktiverade RLS och FORCE RLS på `tenant_audit_events` utan policies eller
+  API-rollgrants. Ingen publik write/read-funktion och inga tenantmutationer
+  infördes.
+- Lade till 71 pgTAP-kontroller för struktur, eventtyper, revisioner, FK,
+  actorhistorik, payloadkontrakt, append-only, grants och RLS; 262 pgTAP-tester
+  passerar totalt.
+
+- Implementerade E2:s avgränsade tenantåtkomstlager: RLS och FORCE RLS,
+  minimalt SELECT-grant för `authenticated`, en owner-only SELECT-policy och den
+  booleska fail-closed-helpern `public.is_control_center_owner()`.
+- Lade till separata pgTAP-bevis för policystruktur, grants, helperkontrakt,
+  owner/non-owner/unauthenticated, aktiva och arkiverade tenants samt fortsatt
+  nekad direkt skrivning. Ingen bootstrap, audit, mutation, DAL, route eller UI
+  infördes. Två rena resetkörningar, 191 pgTAP-tester, databaslint och
+  deterministisk typgenerering verifierades lokalt.
 
 - Implementerade E1:s tenantdatabasgrund enligt det låsta Steg C-kontraktet:
   `public.tenants`, 17 kolumner, namngivna constraints, canonical
