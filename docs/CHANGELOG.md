@@ -1,5 +1,94 @@
 # Changelog
 
+## 2026-07-28
+
+- Implementerade F2C4:s sju separata installations-RPC:er för create, update,
+  activate, pause, decommission, archive och restore. Varje funktion omprövar
+  ownern, binder actor, låser raden och använder expected revision.
+- Låste tenant availability till active och icke arkiverad tenant, planned
+  activation till komplett URL/project ref/region, decommission som terminalt,
+  archive efter decommission och restore som enbart återställd synlighet.
+- Integrerade exakt en metadata-only auditpost per lyckad mutation i samma
+  transaktion. Auditkollision verifierar `audit_failure` och full rollback.
+  Direkta writes, writepolicies, Service Role och audit-read förblir utanför
+  steget.
+
+- Implementerade F2C3:s separata `installation_audit_events` med exakt nio
+  metadatafält, sju installationsägda event, strikt revisionskedja och unik
+  auditpost per installationsrevision.
+- Låste `changed_fields` till installationens 17 kolumnnamn i canonical ordning
+  utan värden, snapshots, JSON eller payloads. Tenantrelation härleds via
+  installation-FK med delete restrict och actor saknar Auth-FK.
+- Införde append-only-trigger, RLS, FORCE RLS, noll policies och noll direkta
+  API-rollgrants. Lade till pgTAP för struktur, events, revisioner, arrays,
+  relationer, actorlivscykel, append-only, grants och index; ingen audit
+  read/write-API skapades.
+
+- Implementerade F2C2:s owner-only installationsläsning med RLS, FORCE RLS,
+  endast SELECT för `authenticated` och exakt en policy som återanvänder
+  `public.is_control_center_owner()`. Inga writepolicies eller verksamhetsreads
+  infördes.
+- Verifierade fail-closed vid non-owner, null auth, saknad singleton och
+  mismatch. Owner kan läsa alla statusar, arkiverade installationer och
+  installationer hos arkiverade tenants; policyn gör ingen tenantjoin.
+- Lade till pgTAP för policystruktur, exakta grants, historisk owner-read och
+  nekade writes. Lokal `service_role` har BYPASSRLS men saknar explicit
+  installationsgrant och ingår inte i appflödet.
+
+- Implementerade F2C1:s isolerade installationsdatabasgrund med exakt 17
+  kolumner, obligatorisk tenant-FK med delete restrict, fyra låsta environments,
+  administrativ status, positiv revision och separat archivemetadata.
+- Låste canonical installation code, säker HTTPS-metadata, skyddsvärd och
+  partiellt unik Supabase project ref samt endast fem motiverade index inklusive
+  primärnyckeln. Installerad appversion, secrets, provisioning-, deployment- och
+  healthstatus ingår inte.
+- Återkallade alla tabellprivilegier från `PUBLIC`, `anon`, `authenticated` och
+  `service_role`. F2C1 lämnar avsiktligt RLS/FORCE RLS av och skapar inga
+  policies; F2C2 ansvarar för owner-only read. Lade till heltäckande pgTAP och
+  låste designen i `INSTALLATION_DATABASE_DESIGN.md`.
+
+- Implementerade F2A:s permanenta Control Center-shell med vänstermeny,
+  toppheader och konsekvent huvudområde. Tenantvyer återanvänder ramen utan
+  duplicerad global markup eller ändrad tenantlogik.
+- Låste modulordningen till Dashboard, Tenants, Installations, Licenses,
+  Provisioning, Monitoring och Settings. Endast Tenants är länkad och aktivt
+  textmarkerad; övriga visas icke-interaktivt som `Kommer senare` utan routes.
+- Root `/` redirectar nu till `/tenants`. Lade till fem kontraktstest för
+  informationsarkitektur, landmarks, fokus/`aria-current`, dead-navigation och
+  frånvaro av placeholder-sidor.
+
+- Rättade den tomma MFA-enrollmentvyn. Rotorsaken var att initialt null-state
+  endast renderade en ensam startknapp och att `mfa.enroll()` inte kördes förrän
+  efter manuell submit. Enrollment initieras nu server-side och sidan har alltid
+  loading, ready eller lokalt fel.
+- Visar Supabase-returnerad QR-kod och manuell setup secret, återhämtar refresh
+  genom kontrollerad cleanup av overifierad factor och skapar inte ny factor när
+  en verifierad redan finns.
+- Kräver challenge, verify och explicit `currentLevel = aal2` före fast redirect
+  till `/tenants`. Lade till sex beteende-/arkitekturtest; manuell Microsoft
+  Authenticator-verifiering kvarstår.
+
+- Implementerade F1:s postgres-only owner-bootstrap i ett icke-exponerat
+  `private`-schema samt en explicit local-only CLI med targetkontroll,
+  UUID-validering och bekräftelse. Ingen ownerdata ligger i migration eller Git.
+- Bootstrap verifierar existerande Auth-user, låser singletonen, är idempotent
+  för samma owner och nekar mismatch utan takeover. Inga HTTP-, UI-,
+  Service Role-, signup- eller owner-switchvägar infördes.
+- Lade till 23 pgTAP-kontrakt för bootstrap/integritet och fyra Node-kontrakt
+  för CLI/input/säkerhetsarkitektur. Lokal och productionmässig runbook,
+  change-record och incidentprocess dokumenterades.
+
+- Implementerade E8D:s metadata-only `Händelsehistorik` direkt på
+  `/tenants/[tenantId]`, även för arkiverade tenants. Initiala 25 poster hämtas
+  direkt via tenantservicen och nästa sidor endast via E7A:s audit-route.
+- Lade till svenska event- och changed-field-labels, svensk datumformatering,
+  `Verifierad owner`, begriplig revision, tomläge, pending och lokalt maskerat
+  load-more-fel. Actor-UUID, audit-ID, correlation-ID och verksamhetsvärden
+  renderas inte.
+- Verifierade cursorpayload, tenantisolering, ordning och dubbletter före append.
+  Ingen total count, filtrering, export, retention, backup eller
+  databasförändring infördes. Lade till åtta E8D-kontraktstest.
+
 ## 2026-07-27
 
 - Implementerade E8C:s state-specifika pause-, activate-, archive- och

@@ -23,6 +23,10 @@ Följande krävs före release av Tenant Management:
 - [x] Den kategoriska owner-integritetsfunktionen är lokalt verifierad utan UUID-läckage.
 - [x] Server-side ownerintegritetsguard och environment-equality är verifierade.
 - [ ] Owner-bootstrap är implementerad och verifierad.
+- [x] Owner-bootstrapmekanismen nekar saknad Auth-user/mismatch, är idempotent och saknar HTTP- eller API-rollsyta.
+- [ ] Bootstrappad miljö är end-to-end-verifierad med ownerlogin, AAL2 och `/tenants`.
+- [x] MFA-enrollment renderar Supabase QR/secret, verifierar challenge och kräver AAL2 före `/tenants`.
+- [ ] Microsoft Authenticator-enrollment är manuellt verifierad med en riktig mobil TOTP-kod.
 - [x] Tenanttabell, constraints, organisationsnummervalidering och grundindex är lokalt verifierade.
 - [x] Tenant-RLS, owner-only SELECT, auditgrund och auditintegrerade atomiska mutationer är lokalverifierade.
 - [x] Paginerad ownerkontrollerad tenant-auditläsning är lokalverifierad utan direkt audit-tabellåtkomst.
@@ -32,7 +36,25 @@ Följande krävs före release av Tenant Management:
 - [x] Tenant list/detail-UI använder tenantservicen server-side med textbaserad status, no-store och maskerade fel.
 - [x] Tenant create/edit-formulär använder verifierade actions med field errors, conflict, selektiv revalidation och serverredirect.
 - [x] Tenant pause/activate/archive/restore-UI använder state-specifika kontroller, confirmations och optimistic concurrency.
-- [ ] Tenant audit history UI använder det verifierade paginerade readkontraktet.
+- [x] Tenant audit history UI använder det verifierade paginerade readkontraktet.
+- [x] F2A:s permanenta applikationsram visar sidomeny, toppheader och ett
+      konsekvent huvudområde för Tenant Management.
+- [x] Endast Tenants är klickbar och textmarkerad med `aria-current`; framtida
+      moduler saknar routes och visas som `Kommer senare`.
+- [x] Root `/` redirectar server-side till `/tenants`.
+- [x] F2C1:s installationstabell med exakt 17 kolumner, tenant-FK, canonical
+      metadata, revision, archivemetadata, grundindex och fail-closed grants är
+      lokalverifierad.
+- [x] Installation owner-only RLS/read access är verifierad för aktiva,
+      arkiverade och historiskt tenantkopplade installationer.
+- [x] F2C3:s separata metadata-only installationsaudit med revisionskedja,
+      canonical changed fields, append-only-skydd, FORCE RLS och noll direkta
+      grants är lokalverifierad.
+- [x] F2C4:s sju ownerkontrollerade installationsmutationer med tenant
+      availability, expected revision, låsta transitions och atomisk audit är
+      lokalverifierade.
+- [ ] Installationsaudit, mutationer, DAL/service, routes/actions och UI är
+      verifierade.
 
 ## Relaterade dokument
 
@@ -41,3 +63,4 @@ Följande krävs före release av Tenant Management:
 - [Databas-recovery](DATABASE_RECOVERY.md)
 - [Security Standard](SECURITY_STANDARD.md)
 - [Tenant Database Design](TENANT_DATABASE_DESIGN.md)
+- [Installation Database Design](INSTALLATION_DATABASE_DESIGN.md)

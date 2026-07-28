@@ -30,6 +30,118 @@ export type Database = {
         };
         Relationships: [];
       };
+      installation_audit_events: {
+        Row: {
+          actor_user_id: string;
+          changed_fields: string[];
+          correlation_id: string | null;
+          event_type: string;
+          id: string;
+          installation_id: string;
+          occurred_at: string;
+          revision_after: number;
+          revision_before: number | null;
+        };
+        Insert: {
+          actor_user_id: string;
+          changed_fields: string[];
+          correlation_id?: string | null;
+          event_type: string;
+          id?: string;
+          installation_id: string;
+          occurred_at?: string;
+          revision_after: number;
+          revision_before?: number | null;
+        };
+        Update: {
+          actor_user_id?: string;
+          changed_fields?: string[];
+          correlation_id?: string | null;
+          event_type?: string;
+          id?: string;
+          installation_id?: string;
+          occurred_at?: string;
+          revision_after?: number;
+          revision_before?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fk_installation_audit_events_installation_id";
+            columns: ["installation_id"];
+            isOneToOne: false;
+            referencedRelation: "installations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      installations: {
+        Row: {
+          administrative_note: string | null;
+          administrative_status: string;
+          application_url: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          created_at: string;
+          created_by: string;
+          display_name: string;
+          environment: string;
+          hosting_region: string | null;
+          id: string;
+          installation_code: string;
+          revision: number;
+          supabase_project_ref: string | null;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        Insert: {
+          administrative_note?: string | null;
+          administrative_status?: string;
+          application_url?: string | null;
+          archived_at?: string | null;
+          archived_by?: string | null;
+          created_at?: string;
+          created_by: string;
+          display_name: string;
+          environment: string;
+          hosting_region?: string | null;
+          id?: string;
+          installation_code: string;
+          revision?: number;
+          supabase_project_ref?: string | null;
+          tenant_id: string;
+          updated_at?: string;
+          updated_by: string;
+        };
+        Update: {
+          administrative_note?: string | null;
+          administrative_status?: string;
+          application_url?: string | null;
+          archived_at?: string | null;
+          archived_by?: string | null;
+          created_at?: string;
+          created_by?: string;
+          display_name?: string;
+          environment?: string;
+          hosting_region?: string | null;
+          id?: string;
+          installation_code?: string;
+          revision?: number;
+          supabase_project_ref?: string | null;
+          tenant_id?: string;
+          updated_at?: string;
+          updated_by?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fk_installations_tenant";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       tenant_audit_events: {
         Row: {
           actor_user_id: string;
@@ -139,6 +251,38 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      activate_installation: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_installation_id: string;
+        };
+        Returns: {
+          administrative_note: string | null;
+          administrative_status: string;
+          application_url: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          created_at: string;
+          created_by: string;
+          display_name: string;
+          environment: string;
+          hosting_region: string | null;
+          id: string;
+          installation_code: string;
+          revision: number;
+          supabase_project_ref: string | null;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "installations";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       activate_tenant: {
         Args: {
           p_correlation_id?: string;
@@ -171,6 +315,38 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      archive_installation: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_installation_id: string;
+        };
+        Returns: {
+          administrative_note: string | null;
+          administrative_status: string;
+          application_url: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          created_at: string;
+          created_by: string;
+          display_name: string;
+          environment: string;
+          hosting_region: string | null;
+          id: string;
+          installation_code: string;
+          revision: number;
+          supabase_project_ref: string | null;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "installations";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       archive_tenant: {
         Args: {
           p_correlation_id?: string;
@@ -199,6 +375,44 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "tenants";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      create_installation: {
+        Args: {
+          p_administrative_note: string;
+          p_application_url: string;
+          p_correlation_id?: string;
+          p_display_name: string;
+          p_environment: string;
+          p_hosting_region: string;
+          p_installation_code: string;
+          p_supabase_project_ref: string;
+          p_tenant_id: string;
+        };
+        Returns: {
+          administrative_note: string | null;
+          administrative_status: string;
+          application_url: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          created_at: string;
+          created_by: string;
+          display_name: string;
+          environment: string;
+          hosting_region: string | null;
+          id: string;
+          installation_code: string;
+          revision: number;
+          supabase_project_ref: string | null;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "installations";
           isOneToOne: true;
           isSetofReturn: false;
         };
@@ -240,6 +454,38 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      decommission_installation: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_installation_id: string;
+        };
+        Returns: {
+          administrative_note: string | null;
+          administrative_status: string;
+          application_url: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          created_at: string;
+          created_by: string;
+          display_name: string;
+          environment: string;
+          hosting_region: string | null;
+          id: string;
+          installation_code: string;
+          revision: number;
+          supabase_project_ref: string | null;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "installations";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       get_owner_integrity_status: { Args: never; Returns: string };
       is_control_center_owner: { Args: never; Returns: boolean };
       is_valid_swedish_organization_number: {
@@ -267,6 +513,38 @@ export type Database = {
           revision_before: number;
           tenant_id: string;
         }[];
+      };
+      pause_installation: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_installation_id: string;
+        };
+        Returns: {
+          administrative_note: string | null;
+          administrative_status: string;
+          application_url: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          created_at: string;
+          created_by: string;
+          display_name: string;
+          environment: string;
+          hosting_region: string | null;
+          id: string;
+          installation_code: string;
+          revision: number;
+          supabase_project_ref: string | null;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "installations";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       pause_tenant: {
         Args: {
@@ -300,6 +578,38 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      restore_installation: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_installation_id: string;
+        };
+        Returns: {
+          administrative_note: string | null;
+          administrative_status: string;
+          application_url: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          created_at: string;
+          created_by: string;
+          display_name: string;
+          environment: string;
+          hosting_region: string | null;
+          id: string;
+          installation_code: string;
+          revision: number;
+          supabase_project_ref: string | null;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "installations";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       restore_tenant: {
         Args: {
           p_correlation_id?: string;
@@ -328,6 +638,43 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "tenants";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      update_installation: {
+        Args: {
+          p_administrative_note: string;
+          p_application_url: string;
+          p_correlation_id?: string;
+          p_display_name: string;
+          p_expected_revision: number;
+          p_hosting_region: string;
+          p_installation_id: string;
+          p_supabase_project_ref: string;
+        };
+        Returns: {
+          administrative_note: string | null;
+          administrative_status: string;
+          application_url: string | null;
+          archived_at: string | null;
+          archived_by: string | null;
+          created_at: string;
+          created_by: string;
+          display_name: string;
+          environment: string;
+          hosting_region: string | null;
+          id: string;
+          installation_code: string;
+          revision: number;
+          supabase_project_ref: string | null;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "installations";
           isOneToOne: true;
           isSetofReturn: false;
         };

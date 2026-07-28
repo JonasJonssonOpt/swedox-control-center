@@ -117,6 +117,52 @@ skrivpolicies införs. FORCE RLS följer singletonens låsta modell och minskar
 risken att tabellägaren oavsiktligt behandlas som normal applikationsväg;
 privilegierade databasroller förblir ett operativt administrationsundantag.
 
+## Installation Management
+
+F2C1 låser en installation som en självständigt identifierbar och administrerbar
+teknisk SweDox-miljö som tillhör exakt en tenant. En tenant får ha noll, en eller
+flera installationer, inklusive flera production-installationer. `tenant_id`,
+`installation_code` och `environment` är immutable efter create; tenant-FK
+använder delete restrict.
+
+Version 1:s environments är `production`, `staging`, `test` och `development`.
+Pilot är tenantkategori, inte environment. Administrativ status är `planned`,
+`active`, `paused` eller `decommissioned` och hålls skild från archive,
+provisioning, deployment och health.
+
+`application_url`, Supabase project ref och hosting region är skyddsvärd teknisk
+metadata, aldrig credentials. Kunddata, connection strings, nycklar, tokens och
+andra secrets är förbjudna. Installerad SweDox-version och deploytid ska ägas av
+en framtida deployment-/releasedomän och lagras inte manuellt på installationen.
+
+F2C1:s exakta kontrakt finns i
+[Installation Database Design](INSTALLATION_DATABASE_DESIGN.md). Tabellen är
+fail-closed. F2C2 ger den verifierade singleton-ownern SELECT till samtliga
+installationer genom RLS, FORCE RLS, ett minimalt grant och exakt en policy som
+återanvänder `public.is_control_center_owner()`. Arkiverade installationer och
+installationer hos arkiverade tenants är historiskt läsbara. Policyn gör ingen
+tenantjoin; tenant availability hör till framtida mutationsgräns. Audit,
+mutationer och verksamhetslager saknas fortsatt och Installation Management är
+inte verksamhetsklart.
+
+F2C3 lagrar installationsaudit i en separat
+`public.installation_audit_events`, inte i tenant audit. Tabellen är
+metadata-only och append-only; den lagrar event, actor, revisioner, allowlistade
+fältbenämningar och valfri correlation UUID, aldrig verksamhetsvärden eller
+payloads. Provisioning, deployment och monitoring ska äga sina egna event.
+Framtida global activity aggregerar domänägda reads i servicelagret och använder
+inte en gemensam audittabell.
+
+F2C4 låser installationsmutationer till sju separata typade RPC:er. Varje RPC
+omprövar ownern, binder actor till `auth.uid()`, använder expected revision och
+skriver exakt en auditpost atomiskt. Tenant måste vara active och icke arkiverad;
+paused eller arkiverad tenant blockerar samtliga installationsmutationer.
+
+Decommission är terminalt. Archive tillåts endast efter decommission och restore
+återställer endast synlighet utan aktivering. Planned till active kräver
+application URL, Supabase project ref och hosting region. Decommissioned men
+oarkiverad installation får fortsatt uppdatera säker metadata.
+
 Steg E3 implementerar `public.tenant_audit_events` som en tenantspecifik,
 append-only auditgrund. Kontraktet använder de sex låsta eventtyperna,
 revisionspar med exakt en auditpost per tenantrevision, metadata-only
@@ -272,7 +318,57 @@ Varje kontroll har separat pending-state. Native dialog sköter Escape;
 Avbryt fokuseras vid öppning och fokus återgår till triggern vid stängning.
 Status visas fortsatt som text och E8C läser ingen audit.
 
+Steg E8D placerar tenantens `Händelsehistorik` direkt på
+`/tenants/[tenantId]`; ingen separat route införs. Initiala 25 poster hämtas
+server-side direkt genom `listTenantAuditEvents()`. Endast den minimala
+load-more-gränsen är klientbaserad och anropar E7A:s audit-GET med det kompletta
+cursorpar som föregående verifierade svar returnerade.
+
+Historiken är en semantisk lista i `occurred_at DESC, id DESC`. Svenska labels
+används för de sex eventtyperna och E3:s samtliga allowlistade changed-fields.
+Create visas som `Revision 1`, övriga som `Revision före → efter`. Actor visas
+som `Verifierad owner`; actor-UUID, audit-ID och correlation-ID renderas inte.
+Tidigare/nya verksamhetsvärden finns inte i presentationen.
+
+Ingen total count, URL-cursor, offset, filtrering, sökning, export, retention
+eller backup införs. Arkiverade tenants behåller historiken.
+
 Bootstrap och recovery regleras i [Owner-bootstrap](OWNER_BOOTSTRAP.md) och [Databas-recovery](DATABASE_RECOVERY.md).
+
+F1 låser owner-bootstrap som en miljöspecifik administrativ driftoperation, inte
+som ownerdatamigration. En mekanismmigration skapar två postgres-only,
+security-invoker-funktioner i det icke-exponerade `private`-schemat. Ingen
+owneridentitet finns i migrationen.
+
+Bootstrap kräver existerande Auth-user och explicit UUID. Tom singleton fylls,
+samma owner ger idempotent success utan write och annan owner ger
+`owner_mismatch` utan takeover. Local-only CLI kräver explicit target och
+bekräftelse; staging/production använder kortlivad direkt DB-adminåtkomst.
+Service Role, HTTP, UI, automatisk discovery och owner-switch är förbjudna.
+
+MFA-enrollment ska initieras server-side när en autentiserad AAL1-owner når
+`/auth/mfa/enroll`; ett initialt null-state med en ensam startknapp är inte ett
+giltigt enrollmentflöde. Supabase är ensam källa för QR-data och setup secret.
+
+Eftersom en overifierad factors secret inte kan återläsas ska normal refresh
+kontrollerat unenrolla den overifierade TOTP-faktorn och skapa exakt en ny.
+Verifiering använder factor challenge och verify, läser därefter assurance level
+och redirectar till den fasta interna routen `/tenants` endast vid `aal2`.
+Query-styrda return paths införs inte.
+
+F2A låser Control Centers permanenta informationsarkitektur till en gemensam
+server-renderad applikationsram med vänstersida, toppheader och ett enda
+huvudinnehåll. Ramen är generell och domänoberoende; Tenant Management ansluts
+genom en tunn layout utan duplicerad global markup eller ändrad tenantlogik.
+Auth- och MFA-routes ligger utanför ramen och deras guards påverkas inte.
+
+Modulordningen är Dashboard, Tenants, Installations, Licenses, Provisioning,
+Monitoring och Settings. Endast implementerade moduler får vara interaktiva.
+F2A länkar därför endast Tenants och visar övriga som icke-interaktiv
+`Kommer senare`-text. Inga tomma routes eller placeholder-sidor skapas.
+Aktiv modul markeras med text och `aria-current`, aldrig badge eller enbart
+färg. Root `/` serverredirectar fast till den första tillgängliga modulen
+`/tenants`.
 
 ## Arbetssätt
 

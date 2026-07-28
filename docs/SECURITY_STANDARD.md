@@ -28,6 +28,17 @@ Intern åtkomst till Control Center ska alltid kräva TOTP-MFA med Microsoft Aut
 
 Control Center ska inte skapa egna recovery codes. Förlorad MFA-åtkomst ska hanteras genom en dokumenterad manuell rutin via Supabase. Rutinen ska verifiera ägarens identitet, återkalla berörda sessioner och vara auditerbar. En extra registrerad TOTP-enhet kan senare övervägas som reserv, men ingår inte som krav i version 1.
 
+MFA-enrollment för en autentiserad AAL1-owner initieras server-side på
+`/auth/mfa/enroll`. QR-kod och manuell setup-nyckel kommer uteslutande från
+Supabase `mfa.enroll()` och får endast finnas i den aktuella autentiserade
+sidans state. De får aldrig loggas eller transporteras i URL.
+
+En overifierad TOTP-factor saknar återläsningsbar secret. Vid normal refresh
+unenrollas därför den overifierade faktorn kontrollerat innan en ny enrollment
+skapas. Verifierad factor skapar ingen ny enrollment utan går till challenge.
+Challenge och verify måste lyckas och sessionens `currentLevel` måste därefter
+vara `aal2` innan fast intern redirect till `/tenants`. Råa Supabasefel maskeras.
+
 ### RLS
 
 När en databas senare införs ska Row Level Security användas som ett obligatoriskt skyddslager för exponerade tabeller. Policies ska utgå från nekad åtkomst och öppna endast dokumenterade operationer. RLS ersätter inte server-side auktorisering.
@@ -64,6 +75,53 @@ Ingen Service Role används av applikationen. Canonical format, Luhn, kategori,
 status, arkivmetadata, revision och textgränser verkställs i databasen som sista
 skyddslager även när framtida appvalidering finns.
 
+Installationstabellens F2C1-grund följer samma isolerade fail-closed-princip.
+F2C2 aktiverar RLS och FORCE RLS och ger `authenticated` endast SELECT. Exakt en
+SELECT-policy återanvänder den argumentlösa, informationsminimerade
+`public.is_control_center_owner()`. `PUBLIC`, `anon` och `service_role` saknar
+tabellprivilegier och samtliga API-roller saknar direkta writes. Lokal
+`service_role` kan ha BYPASSRLS som plattformsegenskap men saknar verksamhetsgrant
+och används inte i appkod.
+
+Ownerpolicyn omfattar alla aktiva och arkiverade installationsrader, även när
+tenant är arkiverad. Den gör ingen tenantjoin och bedömer inte tenantstatus.
+Authenticated non-owner, null auth, saknad singleton och mismatch returnerar
+noll rader. Tenant availability ska senare verkställas atomiskt i
+mutationsfunktionerna.
+
+F2C3:s `public.installation_audit_events` lagrar endast installationsägd
+mutationsmetadata: installation, eventtyp, actor UUID, tid, revisioner,
+allowlistade fältnamn och valfri correlation UUID. Business values, snapshots,
+JSON, endpoints, project refs, noteringar, credentials, requestpayloads och
+providerfel är förbjudna. Actor saknar Auth-FK så historiken består efter
+Auth-userns livscykel.
+
+Audit är append-only genom både privilege/RLS-lager och en trigger som blockerar
+UPDATE/DELETE med stabil SQLSTATE. Tabellen har RLS och FORCE RLS, noll policies
+och noll direkta grants för samtliga API-roller, inklusive `service_role`.
+F2C3 skapar ingen publik insert- eller readfunktion. Audit får senare endast
+skrivas atomiskt av installationsmutationerna och läsas genom en separat
+ownerkontrollerad RPC.
+
+F2C4:s sju installationsmutationer omprövar den giltiga singleton-ownern i varje
+anrop och binder actorfält till `auth.uid()`; actor, target status, revision
+after, timestamps och archivemetadata kan inte skickas av klienten. AAL2 ligger
+fortsatt i serverguarden och ersätts inte av en ny DB-modell.
+
+Mutationerna kräver active, icke arkiverad tenant, låser installationsraden och
+kontrollerar expected revision före state. Installation och exakt en
+metadata-only auditpost skrivs i samma transaktion; auditfel rullar tillbaka hela
+ändringen. `authenticated` har endast EXECUTE på de sju smala RPC:erna. Direkta
+installation- och auditwrites är fortsatt blockerade, writepolicies saknas och
+`service_role` saknar EXECUTE.
+
+Databasconstraints verkställer tenant-FK med delete restrict, canonical och unik
+installation code, canonical och partiellt unik Supabase project ref, säker
+HTTPS-metadata utan credentials eller fragment, positiv revision och konsekvent
+archivemetadata. Project ref, URL och administrativ notering är skyddsvärda och
+får inte förekomma i generell loggning. URL:en får inte hämtas eller användas som
+monitoringtarget utan en separat SSRF- och outbound-request-granskning.
+
 Steg E2 gör RLS och FORCE RLS till tenanttabellens obligatoriska åtkomstlager.
 `authenticated` har endast SELECT; `PUBLIC`, `anon` och `service_role` saknar
 tenantprivilegier och inga normala roller har direkta skrivgrants. En enda
@@ -78,6 +136,23 @@ skrivpolicies finns, och Service Role ingår inte i verksamhetsflödet.
 Service Role eller motsvarande privilegierad credential får aldrig exponeras i klientkod, webbläsare, mobilklient eller annan opålitlig miljö. Privilegierade operationer får endast utföras i kontrollerad servermiljö.
 
 Service Role får inte användas för normal tenant-CRUD eller för att kringgå RLS. Miljöspecifik bootstrap och recovery är separata, avgränsade och auditerade driftoperationer.
+
+### Owner-bootstrap
+
+Owner-bootstrap är en separat administrativ DB-operation utan HTTP-, UI-,
+Server Action- eller API-rollsyta. Mekanismen ligger i schemat `private`, ägs av
+`postgres`, körs som security invoker och saknar EXECUTE för `PUBLIC`, `anon`,
+`authenticated` och `service_role`.
+
+Endast en redan existerande, identitetsverifierad Auth-user får kopplas. Tom
+singleton kan fyllas, samma owner är idempotent och annan owner ger hard fail
+utan overwrite. Automatisk owner discovery, första-user-logik, takeover och
+signupändring är förbjudna.
+
+Samma UUID ska sättas som server-secret och DB-owner. D3 kräver dessutom
+matchande Auth-session och AAL2. Bootstrapcredential är kortlivad
+DB-administration, får inte lagras eller loggas och är aldrig en runtime-
+eller Service Role-väg. Recovery/ownerbyte kräver separat incidentprocess.
 
 ### Kundinstallationernas databaser
 
@@ -285,3 +360,18 @@ Verifierat:
 - Serverbaserad owner-verifiering och obligatorisk MFA är implementerade.
 - Owner-singletonens struktur och fail-closed tabellskydd är implementerade
   lokalt; bootstrap, equality och Tenant Management återstår.
+
+## E8D security pass
+
+E8D:s initiala auditläsning sker i tenantdetail genom E6:s
+`listTenantAuditEvents()` och ärver därmed ownerintegritet, AAL2, request-lokal
+SSR och databasens tenantbundna cursorverifiering. Load-more-komponenten får
+endast anropa E7A:s no-store audit-GET. Ingen UI-kod importerar Supabase,
+repository, RPC eller Service Role och ingen cross-request cache införs.
+
+Klientgränsen accepterar endast komplett serverreturnerat cursorpar och
+runtimevaliderar nästa sida, tenantkoppling, sortering och dubbletter före
+append. Råa fel maskeras lokalt. UI-modellen tar bort actor-UUID,
+correlation-ID och audit-ID före rendering och visar endast eventtyp, tid,
+`Verifierad owner`, revision samt labels för ändrade fält. Inga
+verksamhetsvärden, export-, retention- eller backupvägar skapas.
