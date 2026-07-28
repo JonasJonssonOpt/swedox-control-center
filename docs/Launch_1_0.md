@@ -53,6 +53,13 @@ Följande krävs före release av Tenant Management:
 - [x] F2C4:s sju ownerkontrollerade installationsmutationer med tenant
       availability, expected revision, låsta transitions och atomisk audit är
       lokalverifierade.
+- [x] F2C5:s installationbundna, metadata-only och cursorpaginerade owner audit
+      read-RPC är lokalverifierad utan direkt audittabellåtkomst.
+- [x] F2C6A:s owner-only installationslista med stabil display name/UUID-cursor,
+      filter, bokstavlig sökning och allowlistad metadata är lokalverifierad.
+- [x] Installationslistans sökning är begränsad till display name och
+      installation code; tenant legal name och application host är uttryckligen
+      inte sökbara.
 - [ ] Installationsaudit, mutationer, DAL/service, routes/actions och UI är
       verifierade.
 

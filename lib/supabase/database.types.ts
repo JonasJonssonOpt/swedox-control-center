@@ -492,6 +492,57 @@ export type Database = {
         Args: { value: string };
         Returns: boolean;
       };
+      list_installation_audit_events: {
+        Args: {
+          p_cursor_id?: string;
+          p_cursor_occurred_at?: string;
+          p_installation_id: string;
+          p_page_size?: number;
+        };
+        Returns: {
+          actor_user_id: string;
+          changed_fields: string[];
+          correlation_id: string;
+          event_type: string;
+          has_more: boolean;
+          id: string;
+          installation_id: string;
+          next_cursor_id: string;
+          next_cursor_occurred_at: string;
+          occurred_at: string;
+          revision_after: number;
+          revision_before: number;
+        }[];
+      };
+      list_installations: {
+        Args: {
+          p_administrative_status?: string;
+          p_cursor_display_name?: string;
+          p_cursor_id?: string;
+          p_environment?: string;
+          p_include_archived?: boolean;
+          p_page_size?: number;
+          p_search?: string;
+          p_tenant_id?: string;
+        };
+        Returns: {
+          administrative_status: string;
+          application_host: string;
+          archived_at: string;
+          display_name: string;
+          environment: string;
+          has_more: boolean;
+          hosting_region: string;
+          id: string;
+          installation_code: string;
+          next_cursor_display_name: string;
+          next_cursor_id: string;
+          revision: number;
+          tenant_id: string;
+          tenant_legal_name: string;
+          updated_at: string;
+        }[];
+      };
       list_tenant_audit_events: {
         Args: {
           p_cursor_id?: string;

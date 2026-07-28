@@ -2,6 +2,26 @@
 
 ## 2026-07-28
 
+- Implementerade F2C6A:s ownerkontrollerade `list_installations` med
+  standardsida 50, max 100 och stabil cursor på display name/UUID i stigande
+  ordning.
+- Låste tenant-, environment-, status- och archivefilter samt case-insensitive
+  bokstavlig sökning enbart i display name och installation code. Tenant legal
+  name och application host är medvetet inte sökbara. Cursor valideras mot
+  samma filterkontext och sidor är dubblettfria.
+- Begränsade output till listmetadata, tenantens legal name och härledd
+  application host. Full URL, project ref och intern notering exponeras inte;
+  inga direkta tabellgrants, nya index, DAL, routes eller UI infördes.
+
+- Implementerade F2C5:s ownerkontrollerade
+  `list_installation_audit_events` med obligatoriskt installation-ID,
+  standardsida 25 och stabil timestamp/UUID-cursor i newest-first-ordning.
+- RPC:n returnerar endast nio auditmetadatafält och pagineringsstatus. Verifierade
+  owner/non-owner/null auth, installationbunden cursor, sidstorlek, sortering och
+  dubblettfria sidor.
+- Audittabellens FORCE RLS, noll policies och noll direkta grants är oförändrade.
+  Ingen DAL, route, UI, sökning, export, retention eller backup infördes.
+
 - Implementerade F2C4:s sju separata installations-RPC:er för create, update,
   activate, pause, decommission, archive och restore. Varje funktion omprövar
   ownern, binder actor, låser raden och använder expected revision.

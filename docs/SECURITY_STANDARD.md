@@ -115,6 +115,16 @@ metadata-only auditpost skrivs i samma transaktion; auditfel rullar tillbaka hel
 installation- och auditwrites är fortsatt blockerade, writepolicies saknas och
 `service_role` saknar EXECUTE.
 
+F2C5:s installationsaudit-read återanvänder samma ownerhelper i en smal
+`SECURITY DEFINER`-RPC. Funktionen kräver installation-ID, begränsad sidstorlek
+och en fullständig installationbunden timestamp/UUID-cursor. Den returnerar
+endast auditmetadata och pagineringsstatus. Non-owner, null auth och saknad
+singleton failar stängt.
+
+`authenticated` har EXECUTE endast på RPC:n och får fortsatt inte SELECT på
+audittabellen. `PUBLIC`, `anon` och `service_role` saknar EXECUTE. Audit-RLS,
+FORCE RLS, noll policies och noll direkta grants är oförändrade.
+
 Databasconstraints verkställer tenant-FK med delete restrict, canonical och unik
 installation code, canonical och partiellt unik Supabase project ref, säker
 HTTPS-metadata utan credentials eller fragment, positiv revision och konsekvent
@@ -322,6 +332,22 @@ Secrets får aldrig lagras i källkod, dokumentation, klientkod eller loggar. De
 - Lokala Auth-users, owneridentiteter och testdata ska vara syntetiska.
 - Lokalt genererade credentials får inte skrivas till CI-logg eller versionshanteras.
 - Den lokala stacken får endast köras på en betrodd maskin med aktivt brandväggsskydd och ska stoppas när den inte används.
+
+### Installation list read
+
+F2C6A:s installationslista är endast åtkomlig genom en postgresägd
+`SECURITY DEFINER`-RPC som omprövar `is_control_center_owner()` för varje
+anrop. Endast `authenticated` har EXECUTE; tabellens RLS, FORCE RLS och
+befintliga direkta grants ändras inte.
+
+Returkontraktet är allowlistat. Det innehåller listmetadata och en härledd
+application host, men aldrig full URL, Supabase project ref, intern notering,
+credentials eller providerpayload. Filter och cursor valideras i databasen
+innan pagination; ogiltig eller filterfrämmande cursor stoppas kategoriskt.
+Sökinput är längdbegränsad och `%` samt `_` har ingen wildcardbetydelse.
+Sökvillkoret får endast använda display name och installation code. Tenant
+legal name och application host är medvetet inte sökbara; full URL, project
+ref, hosting region och intern notering får inte heller påverka träffresultatet.
 
 ### Sessioner
 

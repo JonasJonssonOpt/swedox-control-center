@@ -3,10 +3,10 @@
 ## Status och source of truth
 
 Detta dokument låser F2C1:s databasgrund, F2C2:s owner-only read access, F2C3:s
-separata auditgrund och F2C4:s atomiska mutationer för Installation Management.
-Stegen är lokalverifierade genom migrationer, pgTAP, typgenerering och full
-regression. Dokumentet får inte utökas med integrationsstatus utan ett separat
-analyserat steg.
+separata auditgrund, F2C4:s atomiska mutationer och F2C5:s paginerade audit-read
+för Installation Management. Stegen är lokalverifierade genom migrationer,
+pgTAP, typgenerering och full regression. Dokumentet får inte utökas med
+integrationsstatus utan ett separat analyserat steg.
 
 ## Definition och relation
 
@@ -204,5 +204,50 @@ Stabila DB-fel är `unauthorized`, `not_found`, `conflict`, `validation_error`,
 och `audit_failure`. Både duplicate installation code och duplicate project ref
 mappas till `duplicate_installation`.
 
-F2C4 skapar ingen audit-read, repository, service, route, Server Action eller UI.
-Installation Management är inte verksamhetsklart.
+## Paginerad audit-read
+
+F2C5 exponerar endast
+`list_installation_audit_events(uuid, integer, timestamptz, uuid)` till
+`authenticated`. Funktionen är ownerkontrollerad, stable, postgresägd
+`SECURITY DEFINER` med fast search path. `PUBLIC`, `anon` och `service_role`
+saknar EXECUTE.
+
+Installation-ID är obligatoriskt. Standardsidan är 25 och max är 100. Resultatet
+sorteras stabilt på `(occurred_at DESC, id DESC)` och cursorn består av exakt
+samma timestamp/UUID-par bundet till installationen. Output är auditens nio
+metadatafält plus `has_more`, `next_cursor_occurred_at` och `next_cursor_id`.
+
+Audittabellen behåller RLS, FORCE RLS, noll policies och noll direkta grants.
+F2C5 skapar ingen generell installationsread, sökning, filtrering, export,
+retention, backup, DAL, route eller UI. Installation Management är inte
+verksamhetsklart.
+
+## Paginerad installationslista
+
+F2C6A exponerar endast `list_installations(integer, text, uuid, uuid, text,
+text, boolean, text)` till `authenticated`. Funktionen är ownerkontrollerad,
+stable, postgresägd `SECURITY DEFINER` med fast search path. `PUBLIC`, `anon`
+och `service_role` saknar EXECUTE.
+
+Standardsidan är 50 och max är 100. Resultatet sorteras stabilt på
+`(display_name ASC, id ASC)` och cursorn består av exakt samma text/UUID-par.
+Cursorposten måste finnas och matcha samma tenant-, environment-, status-,
+archive- och sökfilter; annars nekas anropet med `validation_error`.
+
+Filtren för tenant, environment och administrativ status appliceras före
+keyset-pagination. Arkiverade installationer är exkluderade som standard.
+Sökning är case-insensitive men behandlar `%` och `_` bokstavligt och matchar
+endast installationens display name och installation code. Tenantens legal
+name och härledd application host ingår medvetet inte i sökvillkoret. Inte
+heller full URL, project ref, hosting region eller administrativ notering får
+påverka träffresultatet.
+
+Output består endast av `id`, `tenant_id`, `tenant_legal_name`,
+`installation_code`, `display_name`, `environment`,
+`administrative_status`, `hosting_region`, `application_host`, `revision`,
+`updated_at`, `archived_at`, `has_more`, `next_cursor_display_name` och
+`next_cursor_id`. Full `application_url`, `supabase_project_ref`,
+`internal_note` och andra verksamhetsvärden exponeras inte.
+
+F2C6A använder befintliga listindex och inför inga nya index, direkta
+tabellgrants, DAL/service, routes, actions eller UI.

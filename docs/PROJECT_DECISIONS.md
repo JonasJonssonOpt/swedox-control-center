@@ -163,6 +163,11 @@ Decommission är terminalt. Archive tillåts endast efter decommission och resto
 application URL, Supabase project ref och hosting region. Decommissioned men
 oarkiverad installation får fortsatt uppdatera säker metadata.
 
+F2C5 låser installationshistorik till en ownerkontrollerad, installationbunden
+och cursorpaginerad RPC. Standardsidan är 25 och ordningen är newest-first på
+timestamp och UUID. Output är metadata-only; direkt audit-SELECT, generell
+aktivitet, sökning, export och UI ingår inte.
+
 Steg E3 implementerar `public.tenant_audit_events` som en tenantspecifik,
 append-only auditgrund. Kontraktet använder de sex låsta eventtyperna,
 revisionspar med exakt en auditpost per tenantrevision, metadata-only
@@ -369,6 +374,22 @@ F2A länkar därför endast Tenants och visar övriga som icke-interaktiv
 Aktiv modul markeras med text och `aria-current`, aldrig badge eller enbart
 färg. Root `/` serverredirectar fast till den första tillgängliga modulen
 `/tenants`.
+
+F2C6A låser installationslistans serverinterna databaskontrakt till
+`list_installations`. Läsningen är owner-only och använder keyset-pagination
+på `(display_name ASC, id ASC)`, standardsida 50 och max 100. Cursorposten
+valideras mot samma filterkontext innan nästa sida läses.
+
+Tenant, environment, administrativ status, archived-läge och en
+case-insensitive bokstavlig sökning är de enda filtren. Sökningen omfattar
+endast installationens display name och installation code; tenantens legal name
+och application host är medvetet uteslutna. Full URL, project ref, hosting
+region och intern notering får inte påverka träffresultatet.
+
+Listan returnerar allowlistad metadata, tenantens legal name och hostdelen av
+application URL trots att de två senare inte är sökbara. Befintliga index
+bedöms tillräckliga; inga nya index, DAL/service, routes, actions eller UI
+införs.
 
 ## Arbetssätt
 
