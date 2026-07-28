@@ -2,9 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, unstable_rethrow } from "next/navigation";
 
-import { getTenantById, TenantServiceError } from "@/lib/server/tenants";
+import {
+  getTenantById,
+  listTenantAuditEvents,
+  TenantServiceError,
+} from "@/lib/server/tenants";
+import { parseTenantAuditPage } from "@/lib/tenants/tenant-audit-presentation";
 
 import { TenantDetail } from "../tenant-detail";
+import { TenantAuditHistory } from "./tenant-audit-history";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -19,8 +25,13 @@ export default async function TenantDetailPage({
   const { tenantId } = await params;
 
   let tenant;
+  let auditPage;
   try {
     tenant = await getTenantById(tenantId);
+    auditPage = parseTenantAuditPage(
+      await listTenantAuditEvents({ pageSize: 25, tenantId }),
+      tenantId,
+    );
   } catch (error) {
     unstable_rethrow(error);
     if (error instanceof TenantServiceError && error.code === "not_found") {
@@ -30,7 +41,7 @@ export default async function TenantDetailPage({
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-5xl px-6 py-10 lg:px-8">
+    <div className="mx-auto w-full max-w-5xl">
       <nav aria-label="Brödsmulor" className="mb-6 text-sm">
         <Link
           className="rounded-sm text-stone-600 underline decoration-stone-300 underline-offset-4 hover:text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-900"
@@ -64,6 +75,9 @@ export default async function TenantDetailPage({
       </header>
 
       <TenantDetail tenant={tenant} />
-    </main>
+      <div className="mt-5">
+        <TenantAuditHistory initialPage={auditPage} tenantId={tenantId} />
+      </div>
+    </div>
   );
 }

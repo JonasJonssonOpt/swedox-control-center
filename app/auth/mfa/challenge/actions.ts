@@ -85,6 +85,13 @@ async function performChallengeVerification(
       return { status: "verification_failed" };
     }
 
+    const assuranceResult =
+      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+    if (assuranceResult.error || assuranceResult.data.currentLevel !== "aal2") {
+      return { status: "security_error" };
+    }
+
     return { status: "success" };
   } catch {
     return { status: "security_error" };
@@ -118,5 +125,5 @@ export async function verifyMfaChallenge(
   }
 
   recordMfaAuditEvent("challenge_completed", owner.userId);
-  redirect("/auth/owner-check");
+  redirect("/tenants");
 }

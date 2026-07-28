@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getOwnerMfaState, requireAuthorizedOwner } from "@/lib/server/auth";
 
 import { EnrollmentForm } from "./enrollment-form";
+import { INITIAL_ENROLLMENT_STATE } from "./state";
 
 export default async function MfaEnrollmentPage() {
   await requireAuthorizedOwner();
@@ -31,8 +32,18 @@ export default async function MfaEnrollmentPage() {
   }
 
   return (
-    <main>
-      <EnrollmentForm />
+    <main className="flex min-h-screen items-center justify-center px-6 py-12">
+      <section className="w-full max-w-md rounded-lg border border-stone-200 bg-white p-8 shadow-sm">
+        <p className="text-sm font-medium text-stone-500">Kontosäkerhet</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-stone-950">
+          Konfigurera Microsoft Authenticator
+        </h1>
+        <p className="mt-2 text-sm text-stone-600">
+          Skanna QR-koden eller ange den manuella nyckeln och bekräfta sedan
+          konfigurationen med en sexsiffrig kod.
+        </p>
+        <EnrollmentForm initialState={INITIAL_ENROLLMENT_STATE} />
+      </section>
     </main>
   );
 }

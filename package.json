@@ -17,6 +17,8 @@
     "supabase:start": "node scripts/supabase-local.mjs start",
     "supabase:stop": "node scripts/supabase-local.mjs stop",
     "supabase:status": "node scripts/supabase-local.mjs status",
+    "owner:bootstrap:local": "node scripts/bootstrap-control-center-owner.mjs --confirm-owner-bootstrap",
+    "owner:verify:local": "node scripts/bootstrap-control-center-owner.mjs --confirm-owner-bootstrap --verify",
     "supabase:reset": "supabase db reset --local",
     "supabase:lint": "supabase db lint --local --schema public --fail-on error",
     "supabase:test": "supabase test db supabase/tests/database --local",

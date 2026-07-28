@@ -786,6 +786,44 @@ specifik annan user finns.
   `ck_<table>_<purpose>`. Index följer `idx_<table>_<column_or_purpose>`,
   policies `<table>_<operation>_<purpose>` och auditobjekt innehåller `audit`.
 
+## E8D: tenant audit history UI
+
+E8D visar en metadata-only `Händelsehistorik` direkt på tenantdetail, inklusive
+för arkiverade tenants. Server Component hämtar initialt 25 poster direkt genom
+E6:s `listTenantAuditEvents()`. En minimal Client Component anropar därefter
+endast E7A:s audit-route för `Ladda fler`; ingen intern HTTP används vid initial
+rendering.
+
+Listan bevarar servicens `occurred_at DESC, id DESC`, använder endast komplett
+serverreturnerat cursorpar och saknar offset, total count och filter. Nästa
+payload runtimevalideras före append mot tenant, cursor, ordning och dubbletter.
+Tom historik, pending, lokalt load-more-fel och maskerat initialfel hanteras.
+
+Presentation visar svenska eventlabels, svenska labels för den exakta
+17-fältsallowlisten, svensk tid, `Verifierad owner` och revision. Actor-UUID,
+audit-ID, correlation-ID och verksamhetsvärden visas inte. Inga migrationer,
+RPC:er, policies, grants, export-, retention- eller backupfunktioner införs.
+
+Tenant audit history UI är därmed tekniskt implementerat. Tenant Management är
+fortsatt driftblockerat av owner-bootstrap och användbarheten blockeras även av
+återstående global navigation/informationsarkitektur.
+
+## F1: owner-bootstrap
+
+F1 lägger bootstrapmekanismen i `private`, inte i normal appkod eller publik
+RPC-yta. Funktionerna ägs av `postgres`, är security invoker och saknar
+schema-/function-grants för samtliga API-roller. Migrationen innehåller ingen
+miljöspecifik ownerdata.
+
+Den administrativa operationen låser `public.control_center_owner`, verifierar
+existerande `auth.users`-rad och skriver endast när singletonen är tom. Samma
+owner är idempotent utan timestampändring; annan owner och saknad Auth-user
+nekas utan write. RLS, FORCE RLS, FK och D1–D3-kontraktet ändras inte.
+
+Tenant Management förblir fail-closed tills environment, DB, Auth-session och
+AAL2 matchar. Local-only CLI och productionrunbook dokumenteras i
+`OWNER_BOOTSTRAP.md`.
+
 ## Öppna blockerare
 
 Följande blockerar inte första lokala migrationen men måste lösas före angiven

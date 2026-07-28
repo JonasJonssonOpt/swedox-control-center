@@ -244,6 +244,6 @@ test("list and unarchived detail expose working create/edit links only", async (
   assert.match(detailPage, /href=\{`\/tenants\/\$\{tenant\.id\}\/edit`\}/);
   assert.doesNotMatch(
     `${listPage}\n${detailPage}`,
-    /pauseTenantAction|activateTenantAction|archiveTenantAction|restoreTenantAction|listTenantAuditEvents/,
+    /pauseTenantAction|activateTenantAction|archiveTenantAction|restoreTenantAction/,
   );
 });

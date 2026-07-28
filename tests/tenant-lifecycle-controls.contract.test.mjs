@@ -148,13 +148,15 @@ test("lifecycle successes selectively revalidate and refresh detail", async () =
   assert.doesNotMatch(lifecycleActions, /revalidateTag|router\.push|delete/i);
 });
 
-test("detail renders lifecycle controls but no audit history", async () => {
+test("detail renders lifecycle controls alongside the separate audit history", async () => {
   const detail = await source("../app/tenants/tenant-detail.tsx");
+  const detailPage = await source("../app/tenants/[tenantId]/page.tsx");
   assert.match(detail, /TenantLifecycleControls/);
   assert.match(detail, /expectedRevision=\{tenant\.revision\}/);
   assert.match(detail, /operationalStatus=\{tenant\.operationalStatus\}/);
   assert.doesNotMatch(
     detail,
-    /listTenantAuditEvents|TenantAuditEvent|Audit history|timeline/i,
+    /listTenantAuditEvents|TenantAuditEvent|timeline/i,
   );
+  assert.match(detailPage, /TenantAuditHistory/);
 });

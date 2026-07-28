@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function TenantError() {
   return (
-    <main className="mx-auto min-h-screen max-w-3xl px-6 py-16 lg:px-8">
+    <div className="mx-auto w-full max-w-3xl py-6">
       <h1 className="text-2xl font-semibold text-stone-950">
         Tenantdata kunde inte visas
       </h1>
@@ -17,6 +17,6 @@ export default function TenantError() {
       >
         Till tenantlistan
       </Link>
-    </main>
+    </div>
   );
 }

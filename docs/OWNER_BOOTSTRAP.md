@@ -1,118 +1,188 @@
 # Owner-bootstrap
 
-## Syfte
+## Syfte och status
 
-Detta dokument definierar den kodfria säkerhets- och driftstandarden för att
-etablera Control Centers enda `owner`. Tabellen
-`public.control_center_owner` finns genom den lokalverifierade migrationen
-`20260724184023_create_control_center_owner.sql`, men migrationen skapar ingen
-ownerrad. Exakt bootstrapverktyg och utförandemetod återstår.
+Owner-bootstrap är en explicit, administrativ driftoperation som kopplar en
+redan verifierad Supabase Auth-user till Control Centers enda owner-singleton.
+F1 implementerar mekanismen och en local-only CLI. Den skapar aldrig Auth-users,
+webbroutes, Server Actions, UI eller generell användaradministration.
 
-## Grundprincip
+Bootstrapdata är miljöspecifik och finns inte i migration, seed eller Git.
+Migrationen `20260728170000_create_owner_bootstrap_admin_api.sql` innehåller
+endast den skyddade mekanismen.
 
-Supabase Auth-användarens UUID är identitetsobjektet. Ett kontrollerat, miljöspecifikt deploy- eller recoveryinput anger att just denna användare är Control Centers owner.
+## Låst databasmodell
 
-Samma input ska etablera:
+`public.control_center_owner` har fyra `NOT NULL`-kolumner:
 
-- `CONTROL_CENTER_OWNER_USER_ID` i applikationens servermiljö
-- owner-ID i en framtida skyddad DB-singleton
+- `singleton_key smallint default 1`
+- `owner_user_id uuid`
+- `created_at timestamptz default current_timestamp`
+- `updated_at timestamptz default current_timestamp`
 
-Environment och databas är två verkställande kopior av samma ownerbeslut. De får aldrig administreras oberoende. Saknad eller avvikande konfiguration stoppar Tenant Management fail-closed.
+PK och check kräver exakt `singleton_key = 1`. Owner-ID är unique och refererar
+`auth.users(id)` med `ON DELETE RESTRICT`. Tabellen ägs av `postgres`, har RLS
+och FORCE RLS utan policies och saknar grants för `PUBLIC`, `anon`,
+`authenticated` och `service_role`.
 
-## Första bootstrap
+## Vald bootstrapmetod
 
-Bootstrap ska ske i följande ordning:
+Två funktioner finns i det icke-exponerade schemat `private`:
 
-1. Verifiera rätt Supabase-projekt.
-2. Verifiera rätt environment.
-3. Verifiera avsedd Auth-user.
-4. Verifiera att endast avsedda Auth-users finns.
-5. Verifiera att signup är avstängd.
-6. Verifiera att anonymous sign-in är avstängd.
-7. Verifiera obligatorisk MFA.
-8. Registrera owner-UUID i godkänd secret- eller deploymentmiljö.
-9. Konfigurera applikationens servermiljö från samma input.
-10. Fyll den framtida DB-singletonen genom en separat administrativ driftoperation.
-11. Kör equality- och integritetskontroll.
-12. Kör positivt test med avsedd owner.
-13. Kör negativt test med annan syntetisk authenticated user.
-14. Aktivera Tenant Management först efter godkänt resultat.
+- `private.bootstrap_control_center_owner(uuid)`
+- `private.get_control_center_owner_bootstrap_status(uuid)`
 
-Bootstrap får endast utföras av en uttryckligen behörig drift- eller databasadministrativ identitet. Operationen ska vara avgränsad, engångsbetonad och auditerad.
+Båda är security-invoker, ägs av `postgres` och saknar EXECUTE för samtliga
+API-roller. Endast en privilegierad DB-administratör kan använda dem.
+Bootstrapfunktionen låser singletontabellen under operationen, verifierar att
+Auth-usern finns och skriver endast när tabellen är tom.
 
-Auth-usern måste finnas före ownerraden eftersom `owner_user_id` refererar
-`auth.users(id)` med delete restrict. Bootstrap får inte läggas i en generell
-migration, seed eller normal authenticated operation.
+Den lokala CLI:n använder den entydigt identifierade lokala
+Supabase-databascontainerns `psql`. UUID skickas via stdin, inte som
+processargument. CLI:n lagrar eller loggar aldrig UUID eller credentials.
 
-## Förbud
+Staging och production kör samma privata funktion med en kontrollerad
+`postgres`-administrativ anslutning. Service Role används inte.
 
-- Inget verkligt owner-UUID får finnas i Git.
-- Ingen owneridentitet får finnas i en generell migration.
-- Vanlig seed får inte etablera owner i en delad miljö.
-- Ingen bootstraproute eller Server Action får skapas.
-- Ingen browserfunktion får utföra bootstrap.
-- Ingen allmän administrationssida får ändra owner.
-- Normal tenant-CRUD får inte använda Service Role.
-- Bootstrap får inte skapa ett users-, roles- eller permissionssystem.
+## Input och resultat
 
-## Miljöseparation
+CLI:n kräver:
 
-- Lokal utveckling och automatiserade tester använder syntetiska identiteter.
-- Staging och produktion har separata Auth-users.
-- Miljöerna använder separata Supabase-projekt där det är relevant.
-- Varje miljö har separata secrets och deploymentinputs.
-- Produktionsownern återanvänds inte i lokal, test eller staging.
+- `CONTROL_CENTER_OWNER_USER_ID`: ett trimmat UUID
+- `CONTROL_CENTER_BOOTSTRAP_TARGET=local`
+- flaggan `--confirm-owner-bootstrap`, inbyggd i npm-scriptet
 
-En operatör ska verifiera både projektreferens och environment innan någon miljöspecifik ownerkonfiguration etableras. Projektreferenser och owner-ID:n ska inte skrivas i vanlig dokumentation eller logg.
+Kategoriska databasresultat:
 
-## Equality och fail-closed
+| Status                         | Betydelse                                                        |
+| ------------------------------ | ---------------------------------------------------------------- |
+| `bootstrapped`                 | Tom singleton fylldes med existerande Auth-user.                 |
+| `already_bootstrapped`         | Samma owner fanns; ingen write utfördes.                         |
+| `ok`                           | Verifiering visar matchande Auth-user och DB-owner.              |
+| `auth_user_not_found`          | Auth-usern saknas; ingen write.                                  |
+| `owner_mismatch`               | En annan owner finns; ingen takeover eller write.                |
+| `missing_database_owner`       | Verifiering visar att singletonen är tom.                        |
+| `invalid_database_owner_state` | Singletoninvarianten kan inte verifieras; fail-closed.           |
+| `invalid_input`                | Null input nekades i databasen. CLI nekar ogiltigt UUID före DB. |
 
-`public.get_owner_integrity_status()` kan rapportera
-`missing_database_owner` men skapar, uppdaterar eller tar aldrig bort owner.
-Bootstrap är fortsatt en separat privilegierad process. Efter bootstrap ska
-funktionen ge `ok` endast när aktuell `auth.uid()` motsvarar singletonens owner;
-andra authenticated users får endast `authenticated_user_mismatch`.
+Publik CLI-output innehåller endast kategorisk status eller ett generiskt fel.
 
-Serverguarden failar därför stängt med missing owner tills bootstrap har skett.
-Bootstrap får inte kringgå environment/Auth/DB-kedjan. Efter bootstrap kan
-`requireOwnerIntegrity()` endast lyckas för rätt environment-owner med verifierad
-Auth-identitet, AAL2 och DB-status `ok`.
+## Auth-user och miljövariabel
 
-Tenanttabellens E2-policy har samma fail-closed utgångsläge:
-`public.is_control_center_owner()` returnerar `false` och RLS visar inga
-tenantrader innan singletonen har bootstrappats. E2 skapar ingen ownerrad, seed,
-bootstrapfunktion eller operativ bootstrapväg.
+Auth-usern skapas först genom Supabase Dashboard eller annan godkänd
+Auth-administration. Operatören ska utanför bootstrapdata:
 
-E4:s tenantmutationer använder samma DB-ownerkontroll och returnerar endast
-`unauthorized` före bootstrap eller vid mismatch/null auth. De skapar då varken
-tenant- eller auditdata. E4 skapar ingen ownerrad eller bootstrapväg.
+1. Verifiera personens identitet och e-post.
+2. Skapa användaren med ett starkt, unikt lösenord.
+3. Bekräfta att self-signup och anonymous sign-in är avstängda.
+4. Hämta Auth-userns UUID.
+5. Sätta samma UUID som server-secret `CONTROL_CENTER_OWNER_USER_ID`.
+6. Köra bootstrap.
+7. Låta owner registrera TOTP och verifiera AAL2.
 
-E5:s audit-read-funktion använder samma fail-closed kontroll och returnerar
-`unauthorized` innan tenant- eller cursoruppslag när singletonen saknas eller
-auth inte matchar. Därmed exponeras inte tenantexistens eller historik före
-bootstrap.
+E-post lagras inte i `control_center_owner`. Efter godkänd verifiering måste:
 
-Tenant Management ska stoppas vid:
+```text
+environment owner UUID = database owner UUID = authenticated owner UUID
+```
 
-- saknat environmentvärde
-- ogiltigt UUID-format
-- saknad DB-singleton
-- fler än en singletonpost
-- mismatch mellan environment och databas
-- verifierad användare som inte matchar owner
-- unavailable eller felande integritetskontroll
+D3 failar stängt vid saknat/ogiltigt environment, Auth-mismatch, otillräcklig
+MFA eller annan DB-status än `ok`.
 
-Ingen fallback får välja environment eller databas som mer trovärdig. Login, MFA, logout och säkerhetsfelsida får fortsätta fungera när det kan ske utan att öppna tenantåtkomst.
+## Lokal runbook
 
-## Verifieringsresultat
+Förutsättningar: Docker Desktop är igång, repositoryts Supabase-stack är
+startad och Auth-usern finns.
 
-Bootstrapresultatet ska dokumentera:
+```powershell
+npm run supabase:start
+npm run supabase:reset
+npm run supabase:lint
+npm run supabase:test
 
-- environment
-- tidpunkt
-- ansvarig operatör eller funktion
-- verifierade kontrollsteg
-- positivt och negativt testresultat
-- slutligt godkännande
+$env:CONTROL_CENTER_OWNER_USER_ID = "<verifierat-lokalt-auth-user-uuid>"
+$env:CONTROL_CENTER_BOOTSTRAP_TARGET = "local"
 
-Dokumentationen får inte innehålla fullständigt owner-UUID, credentials, tokens, nycklar eller råa Auth- och databasfel.
+npm run owner:bootstrap:local
+npm run owner:verify:local
+npm run owner:bootstrap:local
+```
+
+Sista kommandot ska ge `already_bootstrapped`. Starta därefter appen med samma
+`CONTROL_CENTER_OWNER_USER_ID`, logga in, registrera/verifiera TOTP och öppna
+`/tenants`. En annan syntetisk authenticated user ska nekas.
+
+`/auth/mfa/enroll` ska direkt visa Supabase-genererad QR-kod, manuell
+setup-nyckel och verifieringsform. Refresh före verifiering ersätter den
+overifierade faktorn kontrollerat och visar en ny QR/secret. Efter korrekt
+sexsiffrig kod ska sessionen nå AAL2 innan redirect till `/tenants`.
+
+Kör inte reset efter bootstrap om den lokala ownerraden ska behållas; reset
+återställer avsiktligt databasen till tom bootstrapstatus.
+
+## Staging och production
+
+Local-only CLI vägrar andra targets. I staging/production ska en godkänd
+DB-administratör:
+
+1. Godkänna change record och verifiera targetprojekt/environment.
+2. Verifiera backup/checkpoint och aktuell migrationsversion.
+3. Skapa/verifiera Auth-usern och signupinställningarna.
+4. Sätta `CONTROL_CENTER_OWNER_USER_ID` i hostingens secret manager.
+5. Etablera kortlivade standardiserade `PG*`-credentials för `postgres`.
+6. Köra följande från en kontrollerad adminarbetsstation:
+
+```powershell
+$ownerId = $env:CONTROL_CENTER_OWNER_USER_ID
+if ($ownerId -notmatch '^[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$') {
+  throw "Ogiltigt owner-ID."
+}
+
+"select private.bootstrap_control_center_owner('$ownerId'::uuid);" |
+  psql --no-psqlrc --set ON_ERROR_STOP=1 --tuples-only --no-align
+
+"select private.get_control_center_owner_bootstrap_status('$ownerId'::uuid);" |
+  psql --no-psqlrc --set ON_ERROR_STOP=1 --tuples-only --no-align
+```
+
+7. Ta bort de kortlivade DB-credentials.
+8. Starta/redeploya appen med server-secreten.
+9. Verifiera ownerlogin, TOTP/AAL2, `/tenants` och negativ non-owner-åtkomst.
+10. Dokumentera endast kategoriska resultat.
+
+Inga lokala defaults, projektidentifierare, owner-ID:n eller credentials får
+återanvändas i production.
+
+## Audit och change record
+
+F1 skapar inte ett nytt owner-auditramverk. Varje körning måste ha en godkänd
+extern change record med environment, tidpunkt, ansvarig operatör, verifierade
+kontrollsteg, kategoriskt resultat, positiva/negativa test och slutligt beslut.
+
+Change record får inte innehålla fullständigt UUID, e-post, lösenord, token,
+databas-URL, nyckel eller rått databasfel.
+
+## Incident, rollback och recovery
+
+Automatisk owner-switch är förbjuden. `owner_mismatch` gör ingen ändring.
+
+Om fel owner har bootstrappats ska Tenant Management stängas och alla berörda
+sessioner återkallas. Korrigering kräver en separat godkänd incident- och
+change-process med identitetsverifiering, backup/checkpoint och privilegierad
+DB-admin. Environment och DB ska uppdateras som en sammanhållen operation och
+D2/D3 samt positiva/negativa åtkomsttest ska köras om.
+
+Ownerraden får inte tas bort som normal rollback eftersom FK, equality och
+operativ åtkomst då failar stängt. Recovery får inte byggas in i F1:s
+bootstrapfunktion.
+
+## Förbjudna vägar
+
+- Ingen bootstrap över HTTP, route, Server Action, UI eller browser.
+- Ingen automatisk ”första Auth-user blir owner”.
+- Ingen owner discovery via e-post eller listordning.
+- Ingen takeover, owner-switch eller overwrite.
+- Ingen verklig owneridentitet i migration, seed, exempel eller Git.
+- Ingen permanent Service Role- eller admincredential i applikationen.
+- Ingen RLS-, FORCE RLS-, policy- eller signupförsvagning.
+- Ingen skapad Auth-user, invitefunktion eller generell användaradministration.

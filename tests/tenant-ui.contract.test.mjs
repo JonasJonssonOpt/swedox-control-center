@@ -30,7 +30,8 @@ test("tenant pages are dynamic server components with service-only data access",
 
   assert.match(listPage, /await listTenants\(\)/);
   assert.match(detailPage, /await getTenantById\(tenantId\)/);
-  assert.doesNotMatch(detailPage, /listTenantAuditEvents|tenant-audit|audit/i);
+  assert.match(detailPage, /await listTenantAuditEvents\(/);
+  assert.match(detailPage, /pageSize: 25/);
 });
 
 test("tenant list keeps service order and renders the locked compact columns", async () => {
@@ -94,7 +95,7 @@ test("tenant detail contains identity, contact, status, administration and safe 
   assert.doesNotMatch(detail, /tenant\.createdBy|tenant\.updatedBy/);
   assert.doesNotMatch(
     detail,
-    /createTenantAction|updateTenantAction|pauseTenantAction|activateTenantAction|archiveTenantAction|restoreTenantAction|listTenantAuditEvents|badge/i,
+    /createTenantAction|updateTenantAction|pauseTenantAction|activateTenantAction|archiveTenantAction|restoreTenantAction|badge/i,
   );
 });
 

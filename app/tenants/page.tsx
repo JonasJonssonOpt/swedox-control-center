@@ -16,13 +16,10 @@ export default async function TenantsPage() {
   const tenants = await listTenants();
 
   return (
-    <main className="mx-auto min-h-screen max-w-7xl px-6 py-10 lg:px-8">
+    <div>
       <header className="mb-6 flex items-end justify-between gap-6">
         <div>
-          <p className="text-sm font-medium text-stone-500">
-            SweDox Control Center
-          </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-stone-950">
+          <h1 className="text-2xl font-semibold tracking-tight text-stone-950">
             Tenants
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-stone-600">
@@ -38,6 +35,6 @@ export default async function TenantsPage() {
       </header>
 
       <TenantList tenants={tenants} />
-    </main>
+    </div>
   );
 }

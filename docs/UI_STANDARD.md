@@ -30,6 +30,29 @@ Badges får inte användas för status. Status får inte förmedlas enbart med f
 
 ## Standardmönster
 
+### Global navigation och applikationsram
+
+Control Centers permanenta interna ram består av en vänsterställd sidomeny,
+en enkel toppheader och ett konsekvent huvudområde. Auth-, MFA- och felvyer
+ligger utanför ramen. Domänsidor får inte skapa egna globala sidomenyer,
+toppheaders eller `<main>`-landmarks.
+
+Sidomenyn visar den låsta modulordningen Dashboard, Tenants, Installations,
+Licenses, Provisioning, Monitoring och Settings. Endast implementerade moduler
+är länkar. I F2A är endast Tenants klickbar och markerad med text samt
+`aria-current="page"`. Övriga poster visar vanlig text `Kommer senare` och
+saknar interaktiv kontroll, route och placeholder-sida.
+
+Toppheadern visar endast `Control Center` och `Verifierad owner`. Profilmeny,
+avatar, sök, notifieringar och logout ingår inte. Shellkomponenten äger
+konsekvent maxbredd, horisontell padding och vertikal rytm. Domänvyer får
+använda en smalare intern maxbredd när formulär eller detailinnehåll kräver det.
+
+Applikationsramen är desktop first och övergår vid smalare normalbredder till
+en staplad struktur utan separat mobilnavigation. Navigationen är semantisk,
+tangentbordsnåbar och har synliga fokusmarkeringar. Aktiv modul och
+framtidsstatus förmedlas aldrig med badge eller enbart färg.
+
 ### Tabeller
 
 - Kolumnordning, rubriker, justering och formatering ska vara konsekventa mellan moduler.
@@ -116,6 +139,29 @@ Conflict och invalid state visas som alerts med instruktion att stänga dialogen
 och läsa om detail. Efter success revalideras endast lista/detail och servern
 redirectar tillbaka till uppdaterad detail. Inga badges, target-statusfält eller
 audit history ingår i lifecyclemönstret.
+
+### Tenant audit history
+
+Tenantdetail visar en egen sektion `Händelsehistorik` direkt på
+`/tenants/[tenantId]`, även för arkiverade tenants. Initialsidan laddas med 25
+poster direkt genom `listTenantAuditEvents()` i Server Component. En minimal
+Client Component använder därefter endast
+`GET /api/tenants/[tenantId]/audit` för `Ladda fler`.
+
+Historiken är en semantisk kronologisk lista i servicens låsta ordning, nyast
+först. Varje post visar svensk eventtext, svensk tid i Europe/Stockholm,
+`Verifierad owner`, revision och användarvänliga namn på ändrade fält. Den visar
+aldrig actor-UUID, audit-ID, correlation-ID, tidigare eller nya fältvärden.
+
+Cursorparet kommer endast från verifierat service-/API-resultat och hålls i
+komponentstate. Inga offsetvärden, total counts eller page-size-kontroller
+finns. Resultat valideras före append och dubbletter, fel ordning, fel tenant
+eller ofullständigt cursorpar stoppas. Tom historik är neutral. Load-more-fel
+visas lokalt med befintliga poster kvar, och pending blockerar parallella
+requests.
+
+Historiken har inga badges, filter, sökning, export, retention- eller
+backupkontroller.
 
 ## Relaterade dokument
 

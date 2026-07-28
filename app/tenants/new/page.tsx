@@ -16,7 +16,7 @@ export default async function NewTenantPage() {
   await requireOwnerIntegrity();
 
   return (
-    <main className="mx-auto min-h-screen max-w-4xl px-6 py-10 lg:px-8">
+    <div className="mx-auto w-full max-w-4xl">
       <nav aria-label="Brödsmulor" className="mb-6 text-sm">
         <Link
           className="rounded-sm text-stone-600 underline decoration-stone-300 underline-offset-4 hover:text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-900"
@@ -51,6 +51,6 @@ export default async function NewTenantPage() {
         }}
         mode="create"
       />
-    </main>
+    </div>
   );
 }
