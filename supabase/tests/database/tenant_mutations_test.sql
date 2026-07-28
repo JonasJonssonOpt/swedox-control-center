@@ -847,7 +847,9 @@ select is(
     where pronamespace = 'public'::regnamespace
       and proname ~ 'audit'
       and proname not in (
+        'prevent_installation_audit_event_modification',
         'prevent_tenant_audit_event_modification',
+        'list_installation_audit_events',
         'list_tenant_audit_events'
       )
   ),
