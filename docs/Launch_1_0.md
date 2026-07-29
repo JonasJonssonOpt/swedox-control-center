@@ -60,8 +60,10 @@ Följande krävs före release av Tenant Management:
 - [x] Installationslistans sökning är begränsad till display name och
       installation code; tenant legal name och application host är uttryckligen
       inte sökbara.
-- [ ] Installationsaudit, mutationer, DAL/service, routes/actions och UI är
-      verifierade.
+- [x] F2C6B:s server-only installations-DAL/service med ownerguard,
+      request-lokal SSR, separata list/detail-DTO:er, runtimevalidering, stabila
+      servicefel, audit och sju mutationer är lokalverifierat.
+- [ ] Installation routes/actions och UI är verifierade.
 
 ## Relaterade dokument
 

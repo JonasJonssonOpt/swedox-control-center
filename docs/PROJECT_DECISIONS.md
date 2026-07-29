@@ -391,6 +391,14 @@ application URL trots att de två senare inte är sökbara. Befintliga index
 bedöms tillräckliga; inga nya index, DAL/service, routes, actions eller UI
 införs.
 
+F2C6B låser ett modulägt installationsservice-lager under
+`lib/server/installations`. Framtida routes, actions och servervyer ska använda
+serviceytan och får inte anropa repository eller Supabase direkt. List- och
+detailmodeller är separata: full application URL, Supabase project ref och
+administrativ notering finns endast i detail. Dashboard ska senare konsumera en
+separat modulägd summary-read och får inte återanvända detail eller göra egna
+installationstabellfrågor.
+
 ## Arbetssätt
 
 ### Analys före implementation

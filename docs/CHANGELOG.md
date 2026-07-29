@@ -2,6 +2,18 @@
 
 ## 2026-07-28
 
+- Implementerade F2C6B:s strikt server-only installations-DAL/service med tio
+  publika operationer, ownerguard före repository, request-lokal Supabase SSR,
+  central runtimevalidering/mapping och stabil maskerad felmodell.
+- Separerade paginerad list-DTO från detail: listan innehåller tenant legal name
+  och host-only application host men aldrig full URL, project ref eller
+  administrativ notering. Detail inkluderar skyddsvärd metadata men inga
+  actor-UUID:n; cross-installation auditoutput nekas fail-closed.
+- Kapslade list/detail/audit och samtliga sju mutationer utan direkta writes,
+  retry, Service Role, browserklient, routes, actions eller UI. Lade till
+  kontraktstest för arkitektur, mapping, validering, pagination,
+  repositoryanrop, guard/SSR-gräns, mutationer och stabila fel.
+
 - Implementerade F2C6A:s ownerkontrollerade `list_installations` med
   standardsida 50, max 100 och stabil cursor på display name/UUID i stigande
   ordning.

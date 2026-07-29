@@ -251,3 +251,24 @@ Output består endast av `id`, `tenant_id`, `tenant_legal_name`,
 
 F2C6A använder befintliga listindex och inför inga nya index, direkta
 tabellgrants, DAL/service, routes, actions eller UI.
+
+## Server-only DAL och servicelager
+
+F2C6B kapslar installationsdomänens läsningar och sju mutationer under
+`lib/server/installations`. Varje publik operation kör
+`requireOwnerIntegrity()` före repositoryåtkomst och skapar därefter exakt en
+request-lokal, cookie-baserad Supabase SSR-klient. Repositoryt innehåller endast
+detail-SELECT och låsta RPC-anrop; ingen ownerguard, redirect eller
+felpresentation.
+
+Serviceytan består av list, detail, audit, create, update, activate, pause,
+decommission, archive och restore. List-DTO:n innehåller endast list-säker
+metadata, tenant legal name och host-only application host. Detail innehåller
+full URL, project ref och administrativ notering men inga actor-UUID:n.
+Auditresultat från annan installation nekas fail-closed.
+
+Alla inputs och DB/RPC-resultat runtimevalideras före central
+snake_case-till-camelCase-mapping. Nullable fält bevaras. Endast låsta stabila
+felkoder lämnar servicegränsen; oväntade fel loggas med syntetiskt correlation
+ID utan URL, project ref, notering eller payload. Inga routes, Server Actions,
+formulär eller UI ingår och Installation Management är inte verksamhetsklart.

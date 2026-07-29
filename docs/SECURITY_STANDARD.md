@@ -349,6 +349,17 @@ Sökvillkoret får endast använda display name och installation code. Tenant
 legal name och application host är medvetet inte sökbara; full URL, project
 ref, hosting region och intern notering får inte heller påverka träffresultatet.
 
+F2C6B:s installationsservice är strikt server-only. Varje publik operation kör
+ownerintegritetsguarden, inklusive session-, owner-equality- och AAL2-kontroll,
+före repositoryåtkomst och skapar sedan en request-lokal cookie-baserad
+Supabase SSR-klient. Browserklient, Service Role, global klient och
+cross-request cache är förbjudna.
+
+Repositoryt saknar ownerlogik och direkta writes. Rå output runtimevalideras,
+cross-installation auditresultat nekas och full URL, project ref samt notering
+lämnar aldrig list-DTO:n. Råa Supabase-, PostgREST- och SQL-fel maskeras;
+oväntade fel loggas utan payload eller skyddsvärda metadatavärden.
+
 ### Sessioner
 
 Sessioner ska vara cookiebaserade, serverhanterade och använda PKCE. De ska vara tidsbegränsade, säkert lagrade och möjliga att återkalla. Förnyelse, utloggning, inaktivitet och känsliga operationer ska hanteras explicit.
