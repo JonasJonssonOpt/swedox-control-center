@@ -66,7 +66,10 @@ Följande krävs före release av Tenant Management:
 - [x] F2C7A:s tre dynamiska installation read routes för paginerad lista,
       detail och installationbunden audit använder endast servicegränsen med
       säker query parsing, stabil felmapping och private no-store.
-- [ ] Installation mutation Server Actions och UI är verifierade.
+- [x] F2C7B:s sju separata installation mutation Server Actions använder
+      strikt FormData-gräns, servergenererat correlation-ID, stabila
+      actionresultat och service-only dataflöde utan mutation routes.
+- [ ] Installation formulär och UI är verifierade.
 
 ## Relaterade dokument
 

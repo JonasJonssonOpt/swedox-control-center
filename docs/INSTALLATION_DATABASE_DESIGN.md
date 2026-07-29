@@ -292,3 +292,27 @@ modell. Alla svar använder `Cache-Control: private, no-store, max-age=0`;
 routes är `force-dynamic` med `revalidate = 0`. Stabil servicefelmapping
 returnerar endast allowlistad kod och säker text. F2C7A skapar inga mutation
 routes, Server Actions eller UI.
+
+## Mutation Server Actions
+
+F2C7B exponerar exakt sju separata Server Actions under
+`app/installations/actions.ts`: create, update, activate, pause, decommission,
+archive och restore. Actions använder en injicerbar server-only action core och
+anropar endast motsvarande publika F2C6B-servicefunktion.
+
+Create-gränsen accepterar tenant, installationskod, namn, environment och fyra
+nullable metadatafält. Update kräver installation-ID, expected revision och en
+full målbild för namn och nullable metadata. Lifecycle-actions accepterar
+endast installation-ID och expected revision. Strängar trimmas, tom nullable
+metadata blir null och boundaryfel returneras med allowlistade field errors.
+Actor, eventtyp, status, target status, revision-after, archivemetadata och
+andra systemfält läses inte från klienten.
+
+Varje validerat actionförsök skapar exakt ett server-side correlation-ID före
+serviceanropet. Klientens correlation-ID ignoreras och exponeras inte i
+actionresultatet. Resultatet är en discriminated union med installation-ID och
+revision vid success eller stabil kod, säker svensk text och valfria field
+errors vid failure.
+
+F2C7B skapar inga JSON-mutationsroutes. Redirect och selektiv revalidation
+skjuts till UI-steget och får senare endast köras efter `ok: true`.

@@ -372,6 +372,21 @@ Samtliga routevar, inklusive fel, använder
 flow bevaras. Övriga okända fel maskeras till stabil `unexpected_error` utan
 råa SQL-, PostgREST-, Supabase- eller stackdetaljer.
 
+F2C7B:s installation Server Actions använder endast den publika servicegränsen
+och ärver owner equality, AAL2, request-lokal SSR, RLS, RPC-ownerkontroll,
+optimistic concurrency och atomisk audit. Actions importerar inte Supabase,
+repository, RPC, Service Role eller browserklient.
+
+FormData läses genom en strikt fältallowlist. Klienten kan inte styra actor,
+eventtyp, administrativ target status, auditfält, archivemetadata eller
+correlation-ID; correlation skapas server-side och actor/event binds fortsatt i
+databasen. Råa fel maskeras och Next.js framework control flow återkastas före
+felmapping.
+
+CSRF-gränsen är Next Server Actions inbyggda same-origin/origin-skydd. Ingen
+separat JSON-mutationsendpoint eller ny CSRF-tokenmodell införs. Actions utför
+ingen redirect eller revalidation innan framtida UI-flöden har låsts.
+
 ### Sessioner
 
 Sessioner ska vara cookiebaserade, serverhanterade och använda PKCE. De ska vara tidsbegränsade, säkert lagrade och möjliga att återkalla. Förnyelse, utloggning, inaktivitet och känsliga operationer ska hanteras explicit.

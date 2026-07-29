@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile, stat } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 async function source(relativePath) {
@@ -73,7 +73,7 @@ test("tenant routes consume one shell without nested main landmarks", async () =
 });
 
 test("future modules have no routes or placeholder pages", async () => {
-  for (const route of [
+  for (const moduleName of [
     "dashboard",
     "installations",
     "licenses",
@@ -81,9 +81,21 @@ test("future modules have no routes or placeholder pages", async () => {
     "monitoring",
     "settings",
   ]) {
-    await assert.rejects(
-      stat(new URL(`../app/${route}`, import.meta.url)),
-      (error) => error?.code === "ENOENT",
-    );
+    try {
+      const entries = await readdir(
+        new URL(`../app/${moduleName}`, import.meta.url),
+        { recursive: true },
+      );
+      assert.equal(
+        entries.some((entry) =>
+          /(?:^|[\\/])(?:page|layout|loading|error|not-found|route)\.[jt]sx?$/.test(
+            entry,
+          ),
+        ),
+        false,
+      );
+    } catch (error) {
+      assert.equal(error?.code, "ENOENT");
+    }
   }
 });

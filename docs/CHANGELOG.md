@@ -2,6 +2,18 @@
 
 ## 2026-07-28
 
+- Implementerade F2C7B:s sju separata installation Server Actions för create,
+  update, activate, pause, decommission, archive och restore ovanpå F2C6B:s
+  publika service. Ingen generisk action eller JSON-mutationsendpoint infördes.
+- Lade till en injicerbar server-only action core med strikt FormData-gräns,
+  trimning, nullnormalisering, fältspecifika boundaryfel, full update-målbild
+  och servergenererat correlation-ID. Klientstyrd actor, eventtyp, status,
+  target status, auditmetadata och correlation vidarebefordras inte.
+- Låste stabila svenska actionfel, bevarad Next.js control flow och frånvaro av
+  retry, redirect och revalidation. Lade till actionkontraktstest för samtliga
+  mutationer, fältfel, servicefel och säkerhetsgränser. Inga formulär eller UI
+  infördes.
+
 - Implementerade F2C7A:s tre dynamiska `GET`-routes för paginerad
   installationslista, installationdetail och installationbunden audit. Routes
   anropar endast F2C6B-servicen och returnerar dess DTO:er utan extra metadata.

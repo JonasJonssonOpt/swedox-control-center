@@ -405,6 +405,13 @@ modulservicen direkt och får inte skapa intern HTTP-kedjning via dessa routes.
 Inga öppna POST-, PUT-, PATCH- eller DELETE-endpoints skapas; installation
 mutations ska införas separat som ownerguardade Server Actions i F2C7B.
 
+F2C7B låser installation mutations till sju separata Server Actions ovanpå den
+modulägda servicen. Ingen generisk mutationaction och inga JSON-mutations-
+endpoints tillåts. Correlation-ID skapas server-side per validerat
+actionförsök; klientstyrd actor, eventtyp och target status är förbjudna.
+Selektiv revalidation och redirect skjuts till respektive framtida UI-flöde och
+får endast ske efter ett lyckat actionresultat.
+
 ## Arbetssätt
 
 ### Analys före implementation
