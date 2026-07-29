@@ -360,6 +360,18 @@ cross-installation auditresultat nekas och full URL, project ref samt notering
 lämnar aldrig list-DTO:n. Råa Supabase-, PostgREST- och SQL-fel maskeras;
 oväntade fel loggas utan payload eller skyddsvärda metadatavärden.
 
+F2C7A:s tre installation read routes får endast anropa den publika
+installationsservicen. Routefiler och adapter får inte importera Supabase,
+repository eller RPC och ärver därför ownerguard, AAL2, SSR, RLS och
+outputvalidering från servicegränsen. Det finns inga installation mutation
+endpoints.
+
+Samtliga routevar, inklusive fel, använder
+`Cache-Control: private, no-store, max-age=0` och dynamisk request scope.
+`unstable_rethrow()` körs före felmaskering så att Next.js framework control
+flow bevaras. Övriga okända fel maskeras till stabil `unexpected_error` utan
+råa SQL-, PostgREST-, Supabase- eller stackdetaljer.
+
 ### Sessioner
 
 Sessioner ska vara cookiebaserade, serverhanterade och använda PKCE. De ska vara tidsbegränsade, säkert lagrade och möjliga att återkalla. Förnyelse, utloggning, inaktivitet och känsliga operationer ska hanteras explicit.

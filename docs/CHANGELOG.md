@@ -2,6 +2,17 @@
 
 ## 2026-07-28
 
+- Implementerade F2C7A:s tre dynamiska `GET`-routes för paginerad
+  installationslista, installationdetail och installationbunden audit. Routes
+  anropar endast F2C6B-servicen och returnerar dess DTO:er utan extra metadata.
+- Lade till en server-only routeadapter med explicit query parsing, kompletta
+  cursorpar, strikt boolean, nekade dubbletter/okända parametrar, stabil
+  servicefel-till-HTTP-mapping och bevarad Next.js control flow.
+- Samtliga svar använder `private, no-store, max-age=0`. Lade till
+  routekontraktstest för inventering, arkitektur, querytransport, list/detail/
+  audit, samtliga servicefel och frånvaro av mutation endpoints, direkt
+  Supabaseåtkomst och cross-request cache. Inga actions eller UI infördes.
+
 - Implementerade F2C6B:s strikt server-only installations-DAL/service med tio
   publika operationer, ownerguard före repository, request-lokal Supabase SSR,
   central runtimevalidering/mapping och stabil maskerad felmodell.

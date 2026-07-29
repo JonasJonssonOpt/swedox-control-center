@@ -272,3 +272,23 @@ snake_case-till-camelCase-mapping. Nullable fält bevaras. Endast låsta stabila
 felkoder lämnar servicegränsen; oväntade fel loggas med syntetiskt correlation
 ID utan URL, project ref, notering eller payload. Inga routes, Server Actions,
 formulär eller UI ingår och Installation Management är inte verksamhetsklart.
+
+## Server-side read routes
+
+F2C7A exponerar exakt tre dynamiska `GET`-routes:
+`/api/installations`, `/api/installations/[installationId]` och
+`/api/installations/[installationId]/audit`. Routefilerna är tunna och anropar
+endast F2C6B:s publika service genom en server-only routeadapter. De gör ingen
+direkt Supabase-, repository- eller RPC-åtkomst.
+
+Listan accepterar `pageSize`, `cursorDisplayName`, `cursorId`, `tenantId`,
+`environment`, `administrativeStatus`, `includeArchived` och `search`. Audit
+accepterar endast `pageSize`, `cursorOccurredAt` och `cursorId`. Cursor kräver
+komplett par, boolean är exakt `true` eller `false`, duplicerade eller okända
+parametrar nekas och tomma optional parametrar behandlas som frånvarande.
+
+Successvar är exakt servicens detail- eller `{ items, hasMore, nextCursor }`-
+modell. Alla svar använder `Cache-Control: private, no-store, max-age=0`;
+routes är `force-dynamic` med `revalidate = 0`. Stabil servicefelmapping
+returnerar endast allowlistad kod och säker text. F2C7A skapar inga mutation
+routes, Server Actions eller UI.

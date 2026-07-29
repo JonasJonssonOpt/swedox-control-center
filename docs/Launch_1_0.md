@@ -63,7 +63,10 @@ Följande krävs före release av Tenant Management:
 - [x] F2C6B:s server-only installations-DAL/service med ownerguard,
       request-lokal SSR, separata list/detail-DTO:er, runtimevalidering, stabila
       servicefel, audit och sju mutationer är lokalverifierat.
-- [ ] Installation routes/actions och UI är verifierade.
+- [x] F2C7A:s tre dynamiska installation read routes för paginerad lista,
+      detail och installationbunden audit använder endast servicegränsen med
+      säker query parsing, stabil felmapping och private no-store.
+- [ ] Installation mutation Server Actions och UI är verifierade.
 
 ## Relaterade dokument
 

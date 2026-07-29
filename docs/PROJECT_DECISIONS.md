@@ -399,6 +399,12 @@ administrativ notering finns endast i detail. Dashboard ska senare konsumera en
 separat modulägd summary-read och får inte återanvända detail eller göra egna
 installationstabellfrågor.
 
+F2C7A låser installationsdomänens read routes som tunna, dynamiska adapters
+ovanpå den publika installationsservicen. Server Components ska senare anropa
+modulservicen direkt och får inte skapa intern HTTP-kedjning via dessa routes.
+Inga öppna POST-, PUT-, PATCH- eller DELETE-endpoints skapas; installation
+mutations ska införas separat som ownerguardade Server Actions i F2C7B.
+
 ## Arbetssätt
 
 ### Analys före implementation
