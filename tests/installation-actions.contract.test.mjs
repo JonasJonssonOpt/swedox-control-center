@@ -117,10 +117,11 @@ test("action module exports exactly seven use-server actions with service-only a
     source,
     /supabase|repository|createBrowserClient|service[_ -]?role|\.from\(|\.rpc\(/i,
   );
-  assert.doesNotMatch(
-    source,
-    /\bredirect\(|revalidatePath|revalidateTag|genericMutation/i,
-  );
+  assert.match(source, /revalidatePath\("\/installations"\)/);
+  assert.match(source, /revalidatePath\(detailPath\)/);
+  assert.match(source, /redirect\(detailPath\)/);
+  assert.match(source, /if \(result\.ok\)/);
+  assert.doesNotMatch(source, /revalidateTag|genericMutation/i);
   const core = await readFile(
     new URL(
       "../lib/server/installations/installation-action-core.ts",

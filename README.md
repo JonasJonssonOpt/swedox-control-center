@@ -23,7 +23,24 @@ npm run supabase:status
 npm run supabase:stop
 ```
 
-Repositoryt är inte länkat till något externt Supabase-projekt och innehåller ännu ingen verksamhetsmigration. Den lokala stacken får endast köras på en betrodd utvecklingsmaskin med aktiv brandvägg.
+Repositoryt innehåller versionshanterade verksamhetsmigrationer för owner-,
+tenant- och installationsdomänerna. Lokal utveckling använder fortsatt den
+isolerade stacken. En lokal CLI kan vara länkad för uttryckligen godkända
+releaseoperationer, men projektidentifierare och credentials versionshanteras
+inte. Den lokala stacken får endast köras på en betrodd utvecklingsmaskin med
+aktiv brandvägg.
+
+## Aktuell modulstatus
+
+Tenant Management är tekniskt komplett. Installation Management är
+implementerat genom databas, owner/RLS, audit, server-only service, read
+routes, mutation actions samt list-, detail-, create-, edit-, lifecycle- och
+audit-UI. F2C9A och F2C9B är distribuerade; F2C9C:s deterministiska
+listordning är lokalverifierad och väntar migrations- och appdeployment innan
+den manuella runtimeverifieringen kan slutföras.
+
+Senaste lokala fullregression: 804/804 pgTAP och 151/151 Node-tester samt grön
+databaslint, TypeScript, Prettier, ESLint och Next.js production build.
 
 ## Kontroller
 

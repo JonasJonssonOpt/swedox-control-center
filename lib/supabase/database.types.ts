@@ -527,16 +527,16 @@ export type Database = {
         };
         Returns: {
           administrative_status: string;
-          application_host: string;
-          archived_at: string;
+          application_host: string | null;
+          archived_at: string | null;
           display_name: string;
           environment: string;
           has_more: boolean;
-          hosting_region: string;
+          hosting_region: string | null;
           id: string;
           installation_code: string;
-          next_cursor_display_name: string;
-          next_cursor_id: string;
+          next_cursor_display_name: string | null;
+          next_cursor_id: string | null;
           revision: number;
           tenant_id: string;
           tenant_legal_name: string;

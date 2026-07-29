@@ -375,46 +375,54 @@ where id = '40000000-0000-4000-8000-000000000011';
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '40000000-0000-4000-8000-000000000001', true);
 
-select throws_ok(
+select lives_ok(
   $$select public.activate_installation(
     (select id from public.installations where installation_code = 'create-production'),
     3, null
   )$$,
-  'P0001', 'invalid_state_transition', 'planned activation requires technical metadata'
-);
-select lives_ok(
-  $$select public.update_installation(
-    (select id from public.installations where installation_code = 'create-production'),
-    3, 'Production Ready', 'https://ready.example.invalid',
-    'projectready', 'eu-north-1', null, null
-  )$$,
-  'planned installation can receive required activation metadata'
-);
-select lives_ok(
-  $$select public.activate_installation(
-    (select id from public.installations where installation_code = 'create-production'),
-    4, null
-  )$$,
-  'metadata-complete planned installation activates'
+  'planned installation activates without technical metadata'
 );
 select lives_ok(
   $$select public.pause_installation(
     (select id from public.installations where installation_code = 'create-production'),
-    5, null
+    4, null
   )$$,
   'active installation pauses'
 );
 select lives_ok(
   $$select public.activate_installation(
     (select id from public.installations where installation_code = 'create-production'),
-    6, null
+    5, null
   )$$,
-  'paused installation activates'
+  'paused installation activates without technical metadata'
 );
+select ok(
+  (select application_url is null
+     and supabase_project_ref is null
+     and hosting_region is null
+     and administrative_status = 'active'
+     and revision = 6
+   from public.installations where installation_code = 'create-production'),
+  'activation preserves absent technical metadata and increments revision'
+);
+reset role;
+select is(
+  (select count(*)::integer from public.installation_audit_events e
+   join public.installations i on i.id = e.installation_id
+   where i.installation_code = 'create-production'
+     and e.event_type = 'installation_activated'
+     and e.changed_fields =
+       array['administrative_status', 'revision', 'updated_at', 'updated_by']::text[]
+     and e.revision_after in (4, 6)),
+  2,
+  'planned activation and reactivation each write one canonical audit event'
+);
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '40000000-0000-4000-8000-000000000001', true);
 select throws_ok(
   $$select public.activate_installation(
     (select id from public.installations where installation_code = 'create-production'),
-    7, null
+    6, null
   )$$,
   'P0001', 'invalid_state_transition', 'active to active is rejected'
 );
@@ -436,14 +444,14 @@ select lives_ok(
 select lives_ok(
   $$select public.decommission_installation(
     (select id from public.installations where installation_code = 'create-production'),
-    7, null
+    6, null
   )$$,
   'active installation decommissions'
 );
 select lives_ok(
   $$select public.update_installation(
     (select id from public.installations where installation_code = 'create-production'),
-    8, 'Decommissioned Metadata', 'https://ready.example.invalid',
+    7, 'Decommissioned Metadata', 'https://ready.example.invalid',
     'projectready', 'eu-north-1', 'Safe update', null
   )$$,
   'decommissioned but unarchived metadata remains editable'
@@ -451,7 +459,7 @@ select lives_ok(
 select throws_ok(
   $$select public.decommission_installation(
     (select id from public.installations where installation_code = 'create-production'),
-    9, null
+    8, null
   )$$,
   'P0001', 'invalid_state_transition', 'decommission is terminal'
 );
@@ -466,7 +474,7 @@ select throws_ok(
 select lives_ok(
   $$select public.archive_installation(
     (select id from public.installations where installation_code = 'create-production'),
-    9, null
+    8, null
   )$$,
   'decommissioned installation archives'
 );
@@ -480,21 +488,21 @@ select ok(
 select throws_ok(
   $$select public.update_installation(
     (select id from public.installations where installation_code = 'create-production'),
-    10, 'Archived edit', null, null, null, null, null
+    9, 'Archived edit', null, null, null, null, null
   )$$,
   'P0001', 'invalid_state_transition', 'archived installation cannot update'
 );
 select throws_ok(
   $$select public.archive_installation(
     (select id from public.installations where installation_code = 'create-production'),
-    10, null
+    9, null
   )$$,
   'P0001', 'invalid_state_transition', 'already archived installation cannot archive'
 );
 select lives_ok(
   $$select public.restore_installation(
     (select id from public.installations where installation_code = 'create-production'),
-    10, null
+    9, null
   )$$,
   'archived installation restores visibility'
 );
@@ -507,19 +515,12 @@ select ok(
 select throws_ok(
   $$select public.restore_installation(
     (select id from public.installations where installation_code = 'create-production'),
-    11, null
+    10, null
   )$$,
   'P0001', 'invalid_state_transition', 'visible installation cannot restore'
 );
 
 reset role;
-
--- Give the concurrency fixture the metadata required for activation.
-update public.installations
-set application_url = 'https://concurrency.example.invalid',
-    supabase_project_ref = 'projectconcurrency',
-    hosting_region = 'eu-north-1'
-where installation_code = 'create-test';
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '40000000-0000-4000-8000-000000000001', true);
@@ -562,16 +563,16 @@ insert into public.installation_audit_events (
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '40000000-0000-4000-8000-000000000001', true);
 select throws_ok(
-  $$select public.update_installation(
+  $$select public.activate_installation(
     (select id from public.installations where installation_code = 'create-development'),
-    1, 'Rollback Attempt', null, null, null, null, null
+    1, null
   )$$,
-  'P0001', 'audit_failure', 'audit collision maps to audit_failure'
+  'P0001', 'audit_failure', 'activation audit collision maps to audit_failure'
 );
 select is(
-  (select display_name from public.installations where installation_code = 'create-development'),
-  'Development',
-  'audit failure rolls back metadata update'
+  (select administrative_status from public.installations where installation_code = 'create-development'),
+  'planned',
+  'audit failure rolls back administrative activation'
 );
 select is(
   (select revision from public.installations where installation_code = 'create-development'),

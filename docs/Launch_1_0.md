@@ -39,8 +39,9 @@ Följande krävs före release av Tenant Management:
 - [x] Tenant audit history UI använder det verifierade paginerade readkontraktet.
 - [x] F2A:s permanenta applikationsram visar sidomeny, toppheader och ett
       konsekvent huvudområde för Tenant Management.
-- [x] Endast Tenants är klickbar och textmarkerad med `aria-current`; framtida
-      moduler saknar routes och visas som `Kommer senare`.
+- [x] Tenants och Installations är klickbara och textmarkeras med
+      `aria-current`; framtida moduler saknar routes och visas som
+      `Kommer senare`.
 - [x] Root `/` redirectar server-side till `/tenants`.
 - [x] F2C1:s installationstabell med exakt 17 kolumner, tenant-FK, canonical
       metadata, revision, archivemetadata, grundindex och fail-closed grants är
@@ -69,7 +70,38 @@ Följande krävs före release av Tenant Management:
 - [x] F2C7B:s sju separata installation mutation Server Actions använder
       strikt FormData-gräns, servergenererat correlation-ID, stabila
       actionresultat och service-only dataflöde utan mutation routes.
-- [ ] Installation formulär och UI är verifierade.
+- [x] F2C8A:s serverrenderade installationslista och detail med aktiv global
+      navigation, URL-filter, cursorpagination, skyddad metadata och
+      tillgängliga loading/error/not-found-states är lokalverifierade.
+- [x] Installation create/edit-formulär är verifierade med tenant availability,
+      immutable edit-kontext, expected revision, field errors, conflict,
+      pending-låsning och success-only redirect/revalidation.
+- [x] Installation lifecycle-kontroller är verifierade med state-specifik
+      synlighet, native dialogs, terminal avveckling, archive/restore-semantik,
+      expected revision och success-only redirect/revalidation.
+- [x] Installation audit history UI är verifierad med initial service-load,
+      routebaserad pagination, metadata-minimering, responsevalidering,
+      request-lock och stöd för arkiverad detail.
+- [ ] Installation Management är manuellt runtimeverifierat och formellt
+      stängt.
+- [x] F2C9A:s lokala korrigering frikopplar administrativ aktivering från
+      nullable provisioningmetadata med bevarad ownerkontroll, concurrency och
+      atomisk audit.
+- [x] F2C9A-migrationen är distribuerad och runtimeverifieringen återupptogs
+      från aktiveringssteget.
+- [x] F2C9B stödjer lokalt nullable application host och hosting region i
+      installationslistan med `Saknas`, blandade rader och fail-closed
+      validering.
+- [x] F2C9B-appkoden är distribuerad och nullable metadata verifierades i
+      verklig runtime; verifieringen identifierade därefter F2C9C:s separata
+      collationfel.
+- [x] F2C9C låser lokalt installationslistans PostgreSQL- och serverordning
+      till samma UTF-8-byteordning med UUID-tiebreak, stabil cursorpagination
+      och bibehållen nullable metadata.
+- [ ] F2C9C-migrationen och appkoden är godkända och distribuerade, och
+      runtimeverifieringen har återupptagits från listan.
+- [x] Lokal fullregression efter F2C9C är grön med 804/804 pgTAP, 151/151
+      Node-test, databaslint, TypeScript, Prettier, ESLint och production build.
 
 ## Relaterade dokument
 

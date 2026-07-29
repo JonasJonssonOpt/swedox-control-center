@@ -12,6 +12,7 @@ import {
   InstallationServiceError,
   mapInstallationDatabaseError,
 } from "../lib/server/installations/installation.errors.ts";
+import { compareInstallationListKeys } from "../lib/server/installations/installation-ordering.ts";
 import { createInstallationRepository } from "../lib/server/installations/installation.repository.ts";
 import { createInstallationService } from "../lib/server/installations/installation.service-core.ts";
 import {
@@ -120,6 +121,7 @@ test("installation production boundary is server-only and exposes no browser, se
     "installation.types.ts",
     "installation.validation.ts",
     "installation.mapper.ts",
+    "installation-ordering.ts",
     "installation.errors.ts",
     "installation.repository.ts",
     "installation.service-core.ts",
@@ -193,6 +195,180 @@ test("list and detail mapping are separate, immutable, nullable and fail closed"
       }),
     "unexpected_error",
   );
+});
+
+test("list mapping preserves optional technical metadata in mixed immutable rows", () => {
+  const nullableRow = Object.freeze({
+    ...listRow,
+    application_host: null,
+    display_name: "Missing Metadata",
+    hosting_region: null,
+    id: OTHER_INSTALLATION_ID,
+    installation_code: "missing-metadata",
+  });
+  const page = mapInstallationListPage([listRow, nullableRow]);
+
+  assert.equal(page.items.length, 2);
+  assert.equal(page.items[0].applicationHost, "example.supabase.co");
+  assert.equal(page.items[0].hostingRegion, "eu-north-1");
+  assert.equal(page.items[1].applicationHost, null);
+  assert.equal(page.items[1].hostingRegion, null);
+  assert.equal(Object.isFrozen(page), true);
+  assert.equal(Object.isFrozen(page.items), true);
+  assert.equal(Object.isFrozen(page.items[1]), true);
+  assert.equal(nullableRow.application_host, null);
+  assert.equal(nullableRow.hosting_region, null);
+});
+
+test("installation list ordering matches PostgreSQL C collation for case and Unicode", () => {
+  const names = [
+    "alpha",
+    "Ångström",
+    "Control center test 2",
+    "A-1",
+    "Örebro",
+    "Alpha",
+    "Control Center Test Production",
+    "ALPHA",
+    "Älg",
+    "A2",
+  ];
+  const sorted = names
+    .map((displayName, index) => ({
+      displayName,
+      id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+    }))
+    .sort(compareInstallationListKeys)
+    .map(({ displayName }) => displayName);
+
+  assert.deepEqual(sorted, [
+    "A-1",
+    "A2",
+    "ALPHA",
+    "Alpha",
+    "Control Center Test Production",
+    "Control center test 2",
+    "alpha",
+    "Älg",
+    "Ångström",
+    "Örebro",
+  ]);
+});
+
+test("mapper accepts C-collated runtime case and UUID ties but rejects wrong order", () => {
+  const row = (displayName, id, installationCode) => ({
+    ...listRow,
+    application_host: null,
+    display_name: displayName,
+    hosting_region: null,
+    id,
+    installation_code: installationCode,
+  });
+  const runtimeRows = [
+    row(
+      "Control Center Test Production",
+      INSTALLATION_ID,
+      "control-center-production",
+    ),
+    row(
+      "Control center test 2",
+      OTHER_INSTALLATION_ID,
+      "control-center-test-2",
+    ),
+  ];
+  const sameNameRows = [
+    row("Same Name", INSTALLATION_ID, "same-name-1"),
+    row("Same Name", OTHER_INSTALLATION_ID, "same-name-2"),
+  ];
+
+  assert.equal(mapInstallationListPage(runtimeRows).items.length, 2);
+  assert.equal(mapInstallationListPage(sameNameRows).items.length, 2);
+  assert.equal(
+    mapInstallationListPage(runtimeRows).items[0].applicationHost,
+    null,
+  );
+  expectCode(
+    () => mapInstallationListPage([...runtimeRows].reverse()),
+    "unexpected_error",
+  );
+  expectCode(
+    () => mapInstallationListPage([...sameNameRows].reverse()),
+    "unexpected_error",
+  );
+});
+
+test("list mapping accepts each nullable metadata combination and rejects malformed output", () => {
+  for (const [applicationHost, hostingRegion] of [
+    ["example.supabase.co", "eu-north-1"],
+    [null, "eu-north-1"],
+    ["example.supabase.co", null],
+    [null, null],
+  ]) {
+    const item = mapInstallationListPage([
+      {
+        ...listRow,
+        application_host: applicationHost,
+        hosting_region: hostingRegion,
+      },
+    ]).items[0];
+    assert.equal(item.applicationHost, applicationHost);
+    assert.equal(item.hostingRegion, hostingRegion);
+  }
+
+  for (const value of [undefined, 1, {}, [], "", "https://bad"]) {
+    expectCode(
+      () => mapInstallationListPage([{ ...listRow, application_host: value }]),
+      "unexpected_error",
+    );
+  }
+  for (const value of [undefined, 1, {}, [], "", "EU North"]) {
+    expectCode(
+      () => mapInstallationListPage([{ ...listRow, hosting_region: value }]),
+      "unexpected_error",
+    );
+  }
+});
+
+test("list DTO and generated RPC type declare only canonical nullable list fields", async () => {
+  const dto = await readFile(
+    new URL(
+      "../lib/server/installations/installation.types.ts",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const generated = await readFile(
+    new URL("../lib/supabase/database.types.ts", import.meta.url),
+    "utf8",
+  );
+  const listItem = dto.match(
+    /export type InstallationListItem = Readonly<\{([\s\S]*?)\}>;/,
+  )?.[1];
+  const listRpc = generated.match(
+    /list_installations: \{[\s\S]*?Returns: \{([\s\S]*?)\}\[\];/,
+  )?.[1];
+
+  assert.ok(listItem);
+  assert.match(listItem, /applicationHost: string \| null;/);
+  assert.match(listItem, /hostingRegion: string \| null;/);
+  assert.match(listItem, /archivedAt: string \| null;/);
+  for (const field of [
+    "id",
+    "tenantId",
+    "tenantLegalName",
+    "installationCode",
+    "displayName",
+    "environment",
+    "administrativeStatus",
+    "revision",
+    "updatedAt",
+  ])
+    assert.match(listItem, new RegExp(`\\b${field}:`));
+
+  assert.ok(listRpc);
+  assert.match(listRpc, /application_host: string \| null;/);
+  assert.match(listRpc, /hosting_region: string \| null;/);
+  assert.match(listRpc, /archived_at: string \| null;/);
 });
 
 test("input validation locks defaults, filters, search, canonical values and nullable normalization", () => {

@@ -4,6 +4,7 @@ import {
   recordUnexpectedInstallationError,
   InstallationServiceError,
 } from "./installation.errors";
+import { compareInstallationListKeys } from "./installation-ordering";
 import type {
   Installation,
   InstallationAuditEvent,
@@ -194,12 +195,7 @@ export function mapInstallationListPage(value: unknown): InstallationListPage {
   for (let index = 1; index < items.length; index += 1) {
     const previous = items[index - 1];
     const current = items[index];
-    if (
-      previous.displayName > current.displayName ||
-      (previous.displayName === current.displayName &&
-        previous.id >= current.id)
-    )
-      return malformed();
+    if (compareInstallationListKeys(previous, current) >= 0) return malformed();
   }
   const last = items.at(-1);
   if (

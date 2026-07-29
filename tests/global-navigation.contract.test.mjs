@@ -27,7 +27,7 @@ test("control center shell owns the permanent semantic application frame", async
   );
 });
 
-test("only Tenants is actionable and marked as the active module", async () => {
+test("Tenants and Installations are actionable and support active module state", async () => {
   const shell = await source("../components/layout/control-center-shell.tsx");
 
   for (const label of [
@@ -42,8 +42,10 @@ test("only Tenants is actionable and marked as the active module", async () => {
     assert.match(shell, new RegExp(`label: "${label}"`));
   }
 
-  assert.equal((shell.match(/href:/g) ?? []).length, 1);
+  assert.equal((shell.match(/href:/g) ?? []).length, 2);
   assert.match(shell, /href: "\/tenants"/);
+  assert.match(shell, /href: "\/installations"/);
+  assert.match(shell, /activeModule: "installations" \| "tenants"/);
   assert.match(shell, /aria-current=/);
   assert.match(shell, /\? "page" : undefined/);
   assert.match(shell, /Kommer senare/);
@@ -72,10 +74,20 @@ test("tenant routes consume one shell without nested main landmarks", async () =
   }
 });
 
+test("installation routes consume the shared shell without changing root", async () => {
+  const layout = await source("../app/installations/layout.tsx");
+  const list = await source("../app/installations/page.tsx");
+  const detail = await source("../app/installations/[installationId]/page.tsx");
+  assert.match(layout, /ControlCenterShell activeModule="installations"/);
+  assert.doesNotMatch(list, /<main/);
+  assert.doesNotMatch(detail, /<main/);
+  const root = await source("../app/page.tsx");
+  assert.match(root, /redirect\("\/tenants"\)/);
+});
+
 test("future modules have no routes or placeholder pages", async () => {
   for (const moduleName of [
     "dashboard",
-    "installations",
     "licenses",
     "provisioning",
     "monitoring",

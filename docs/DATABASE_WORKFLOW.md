@@ -2,7 +2,10 @@
 
 ## Syfte
 
-Detta dokument definierar repositoryts standard för utveckling och verifiering av Control Centers Supabase-databas. En lokal, tom migrationsmiljö är verifierad. Inget verksamhetsschema finns ännu.
+Detta dokument definierar repositoryts standard för utveckling och verifiering
+av Control Centers Supabase-databas. Den lokala migrationskedjan innehåller
+owner-, tenant- och installationsdomäner och kan reproduceras från en ren
+databas.
 
 ## Verktyg och förutsättningar
 
@@ -77,7 +80,11 @@ Lokala och länkade kommandon har olika riskprofil och ska alltid behandlas som 
 - Destruktiva länkade kommandon får aldrig användas som rutin för staging eller produktion.
 - En operatör ska verifiera projekt och environment före varje godkänd remoteoperation.
 
-Repositoryt är inte länkat till ett externt Supabase-projekt. Login, link och alla remote databasoperationer kräver ett separat godkännande och ingår inte i normal lokal utveckling.
+En utvecklares lokala CLI kan vara länkad till ett externt projekt för en
+uttryckligen godkänd releaseoperation. Länkningen är lokal state och får inte
+versionshanteras eller göra remoteoperationer till en del av normal utveckling.
+Login, link, dry-run och faktisk remote databasoperation ska fortfarande
+behandlas som separata, målverifierade och godkända steg.
 
 Den lokala CLI-stacken publicerar Dockerportar på värdmaskinen. Den får därför endast köras på en betrodd utvecklingsmaskin med aktivt brandväggsskydd och ska stoppas när den inte används. Standardstackens nätverksbeteende får inte beskrivas som produktionssäkert.
 
@@ -127,7 +134,9 @@ Genererade TypeScript-typer:
 - regenereras efter varje schemaändring
 - verifieras i CI mot den committade versionen
 
-Den tomma `public`-typen versionshanteras som baslinje eftersom den verifierar att workflowet fungerar och ger en deterministisk typdriftkontroll. Typer får inte genereras från ett oidentifierat eller oinventerat externt projekt.
+Den genererade `public`-typen för det fullständiga lokala schemat
+versionshanteras som baslinje och ger en deterministisk typdriftkontroll. Typer
+får inte genereras från ett oidentifierat eller oinventerat externt projekt.
 
 ## CI-standard
 
@@ -152,6 +161,20 @@ När tenant- och ownermigrationerna finns ska CI dessutom verifiera:
 6. att inga förbjudna secrets eller miljöspecifika owner-ID:n finns i migrationer
 
 Remote deployment är en separat releaseprocess och ska inte ske från en vanlig pull request-kontroll.
+
+## Aktuell verifieringsbaseline
+
+Efter F2C9C appliceras hela migrationskedjan från ren lokal databas. Senaste
+fulla verifiering gav:
+
+- databaslint utan schemafel
+- 804/804 pgTAP-test
+- 151/151 Node-kontraktstest
+- grön TypeScript, Prettier, ESLint och Next.js production build
+
+Remote dry-run den 29 juli 2026 visade endast
+`20260729200000_stabilize_installation_list_collation.sql` som väntande.
+Dry-runen distribuerade ingenting.
 
 ## Verifierat i Steg B
 

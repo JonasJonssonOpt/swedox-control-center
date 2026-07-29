@@ -135,6 +135,12 @@ metadata, aldrig credentials. Kunddata, connection strings, nycklar, tokens och
 andra secrets är förbjudna. Installerad SweDox-version och deploytid ska ägas av
 en framtida deployment-/releasedomän och lagras inte manuellt på installationen.
 
+F2C9A låser att installationens administrativa lifecycle är oberoende av
+provisioning, deployment och monitoring. `active` är inte en readiness- eller
+healthsignal. `activate_installation` får därför inte kräva application URL,
+Supabase project ref eller hosting region. Dessa nullable fält kan kompletteras
+administrativt men får inte fungera som dold provisioninggate.
+
 F2C1:s exakta kontrakt finns i
 [Installation Database Design](INSTALLATION_DATABASE_DESIGN.md). Tabellen är
 fail-closed. F2C2 ger den verifierade singleton-ownern SELECT till samtliga
@@ -412,6 +418,15 @@ actionförsök; klientstyrd actor, eventtyp och target status är förbjudna.
 Selektiv revalidation och redirect skjuts till respektive framtida UI-flöde och
 får endast ske efter ett lyckat actionresultat.
 
+F2C8A låser UI-paths till `/installations` och
+`/installations/[installationId]`. Installationsmodulen är nu klickbar i global
+navigation och aktiv på båda paths; root redirect förblir `/tenants`.
+
+Listfilter och cursor ligger i URL-query. Första UI-versionen erbjuder endast
+korrekt `Nästa sida`, utan total count, sidnummer, offset eller klientstyrd
+sortering. Pages anropar service direkt och använder ingen intern HTTP eller
+placeholderdata. Create/edit, lifecycle och audit UI hanteras i separata steg.
+
 ## Arbetssätt
 
 ### Analys före implementation
@@ -431,6 +446,59 @@ Säkerhetskritisk logik, verifiering, auktorisering och kommunikation med andra 
 ### Security Pass
 
 En modul får inte låsas eller betraktas som färdig innan en dokumenterad Security Pass har genomförts. Den ska minst omfatta autentisering, auktorisering, dataåtkomst, validering, loggning, secrets, sessioner och felhantering där dessa områden är tillämpliga.
+
+### Installation create/edit UI
+
+F2C8B låser paths till `/installations/new` och
+`/installations/[installationId]/edit` samt ett gemensamt formulär ovanpå
+separata Server Actions. Create erbjuder endast aktiva, icke arkiverade
+tenants. Edit låser tenant, installationskod, environment och status, använder
+expected revision och tillåter inte arkiverade objekt. Framgång revaliderar
+endast installationslistan och berörd detail före redirect. Lifecycle och
+audit hålls utanför detta steg.
+
+### Installation lifecycle UI
+
+F2C8C låser lifecycle-kontrollerna till state machine: planned =
+activate/decommission, active = pause/decommission, paused =
+activate/decommission, decommissioned = archive och archived = restore.
+Decommission är terminal i V1 och archive är endast tillåtet därefter. Restore
+återställer endast synlighet och bevarar Avvecklad status.
+
+Archive och restore redirectar efter success tillbaka till samma detail.
+Lifecycle-UI gör ingen fysisk delete, provisioning, deployment teardown,
+monitoring eller tenantstatusändring.
+
+### Installation audit history UI
+
+F2C8D placerar installationsaudit direkt på
+`/installations/[installationId]`; ingen separat audit-UI-route skapas.
+Initialsidan laddas via service och pagination använder befintlig
+installationbunden audit-route. Installation-, tenant- och framtida
+provisioning/deployment/monitoring-audit förblir separata domäner.
+
+En framtida global activity-vy ska aggregera via domänservicer och får inte
+läsa eller slå ihop audittabeller direkt. Export, retention och backup ingår
+inte i F2C8D.
+
+### Nullable metadata i installationslistan
+
+Installation list rendering måste tåla giltig, ofullständig teknisk metadata.
+Application host och hosting region förblir nullable, bevaras som null genom
+mappern och presenteras som `Saknas`. Verkligt malformed output ska fortfarande
+faila stängt.
+
+### Deterministisk installationsordning
+
+F2C9C låser installationslistans gemensamma databas- och serverordning till
+UTF-8-byteordning: PostgreSQL `COLLATE "C"` för display name och stigande UUID
+som tiebreaker. Implicit databascollation, JavaScripts vanliga
+strängjämförelse och ospecificerad `localeCompare()` är förbjudna i detta
+kontrakt. ORDER BY, tuple-cursor, cursorvalidering och mapper måste använda
+samma ordning.
+
+Pre-F2C9C-cursors är kortlivad URL-state och får invalidieras som en
+engångseffekt. Offsetpagination införs inte.
 
 ## Relaterade dokument
 

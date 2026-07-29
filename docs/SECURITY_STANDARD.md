@@ -387,6 +387,18 @@ CSRF-gränsen är Next Server Actions inbyggda same-origin/origin-skydd. Ingen
 separat JSON-mutationsendpoint eller ny CSRF-tokenmodell införs. Actions utför
 ingen redirect eller revalidation innan framtida UI-flöden har låsts.
 
+F2C8A laddar installation list och detail server-side direkt genom
+installationsservicen. Pages gör ingen intern HTTP, Supabase-, repository- eller
+RPC-åtkomst och använder ingen browserklient eller Service Role. De är
+force-dynamic med revalidation avstängd och saknar global eller cross-request
+cache.
+
+Listan kan endast rendera list-säker metadata. Full application URL, project
+ref och administrativ notering visas endast i detail; actor UUID,
+tenantkontaktdata och rå DB-output visas inte. Stabil not-found hanteras
+separat och övriga fel går till en maskerad boundary utan identifierare,
+metadata, stack eller correlation-ID.
+
 ### Sessioner
 
 Sessioner ska vara cookiebaserade, serverhanterade och använda PKCE. De ska vara tidsbegränsade, säkert lagrade och möjliga att återkalla. Förnyelse, utloggning, inaktivitet och känsliga operationer ska hanteras explicit.
@@ -439,3 +451,61 @@ append. Råa fel maskeras lokalt. UI-modellen tar bort actor-UUID,
 correlation-ID och audit-ID före rendering och visar endast eventtyp, tid,
 `Verifierad owner`, revision samt labels för ändrade fält. Inga
 verksamhetsvärden, export-, retention- eller backupvägar skapas.
+
+### Installation create/edit
+
+F2C8B använder endast F2C7B:s create/update Server Actions. Tenantlistan för
+create filtreras till aktiv och icke arkiverad, men serverns tenantkontroll är
+fortsatt auktoritativ. Klientens ID, revision och formulärvärden är opålitliga;
+immutable systemfält kan inte ändras via formuläret. Fältfel och konflikter
+maskeras utan råa fel eller retry. Revalidation och redirect sker endast efter
+lyckad mutation.
+
+### Installation lifecycle UI
+
+F2C8C:s Client Component använder endast F2C7B:s fem lifecycle Server Actions
+och ärver ownerguard, AAL2, request-lokal SSR, RLS och atomisk audit. Klienten
+skickar endast installation-ID och expected revision; target status, eventtyp,
+actor, correlation-ID och revision-after kan inte styras från UI.
+
+Expected revision verifieras åter server-side och i databasen. Conflict,
+invalid state och tenant unavailable retryas inte och råa fel maskeras.
+Decommission är terminal, archive kräver decommissioned och restore
+återaktiverar inte. Ingen fysisk delete eller teknisk teardown finns.
+Revalidation och redirect sker endast efter success.
+
+F2C9A:s frikoppling av administrativ aktivering från nullable teknisk metadata
+ändrar inte auktorisering. Ownerkontroll, AAL2-serverguard, RLS/FORCE RLS,
+tenant availability, row lock, expected revision, grants och atomisk audit är
+oförändrade. Null project ref, URL eller region ger ingen utökad behörighet.
+Teknisk readiness ska verifieras separat av framtida provisioning-, deployment-
+och monitoringkontrakt.
+
+### Installation audit history UI
+
+Initial audit går via den server-only installationsservicen och ärver
+ownerguard, AAL2, request-lokal SSR och installationsbunden audit-RPC. Load
+more använder endast befintlig no-store read-route. UI har ingen direkt
+Supabase-, repository-, RPC-, browserklient- eller Service Role-åtkomst.
+
+UI-modellen tar bort actor-UUID och correlation-ID före rendering. Audit-ID
+används endast internt för dubblettkontroll och React key och renderas inte i
+DOM. Inga values, snapshots, URL:er, project refs eller noteringar visas.
+Routeoutput valideras helt före merge. En synkron request-lock blockerar
+parallella requests och råa fel maskeras lokalt.
+
+### Nullable metadata i installationslistan
+
+Null för application host och hosting region är giltiga domänvärden och
+accepteras utan att informationsytan utökas. Full application URL, Supabase
+project ref och administrativ notering förblir dolda. Andra typer, tomma eller
+icke-kanoniska strängar och saknade properties failar fortsatt stängt till ett
+maskerat `unexpected_error`; rå rad, installations-ID och metadata loggas inte.
+
+### Installationslistans ordningsvalidering
+
+Ordningsvalideringen finns kvar och failar stängt, men jämför nu samma
+deterministiska UTF-8-byteordning som PostgreSQL `COLLATE "C"`, följd av UUID.
+Det eliminerar falska kontraktsfel utan att acceptera verkligt felordnade eller
+dubblerade rader. Ownerguard, AAL2, RLS, grants, metadataallowlist och maskering
+av råa fel är oförändrade.

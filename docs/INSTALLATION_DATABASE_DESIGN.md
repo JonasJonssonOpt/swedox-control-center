@@ -74,6 +74,13 @@ Decommission beskriver administrativ livscykel medan archive är separat
 synlighetsmetadata. Framtida mutationer ska kräva decommission före archive;
 F2C1 ändrar inte status automatiskt.
 
+F2C9A frikopplar administrativ aktivering från teknisk readiness. Planned och
+paused får aktiveras även när `application_url`, `supabase_project_ref` och
+`hosting_region` är null. Aktiv betyder endast administrativ klassificering och
+garanterar inte att provisioning eller deployment är genomförd, att
+applikationen svarar eller att systemhälsan är god. Framtida provisioning- och
+monitoringmoduler äger dessa verifieringar.
+
 ## Metadata, version och secrets
 
 Control Center lagrar installationsmetadata, aldrig kunddata eller credentials.
@@ -316,3 +323,79 @@ errors vid failure.
 
 F2C7B skapar inga JSON-mutationsroutes. Redirect och selektiv revalidation
 skjuts till UI-steget och får senare endast köras efter `ok: true`.
+
+## List och detail UI
+
+F2C8A implementerar `/installations` och
+`/installations/[installationId]` som dynamiska Server Components med direkt
+åtkomst till den publika installationsservicen. Ingen intern HTTP-kedja eller
+klientdataladdning används.
+
+Listan använder list-DTO:n, URL-burna filter och servicens cursorpagination.
+Full URL, project ref, administrativ notering, revision och actorinformation
+renderas inte. Detail använder den separata detail-DTO:n och visar endast
+allowlistad full metadata utan actor UUID eller tenantkontaktdata. Arkiverad
+detail förblir läsbar och förklarar att objektet inte syns i standardlistan.
+
+F2C8A innehåller inga UI-mutationer, formulär, lifecycle-kontroller eller
+audit history.
+
+## F2C8B create/edit UI
+
+F2C8B lägger ett formulärlager ovanpå F2C7B:s create/update-actions utan att
+ändra databaskontraktet. Create väljer endast aktiva, icke arkiverade tenants.
+Edit skickar installation-ID och expected revision som opålitlig transport;
+service och databas är fortsatt source of truth. Tenant, installationskod,
+environment och administrativ status är immutabla i edit. Arkiverade objekt
+kan inte redigeras, medan icke arkiverade avvecklade objekt får uppdateras.
+Lifecycle och audit UI återstår.
+
+## F2C8C lifecycle UI
+
+Detail mappar status till exakt tillåtna mutationsactions: planned kan
+aktiveras eller avvecklas, active kan pausas eller avvecklas, paused kan
+aktiveras eller avvecklas, decommissioned kan arkiveras och arkiverad kan
+återställas. Klienten skickar endast installation-ID och expected revision till
+respektive F2C7B-action.
+
+Avveckling är terminal i V1. Archive kräver decommissioned och ändrar endast
+arkiveringsmetadata. Restore tar bort arkiveringsmetadata men bevarar
+`administrative_status = decommissioned`. Ingen operation raderar installation
+eller tekniska resurser. Efter success revalideras endast installationslista
+och berörd detail före redirect tillbaka till detail; fel gör inget av detta.
+
+## F2C8D audit history UI
+
+Installationdetail laddar initialt 25 metadata-only auditposter direkt genom
+`listInstallationAuditEvents()`. Fortsatta sidor hämtas endast genom
+`GET /api/installations/[installationId]/audit` med serviceproducerat komplett
+cursorpar. Historiken visas även för arkiverade installationer.
+
+UI presenterar de sju eventtyperna och den exakta 17-fältsallowlisten som
+svenska etiketter, aldrig verksamhetsvärden. Actor visas som
+`Verifierad owner`; audit-ID och correlation-ID renderas inte. Svar valideras
+för installation, ordning, dubbletter, cursor, event, fields, revision och tid
+före append. Ingen export, retention, backup, ny RPC eller databasändring ingår.
+
+## F2C9B nullable metadata i installationslistan
+
+Teknisk metadata är valfri. List-DTO:n bevarar därför `application_host` och
+`hosting_region` som null i `applicationHost: string | null` respektive
+`hostingRegion: string | null`. En giltig rad med ofullständig teknisk metadata
+får inte slå ut andra rader eller hela listan. Befintlig `list_installations`
+returnerar redan null korrekt; ingen SQL- eller nullabilityändring ingår.
+
+## F2C9C deterministisk listordning
+
+Installationslistans ordning är explicit `display_name COLLATE "C" ASC, id ASC`.
+Samma C-collation används i huvudfrågans och slutresultatets `ORDER BY`,
+`row_number()`, cursoruppslaget och tuplevillkoret. Servermappern reproducerar
+ordningen med UTF-8-bytejämförelse och canonical UUID som tiebreaker.
+
+Kontraktet är binärt och localeoberoende: versaler, gemener, svenska tecken och
+annan Unicode ordnas efter sina UTF-8-bytes, inte svensk alfabetisk
+presentation. Cursorparet är fortsatt display name/UUID. Kortlivade cursors
+skapade före migrationen kan nekas med `validation_error` och laddas då om från
+första sidan; ingen beständig affärsdata påverkas. Befintliga index analyserades
+men inget spekulativt collationindex skapades utan representativ
+queryplansevidens.

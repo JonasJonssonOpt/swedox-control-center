@@ -62,6 +62,14 @@ framtidsstatus förmedlas aldrig med badge eller enbart färg.
 
 ### Formulär
 
+Installationsmodulens create/edit-flöde återanvänder ett gemensamt formulär.
+Create visar tenant, installationskod, visningsnamn, environment och valfri
+teknisk/administrativ metadata. Edit visar tenant, kod, environment och status
+som skrivskyddad kontext och låter endast den muterbara målbilden ändras.
+Fältfel kopplas med `aria-describedby` och `aria-invalid`; formulärfel får fokus
+och pending-state inaktiverar submit med verbet `Skapar…` eller `Sparar…`.
+Arkiverade installationer visar ingen edit-form.
+
 - Etiketter, hjälptexter, obligatoriska fält och valideringsfel ska placeras konsekvent.
 - Serverfel ska visas nära relevant åtgärd eller fält och bevara användarens inmatning när det är säkert.
 - Primär och sekundär åtgärd ska ha konsekvent ordning.
@@ -162,6 +170,75 @@ requests.
 
 Historiken har inga badges, filter, sökning, export, retention- eller
 backupkontroller.
+
+### Installation list och detail
+
+Installationslistan finns på `/installations` och detail på
+`/installations/[installationId]`. Båda är dynamiska Server Components som
+anropar installationsservicen direkt. Intern HTTP, browser-Supabase och
+cross-request cache används inte. Root fortsätter till `/tenants`; Tenants och
+Installations är de enda klickbara globala modulerna.
+
+Listan är desktop-first med en kompakt filterrad och semantisk tabell. Filter
+för sökning, tenant, environment, administrativ status och arkiverade objekt
+ligger i URL-query. Sökningen beskrivs uttryckligen som namn och
+installationskod. Listan sorteras endast enligt servicekontraktet och använder
+cursorlänken `Nästa sida`; total count, sidnummer och offset används inte.
+
+Kolumnerna är Installation, Tenant, Environment, Administrativ status, Region,
+Application host och Uppdaterad. Installationskod visas sekundärt under
+detail-länken. Environment och status har svenska etiketter och status visas
+med `StatusText`, aldrig badge eller enbart färg.
+
+Detail använder sektionerna Identitet, Teknisk metadata, Administration och
+Metadata. Full application URL, Supabase project ref och administrativ notering
+visas endast där, som säker ren text. Notering bevarar radbrytningar utan HTML
+eller Markdown. Arkiverad installation har en tydlig text före sektionerna och
+förklarar frånvaron i standardlistan. F2C8A innehåller inga create-, edit-,
+lifecycle- eller auditkontroller.
+
+### Installation lifecycle controls
+
+Installationdetail visar endast state-tillåtna kontroller: planned visar
+Aktivera/Avveckla, active visar Pausa/Avveckla, paused visar
+Aktivera/Avveckla, decommissioned visar Arkivera och arkiverad visar endast
+Återställ. Förbjudna operationer renderas inte som inaktiva dead controls.
+
+Varje operation använder native dialog med kopplad rubrik och beskrivning,
+Avbryt som initialt fokus, Escape-stöd och fokus tillbaka till triggern.
+Avveckling är terminal i V1. Arkivering är destruktivt formgiven men texten
+förklarar att data inte raderas och status förblir Avvecklad. Återställning
+återger endast synlighet och aktiverar inte installationen.
+
+Aktiveringsdialogen beskriver `Aktiv` som administrativ status och förklarar
+uttryckligen att den inte verifierar faktisk systemhälsa, provisioning eller
+deployment. Saknad application URL, project ref eller region presenteras som
+saknad metadata och påstås inte blockera administrativ aktivering.
+
+Pending visas med operationsspecifikt verb och låser samtliga lifecycle-
+triggers mot parallella mutationer. Fel visas som alerts. Status förblir vanlig
+text via `StatusText`; badges används inte.
+
+### Installation audit history
+
+Installationdetail visar `Händelsehistorik` direkt på samma route, även när
+installationen är arkiverad. Initiala 25 poster laddas server-side via
+installationsservicen; `Ladda fler` använder endast befintlig audit-GET-route.
+
+Historiken är en kompakt ordnad lista, nyast först. Varje post visar svensk
+eventetikett, tid i Europe/Stockholm, `Verifierad owner`, revision och svenska
+namn på ändrade fält. Actor-UUID, audit-ID, correlation-ID och tidigare/nya
+värden visas aldrig. Pagination valideras före append och använder synkron
+request-lock. Fel visas lokalt med befintliga poster kvar.
+
+Inga badges, timeline-dekorationer, filter, sökning, infinite scroll, polling,
+realtime, export, retention eller backupkontroller ingår.
+
+### Nullable teknisk metadata i installationslistan
+
+Listans application host och hosting region visas som vanlig text `Saknas` när
+värdet är null. Nullable metadata får inte ge tomma celler, texten `null` eller
+en badge/statusindikator.
 
 ## Relaterade dokument
 

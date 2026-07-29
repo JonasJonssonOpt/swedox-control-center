@@ -3,7 +3,11 @@ import Link from "next/link";
 const MODULES = [
   { label: "Dashboard" },
   { href: "/tenants", id: "tenants", label: "Tenants" },
-  { label: "Installations" },
+  {
+    href: "/installations",
+    id: "installations",
+    label: "Installations",
+  },
   { label: "Licenses" },
   { label: "Provisioning" },
   { label: "Monitoring" },
@@ -14,7 +18,7 @@ export function ControlCenterShell({
   activeModule,
   children,
 }: Readonly<{
-  activeModule: "tenants";
+  activeModule: "installations" | "tenants";
   children: React.ReactNode;
 }>) {
   return (

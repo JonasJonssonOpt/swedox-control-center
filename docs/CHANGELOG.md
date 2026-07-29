@@ -1,6 +1,91 @@
 # Changelog
 
+## 2026-07-29
+
+- Slutförde dagens lokala F2C-verifiering genom F2C9C. Installation Management
+  omfattar nu databas/RLS/audit, server-only DAL/service, read routes, sju
+  mutation actions, list/detail, create/edit, lifecycle och metadata-only
+  audit history UI.
+- F2C9A och F2C9B distribuerades och runtimeverifieringen identifierade därefter
+  F2C9C:s collation/komparator-mismatch. F2C9C är implementerad och
+  lokalverifierad; remote dry-run visar endast dess framåtriktade migration som
+  väntande. Ingen F2C9C-databasdeployment utfördes.
+- Full regression efter dagens samlade ändringar är grön: 804/804 pgTAP,
+  151/151 Node-kontraktstest, databaslint, TypeScript, Prettier, ESLint,
+  Next.js production build och oförändrad routeinventering.
+
+- Implementerade F2C9A:s framåtriktade korrigering av
+  `activate_installation`: planned och paused kan nu aktiveras administrativt
+  utan application URL, Supabase project ref eller hosting region. Historisk
+  F2C4-migration ändrades inte.
+- Bevarade ownerkontroll, tenant availability, row locking, expected revision,
+  output, grants och atomisk audit. pgTAP verifierar nullmetadata från planned
+  och paused, oförändrade metadatafält, canonical audit och rollback vid
+  auditfel.
+- Förtydligade aktiveringsdialogen: Aktiv verifierar inte faktisk systemhälsa,
+  provisioning eller deployment. F2C9 förblir öppet tills migrationen
+  uttryckligen distribuerats och runtimeverifieringen återupptagits.
+
+- Påbörjade F2C9:s Installation Management-runtimeverifiering men stoppade före
+  verksamhetsflödena eftersom den konfigurerade lokala Auth-usern och
+  owner-singletonen saknades efter ren reset. Owner-login, TOTP/AAL2 och
+  skyddade UI-flöden kunde därför inte verifieras utan att kringgå den låsta
+  bootstrapmodellen.
+- Ingen produktkod eller testdata ändrades. Modulstängning godkändes inte.
+  Resultatet och den godkända återstartsvägen dokumenterades i
+  `INSTALLATION_RUNTIME_VERIFICATION.md`.
+
+- Implementerade F2C8D:s metadata-only installationshistorik direkt på
+  installationdetail, även för arkiverade installationer. Initiala 25 poster
+  hämtas via installationsservicen och nästa sidor endast via befintlig
+  no-store audit-route.
+- Lade till svenska event- och fältetiketter, Stockholmstid,
+  `Verifierad owner`, revisionspresentation, tomläge och kompakt lista.
+  Actor-UUID, audit-ID, correlation-ID och verksamhetsvärden renderas inte.
+- Validerar installationstillhörighet, cursor, ordning, dubbletter, event,
+  changed fields, revisioner och timestamps före merge. Synkron request-lock
+  och maskerade retrybara fel ingår; export, retention och backup gör det inte.
+
+- Implementerade F2C8C:s state-specifika lifecycle-kontroller på
+  installationdetail: activate/decommission för planned, pause/decommission för
+  active, activate/decommission för paused, archive för decommissioned och
+  restore för arkiverad.
+- Lade till native dialogs med proportionerliga konsekvenstexter,
+  expected revision, fokusåterställning, operationsspecifik pending-state och
+  gemensamt mutationslås. Conflict, invalid state och tenant unavailable visas
+  lokalt utan retry eller råa fel.
+- Samtliga fem lifecycle-actions revaliderar lista/detail och redirectar till
+  färsk detail endast efter success. Åtta nya kontraktstest täcker state
+  machine, action wiring, dialoger, fel, pending, navigation och scope.
+  Audit history UI, provisioning och monitoring infördes inte.
+
+- Implementerade F2C8B:s återanvändbara create/edit-formulär för installationer
+  på `/installations/new` och `/installations/[installationId]/edit`.
+  Formulären använder F2C7B:s separata Server Actions, fältkopplade fel,
+  konfliktåterkoppling, pending-låsning och success-only redirect med selektiv
+  revalidation av lista och berörd detail.
+- Create erbjuder endast aktiva, icke arkiverade tenants. Edit visar
+  tenant, installationskod, environment och status skrivskyddat, transporterar
+  ID/revision dolt och tillåter redigering av avvecklade men inte arkiverade
+  installationer. Lista/detail har fått kontextuella create/edit-länkar.
+- Lade till F2C8B-kontraktstest. Lifecycle-kontroller, audit history UI,
+  provisioning och monitoring ingår fortsatt inte.
+
 ## 2026-07-28
+
+- Implementerade F2C8A:s dynamiska Server Component-vyer för
+  `/installations` och `/installations/[installationId]` med direkt
+  serviceåtkomst, delad Control Center-shell och klickbar
+  Installations-navigation. Root fortsätter till `/tenants`.
+- Lade till desktop-first filterrad för sökning, tenant, environment,
+  administrativ status och arkiverade objekt samt URL-buren cursorpagination
+  med endast `Nästa sida`. Listan visar endast list-säker metadata och skiljer
+  tom modul från filtrerad nollträff.
+- Lade till sektionerad detail med skyddad metadata endast där, tydlig
+  arkivpresentation, svenska status-/environmentetiketter och maskerade
+  loading-, not-found- och error-states. Kontraktstest täcker arkitektur,
+  navigation, filter, pagination, metadata och tillgänglighet. Inga formulär,
+  lifecycle-kontroller eller audit UI infördes.
 
 - Implementerade F2C7B:s sju separata installation Server Actions för create,
   update, activate, pause, decommission, archive och restore ovanpå F2C6B:s
@@ -281,6 +366,19 @@ Formatet baseras på [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) oc
 
 ### Changed
 
+- Korrigerade F2C9C efter att installationslistan fortsatt krascha på
+  case-varierade namn trots giltigt RPC-resultat. PostgreSQL använder nu
+  explicit `COLLATE "C"` i listordning och cursorsemantik, medan servermappern
+  använder motsvarande UTF-8-bytekomparator med UUID-tiebreak. Tester täcker
+  runtimefallet, case, svenska tecken, nullability och pagination utan
+  dubbletter eller hopp. Äldre kortlivade cursors kan behöva laddas om efter
+  deployment.
+- Korrigerade F2C9B efter runtimefyndet att en giltig installation utan
+  application host och hosting region kunde slå ut hela installationslistan.
+  List-DTO och genererad RPC-typ stöder nu null, mappern bevarar null,
+  presentationen visar `Saknas` och kontraktstester täcker blandade rader samt
+  malformed output. Ingen SQL, migration eller utökad metadataexponering
+  infördes; F2C9 fortsätter efter appdeployment.
 - Låst autentiseringsmodellen för version 1 till ett internt `owner`-konto med e-post och lösenord via Supabase Auth, obligatorisk TOTP-MFA och serverhanterade PKCE-sessioner.
 - Avgränsat användaradministration, invitationer, SSO och ytterligare roller till en möjlig framtida utbyggnad.
 - Dokumenterat manuell recovery via Supabase samt förbud mot självregistrering, SMS-MFA och egna recovery codes.
