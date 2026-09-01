@@ -19,6 +19,8 @@
     "supabase:status": "node scripts/supabase-local.mjs status",
     "owner:bootstrap:local": "node scripts/bootstrap-control-center-owner.mjs --confirm-owner-bootstrap",
     "owner:verify:local": "node scripts/bootstrap-control-center-owner.mjs --confirm-owner-bootstrap --verify",
+    "runtime:test:installations:seed-pagination": "node scripts/runtime-tests/create-installation-pagination-fixtures.mjs",
+    "runtime:test:installations:cleanup-pagination": "node scripts/runtime-tests/cleanup-installation-pagination-fixtures.mjs",
     "supabase:reset": "supabase db reset --local",
     "supabase:lint": "supabase db lint --local --schema public --fail-on error",
     "supabase:test": "supabase test db supabase/tests/database --local",

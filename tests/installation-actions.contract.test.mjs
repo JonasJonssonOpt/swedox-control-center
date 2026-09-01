@@ -121,6 +121,17 @@ test("action module exports exactly seven use-server actions with service-only a
   assert.match(source, /revalidatePath\(detailPath\)/);
   assert.match(source, /redirect\(detailPath\)/);
   assert.match(source, /if \(result\.ok\)/);
+  const successBlock = source.slice(source.indexOf("if (result.ok)"));
+  assert.ok(
+    successBlock.indexOf('revalidatePath("/installations")') <
+      successBlock.indexOf("revalidatePath(detailPath)"),
+  );
+  assert.ok(
+    successBlock.indexOf("revalidatePath(detailPath)") <
+      successBlock.indexOf("redirect(detailPath)"),
+  );
+  assert.equal((source.match(/revalidatePath\(/g) ?? []).length, 2);
+  assert.equal((source.match(/redirect\(/g) ?? []).length, 1);
   assert.doesNotMatch(source, /revalidateTag|genericMutation/i);
   const core = await readFile(
     new URL(

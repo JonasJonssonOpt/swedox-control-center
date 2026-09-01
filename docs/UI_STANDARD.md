@@ -240,6 +240,28 @@ Listans application host och hosting region visas som vanlig text `Saknas` när
 värdet är null. Nullable metadata får inte ge tomma celler, texten `null` eller
 en badge/statusindikator.
 
+### Installation audit freshness efter mutation (F2C9D)
+
+Efter en lyckad installationsmutation ska detail och audit renderas från samma
+nya server-snapshot utan manuell omladdning. Auditkomponenten ska återställas
+när installationens revision ändras, så att första sidans items, cursor,
+`hasMore`, pending- och feltillstånd inte återanvänds från föregående revision.
+Installationsrevisionen är den tillåtna, icke-känsliga versionssignalen.
+
+### Låst Installation Management-mönster (F2C9H)
+
+Den stängda installationsmodulen använder serverrendererad metadata-minimerad
+lista, URL-bundna filter och literal search samt keyset-pagination med bevarad
+filterkontext. Nullable host och region visas som vanlig text `Saknas`; status
+visas som text enligt den globala UI-standarden, aldrig som informationsbärande
+badge.
+
+Detail, create/edit-formulär, native lifecycle-dialoger och state-specifika
+kontroller följer samma tillgängliga fokus-, pending- och felmönster. Audit är
+en semantisk newest-first-lista med routebaserad cursorpagination och omedelbar
+revisionskonsistent refresh efter mutation. Dessa mönster är runtimeverifierade
+och ändras endast genom ett nytt analyserat change-step.
+
 ## Relaterade dokument
 
 - [Projektbeslut](PROJECT_DECISIONS.md)

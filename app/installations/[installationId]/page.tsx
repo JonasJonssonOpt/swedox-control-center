@@ -89,6 +89,7 @@ export default async function InstallationDetailPage({
         <InstallationAuditHistory
           initialPage={auditPage}
           installationId={installationId}
+          key={`installation-audit-revision-${installation.revision}`}
         />
       </div>
     </div>

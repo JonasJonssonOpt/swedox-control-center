@@ -26,12 +26,11 @@ Etablera ett minimalt register över kunder utan att lagra kundernas affärsdata
 
 Representera separata kundinstallationer och deras tekniska identitet utan generell direktåtkomst till kunddatabaser.
 
-F2C1–F2C8D är implementerade och lokalverifierade från schema och ownerkontroll
-till komplett administrations-UI och metadata-only audit history. F2C9:s
-runtimeverifiering identifierade och korrigerade tre integrationsfel:
-administrativ aktivering kopplad till provisioningmetadata, nullable metadata
-i listan och implicit collation. F2C9C väntar deployment och efterföljande
-runtimeverifiering; fasen är därför inte formellt stängd.
+F2C1–F2C9H är avslutade. Modulen är tekniskt komplett, manuellt
+runtimeverifierad, verksamhetsklar och låst efter verifierad owner/AAL2-kedja,
+mutationer, lifecycle, concurrency, audit- och listpagination, fixture-cleanup
+och full slutregression. Framtida ändringar kräver ett nytt analyserat
+change-step. Nästa roadmapfas är Fas 4 – Licenser.
 
 ### Fas 4 – Licenser
 

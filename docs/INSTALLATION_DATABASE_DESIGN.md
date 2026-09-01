@@ -399,3 +399,27 @@ skapade före migrationen kan nekas med `validation_error` och laddas då om fr�
 första sidan; ingen beständig affärsdata påverkas. Befintliga index analyserades
 men inget spekulativt collationindex skapades utan representativ
 queryplansevidens.
+
+## Immediate post-mutation read (F2C9D)
+
+Installation och exakt en auditpost skrivs fortsatt atomiskt av databasens
+mutationskontrakt. Efter success invalidiserar applikationen list- och
+detailvägen och läser om både installation och audit server-side. Revalidation
+och React-rendering ändrar inte auditens source-of-truth: endast den verifierade
+audit-read-RPC:n levererar auditdata, och ingen auditpost konstrueras i klienten.
+
+## Slutlig verifierings- och closurestatus (F2C9H)
+
+Databasdesignen är låst: 17-kolumners installationer med tenant-FK, nullable
+teknisk metadata, positiv expected revision, administrativ lifecycle och separat
+archivemetadata; atomiska ownerverifierade mutations-RPC:er; och
+installationbunden metadata-only append-only audit med exakt revisionskedja.
+
+List-read använder `display_name COLLATE "C" ASC, id ASC`, komplett display
+name/UUID-cursor, `limit + 1`, filter före pagination och literal search endast i
+display name/installation code. Databasens ordning och TypeScriptvalideringen är
+identiska. Audit- och listpagination, nullable metadata, tenant availability,
+conflict, lifecycle och immediate audit read är verifierade i verklig runtime.
+Slutregressionen är 804/804 pgTAP och 158/158 Node-test. Installation Management
+är verksamhetsklart och stängt; framtida databasändringar kräver nytt analyserat
+change-step och migration först efter separat godkännande.

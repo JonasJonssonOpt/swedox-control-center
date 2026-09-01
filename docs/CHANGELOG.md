@@ -1,5 +1,49 @@
 # Changelog
 
+## 2026-09-01
+
+- Slutförde F2C9H och stängde Installation Management efter verklig
+  owner/AAL2-runtime för create, edit, conflict, lifecycle, tenant availability,
+  auditpagination och keyset-listpagination. Browsertestets första sida innehöll
+  totalt 50 matchande rader: 49 fixtures och en befintlig installation; nästa
+  sida visade återstående resultat utan dubbletter eller hopp.
+- Verifierade filter/search, cursorreset, nullable `Saknas`, case/collation,
+  immediate audit refresh och frånvaro av error boundary. F2C9G-fixtures
+  städades och read-only dry-run rapporterade kategoriskt noll kvarvarande rader.
+- Slutregressionen passerade med 804/804 pgTAP, 158/158 Node-test, databaslint,
+  TypeScript, Prettier, ESLint och production build. F2C1–F2C9H är avslutade;
+  modulen är verksamhetsklar och låst under explicit change-control.
+
+- Lade till F2C9G:s terminalbaserade testinfrastruktur för 55 syntetiska
+  installationspagination-fixtures. Verktyget kräver explicit cloud-test,
+  intern tenant, bekräftelse, project-targetmatchning och tillfälliga
+  `PG*`-credentials, stöder dry-run och loggar inga identifierare eller secrets.
+- Seed är idempotent och cleanup är tenantbunden till en exakt kodallowlist samt
+  vägrar drift eller audit. Ingen route, UI, Server Action, Service Role-appkod,
+  migration eller permanent adminfunktion infördes. Fixtures skapades inte
+  automatiskt; browserverifiering och F2C9H återstår.
+- Korrigerade fixture-seedens write-path från det obefintliga
+  `control_center_owner.user_id` till schemats låsta `owner_user_id`. Dry-run
+  berör inte insert-selecten och kunde därför passera trots felet. Den maskerade
+  operatörsfelgränsen och hela target-/credentialkontraktet är oförändrade.
+
+- F2C9F:s slutliga lokala regression passerade med 804/804 pgTAP, 152/152
+  Node-test, databaslint, TypeScript, Prettier, ESLint och production build.
+  Verklig listpagination över fler än 50 säkra testinstallationer kunde inte
+  köras utan autentiserad owner/AAL2-browsersession och godkänt remote
+  testdataharness. Ingen remote data ändrades och modulstängningen stoppades
+  enligt gate-kontraktet.
+
+- Korrigerade F2C9D:s runtimefynd där detail visade ny status och revision men
+  en redan monterad auditkomponent behöll tidigare `useState` tills F5.
+- Detail och audit var redan force-dynamic, laddades direkt via server-only
+  service och revaliderades före redirect. Auditkomponenten keyas nu med
+  installationens revision och återställs med serverns nya items, cursor,
+  `hasMore` och tomma lokala pending/feltillstånd.
+- Ingen SQL, migration, RPC, RLS, Service Role, browser-Supabase, polling,
+  realtime eller syntetisk audit infördes. Kontraktstester låser cache-,
+  revalidation-, redirect- och revisionsbeteendet.
+
 ## 2026-07-29
 
 - Slutförde dagens lokala F2C-verifiering genom F2C9C. Installation Management

@@ -502,6 +502,47 @@ project ref och administrativ notering förblir dolda. Andra typer, tomma eller
 icke-kanoniska strängar och saknade properties failar fortsatt stängt till ett
 maskerat `unexpected_error`; rå rad, installations-ID och metadata loggas inte.
 
+### F2C9D audit freshness
+
+Audit efter installationsmutation visas endast från det verifierade server-side
+readkontraktet. Klienten får inte fabricera, optimistiskt injicera eller mutera
+auditposter. Revisionsbaserad återställning av presentationsstate kringgår inte
+ownerguard, AAL2, RLS eller RPC; revalidation och redirect sker endast efter ett
+lyckat service-resultat. Browser-Supabase och Service Role införs inte.
+
+### F2C9G runtime fixtures
+
+Installationspaginationens tillfälliga fixtures är ett terminalbaserat
+operatörsverktyg utanför appens produktionsbundle. Det skapar ingen route,
+Server Action, UI-yta, migration, DB-funktion, policy eller grant. Inga
+credentials lagras i repositoryt: anslutningen använder operatörens tillfälliga
+standard-`PG*`-miljö och skriver aldrig anslutningsdata, project ref eller hela
+UUID:n till output.
+
+Seed och cleanup kräver explicit target, explicit intern tenant, explicit
+bekräftelse och matchning mellan förväntad project ref och PG-target. Båda har
+dry-run. Fixtureidentiteten är en exakt allowlist om 55 syntetiska koder;
+cleanup använder tenant + allowlist, förbjuder bred prefix-delete och vägrar
+ändrade eller auditerade fixtures. Owner-, AAL2-, RLS- och RPC-kontrakten
+försvagas inte eftersom verktyget inte blir en del av applikationen.
+
+### F2C9H final Installation Management Security Pass
+
+Security Pass: **GODKÄND**. Den verifierade kedjan är Owner + AAL2 → Server
+Components/Server Actions → service → repository → Supabase SSR → RLS/RPC →
+atomisk append-only audit. RLS/FORCE RLS och RPC verifierar owner; appen använder
+ingen Service Role och inga privilegierade browserwrites. Mutationer använder
+expected revision, tenant availability och den låsta lifecycle state machine;
+conflict och andra fel maskeras utan overwrite eller audit.
+
+List- och detailmetadata är separerade och minimerade. Nullable
+provisioningmetadata stöds, `Saknas` används i listan och DB-/TypeScriptordning
+är gemensamt deterministisk. Audit är metadata-only, newest-first,
+cursorpaginerad och uppdateras omedelbart efter mutation utan fabricerad
+klientdata. Keyset-listpaginationen och fixtureverktygets isolering samt cleanup
+med noll kvarvarande fixtures är runtimeverifierade. Slutregressionen är
+804/804 pgTAP och 158/158 Node-test.
+
 ### Installationslistans ordningsvalidering
 
 Ordningsvalideringen finns kvar och failar stängt, men jämför nu samma

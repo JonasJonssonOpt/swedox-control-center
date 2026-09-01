@@ -500,6 +500,36 @@ samma ordning.
 Pre-F2C9C-cursors är kortlivad URL-state och får invalidieras som en
 engångseffekt. Offsetpagination införs inte.
 
+### Installation mutation freshness
+
+Installation mutation success must immediately render the matching audit
+revision without manual refresh. Detailens audit-Client Component identifieras
+med installationens icke-känsliga revision och återinitieras från serverns nya
+förstasida; gamla cursors och lokala paginationstillstånd får inte överleva ett
+revisionsbyte.
+
+### Runtime pagination fixtures
+
+Runtime pagination fixtures are temporary operator-controlled test data and are
+not part of the Control Center product surface. De får endast användas för den
+avgränsade browserverifieringen, kräver explicit remote target och intern
+testtenant, och ska städas med exakt fixtureallowlist. De motiverar ingen
+permanent adminfunktion, migration, produktionsroute eller generell bulk-create.
+
+### Installation Management closure och change-control
+
+Installation Management is closed. F2C1–F2C9H är avslutade efter full
+automatiserad regression, verklig owner/AAL2-runtime, audit- och
+listpagination samt verifierad fixture-cleanup. Modulen är tekniskt komplett,
+manuellt runtimeverifierad, verksamhetsklar och låst.
+
+Future functional, database, security, lifecycle, pagination or UI changes
+require a new analysis/change step before implementation. Installation
+Management får inte byggas ut indirekt genom framtida moduler. Provisioning,
+Licensing och Monitoring äger sina egna analyser, datakontrakt, mutationer och
+auditdomäner; de får konsumera endast uttryckligt publicerade
+installationskontrakt.
+
 ## Relaterade dokument
 
 - [Security Standard](SECURITY_STANDARD.md)

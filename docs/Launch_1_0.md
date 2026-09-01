@@ -82,8 +82,11 @@ Följande krävs före release av Tenant Management:
 - [x] Installation audit history UI är verifierad med initial service-load,
       routebaserad pagination, metadata-minimering, responsevalidering,
       request-lock och stöd för arkiverad detail.
-- [ ] Installation Management är manuellt runtimeverifierat och formellt
+- [x] Installation Management är manuellt runtimeverifierat och formellt
       stängt.
+- [x] F2C9D korrigerar lokalt immediate audit rendering efter mutation genom
+      revisionsbaserad återställning från serverns nya auditförstasida.
+- [x] F2C9D är appdeployad och manuellt verifierad utan F5.
 - [x] F2C9A:s lokala korrigering frikopplar administrativ aktivering från
       nullable provisioningmetadata med bevarad ownerkontroll, concurrency och
       atomisk audit.
@@ -98,10 +101,13 @@ Följande krävs före release av Tenant Management:
 - [x] F2C9C låser lokalt installationslistans PostgreSQL- och serverordning
       till samma UTF-8-byteordning med UUID-tiebreak, stabil cursorpagination
       och bibehållen nullable metadata.
-- [ ] F2C9C-migrationen och appkoden är godkända och distribuerade, och
+- [x] F2C9C-migrationen och appkoden är godkända och distribuerade, och
       runtimeverifieringen har återupptagits från listan.
 - [x] Lokal fullregression efter F2C9C är grön med 804/804 pgTAP, 151/151
       Node-test, databaslint, TypeScript, Prettier, ESLint och production build.
+- [x] F2C9H:s slutgate är godkänd: verklig list- och auditpagination, fixture
+      cleanup med noll kvarvarande rader samt slutregression 804/804 pgTAP och
+      158/158 Node. Installation Management är verksamhetsklart och låst.
 
 ## Relaterade dokument
 

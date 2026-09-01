@@ -256,6 +256,12 @@ test("detail loads 25 events directly from service and renders archived history"
   assert.match(detailPage, /parseInstallationAuditPage/);
   assert.match(detailPage, /InstallationAuditHistory/);
   assert.match(detailPage, /initialPage=\{auditPage\}/);
+  assert.match(detailPage, /export const dynamic = "force-dynamic"/);
+  assert.match(detailPage, /export const revalidate = 0/);
+  assert.match(
+    detailPage,
+    /key=\{`installation-audit-revision-\$\{installation\.revision\}`\}/,
+  );
   assert.doesNotMatch(
     detailPage,
     /fetch\(|supabase|repository|service_role|\.from\(|\.rpc\(/i,
@@ -268,4 +274,23 @@ test("detail loads 25 events directly from service and renders archived history"
     detailPage,
     /installation\.archivedAt[^?]*\?\s*\(\s*<InstallationAuditHistory/,
   );
+});
+
+test("a new installation revision remounts audit pagination from the server page", async () => {
+  const [detailPage, history] = await Promise.all([
+    source("../app/installations/[installationId]/page.tsx"),
+    source(
+      "../app/installations/[installationId]/installation-audit-history.tsx",
+    ),
+  ]);
+  assert.match(
+    detailPage,
+    /key=\{`installation-audit-revision-\$\{installation\.revision\}`\}/,
+  );
+  assert.match(history, /useState\(initialPage\.items\)/);
+  assert.match(history, /useState\(initialPage\.nextCursor\)/);
+  assert.match(history, /useState\(initialPage\.hasMore\)/);
+  assert.match(history, /useState\(false\)/);
+  assert.match(history, /useState<string \| null>\(null\)/);
+  assert.doesNotMatch(history, /useEffect|optimistic|fabricat/i);
 });
