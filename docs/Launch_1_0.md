@@ -1,5 +1,26 @@
 # Launch 1.0
 
+## Licensing: F2D1B design och framtida releasegates
+
+- [x] Tenant ownership, gemensam kapacitet, paket/Billing-gräns och minimal
+      lifecycle är analyserade och beslutade i
+      [License Database Design](LICENSE_DATABASE_DESIGN.md).
+- [x] Licensing-specifik DB-AAL2 rekommenderas utöver befintlig appguard,
+      utan ändring av stängda Tenant-/Installation-kontrakt.
+- [ ] Tre-tabellsgrund, FK-cykler, unik icke-terminerad tenantlicens och typer verifierade.
+- [ ] RLS/FORCE RLS, grants och samtliga read-/RPC-gränser verifierade.
+- [ ] Verklig direkt Data API-åtkomst nekar owner AAL1 och tillåter owner AAL2.
+- [ ] Immutable terms, metadataaudit och full atomisk rollback verifierade.
+- [ ] Lifecycle, tidsgränser, renewalavbrott, no-op och parallella writes verifierade.
+- [ ] Tenantavailability och suspend/terminate för otillgänglig tenant verifierade.
+- [ ] Eligibility är härledd, fail-closed och utan tekniska provisioninggates.
+- [ ] Service/adapters/UI, historik, keyset och revisionsfreshness verifierade.
+- [ ] Operativ backup/restore och retentionhantering granskade före verkliga kunddata.
+- [ ] Licensing Security Pass och verklig runtime, pagination och cleanup godkända.
+
+Licensing är ännu ej implementerad eller runtimeverifierad. Designbeslut är
+inte bevis för faktisk usage-enforcement i SweDox; konsumentintegration är separat.
+
 ## Syfte
 
 Detta dokument samlar verifierbara releasegates för SweDox Control Center version 1. En punkt får markeras som uppfylld först när motsvarande implementation och testresultat finns.

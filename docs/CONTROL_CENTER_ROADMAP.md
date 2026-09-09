@@ -36,6 +36,17 @@ change-step. Nästa roadmapfas är Fas 4 – Licenser.
 
 Hantera licensstatus, omfattning och giltighet med tydlig historik och auktorisering.
 
+F2D1B har låst domänkontraktet och säkerhetsrekommendation B i
+[License Database Design](LICENSE_DATABASE_DESIGN.md). Licensing är analyserad
+och beslutad, ännu ej implementerad eller runtimeverifierad.
+
+Föreslagen ordning är F2D2 tre-tabellsgrund med stängda grants; F2D3 owner-read
+och Licensing-specifik DB-AAL2; F2D4 audit/terms-integritet; F2D5 atomiska
+mutationer; F2D6 pagination/eligibility; F2D7 server-DAL och separata read/action-
+adapters; F2D8 UI; F2D9 Security Pass och verklig runtimeverifiering.
+Alla tre tabellstrukturer behövs i grunden för de ömsesidiga FK-kontrakten.
+Inga Tenant-/Installation-ändringar eller produktfunktioner ingår i F2D1B.
+
 ### Fas 5 – Versioner
 
 Hantera tillgängliga och installerade versioner samt verifierad versionsinformation per installation.

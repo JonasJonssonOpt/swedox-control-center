@@ -1,5 +1,30 @@
 # Projektbeslut
 
+## F2D1B Licensing: beslutat kontrakt, ännu ej implementerat
+
+2026-09-09 låser [License Database Design](LICENSE_DATABASE_DESIGN.md)
+projektägarens tenantägda modell: högst en icke-terminerad licens per tenant,
+gemensam kapacitet för samtliga installationer och ingen assignment-tabell.
+Kapacitet avser aktiverade inloggningsbara SweDox-konton; usage är senare scope.
+Mini/Standard/Stor har standardmax 24/49/100. Planidentitet och immutable
+tekniska villkorsversioner skiljs från pris och Billing. Alla moduler ingår i 1.0.
+
+Lifecycle är draft/active/suspended/terminated; terminated är terminal.
+Giltighet härleds från obligatorisk start och nullable exkluderande slut.
+Null betyder Tills vidare. Ingen grace eller auto-renewal; förnyelse efter
+avbrott får ny start utan omskriven historik. Rättighetsändringar kräver
+tillgänglig tenant; suspend/terminate får även ske för paused/archived tenant.
+
+Licensing får egna licenses, license_terms_versions och license_audit_events.
+License revision räknar alla mutationer, terms version endast nya snapshots.
+Atomicitet, expected revision, append-only metadataaudit och ingen normal delete
+gäller. Eligibility är härledd och omfattar endast licensperspektivet.
+
+Säkerhetsrekommendation B låses: befintlig appguard kompletteras med explicit
+Licensing-specifik owner+AAL2-kontroll i varje policy och RPC. Gemensam
+ownerhelper och Tenant-/Installation-kontrakt ändras inte. F2D1B dokumenterar
+design, inte implementerat skydd eller godkänd runtime-Security Pass.
+
 ## Syfte
 
 Detta dokument samlar bindande arkitektur- och arbetssättsbeslut för SweDox Control Center. Besluten gäller tills de ersätts av ett uttryckligt, dokumenterat beslut.

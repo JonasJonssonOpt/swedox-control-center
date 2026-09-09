@@ -1,5 +1,26 @@
 # UI Standard
 
+## F2D1B Licensing UI-kontrakt (ännu ej implementerat)
+
+Licensing följer [License Database Design](LICENSE_DATABASE_DESIGN.md).
+Framtida lista visar tenant, plan, administrativ status, härledd giltighet,
+max aktiverade användarkonton, giltig till och uppdaterad tid. Ingen singular
+installationsägare eller faktisk usage visas. Status är StatusText, aldrig badge.
+Null slutdatum visas Tills vidare; annan saknad nullable metadata visas Saknas.
+
+Tenant/status/validity/includeTerminated och literal tenantnamnssökning är
+URL-filter. Fast sortering är created_at DESC/id DESC med keyset, standard
+50/max 100. Filterändring eller mutation återställer cursor. En listserie
+bevarar serverns evaluatedAt för datumfilter; eligibility använder alltid ny tid.
+Ingen total count, offset eller klientstyrd sortering införs.
+
+Detail och terminerad historik laddas server-side via Licensing-service.
+Audit och villkorshistorik är separata licensbundna keyset-vyer med 25/max 100.
+Ny revision återställer auditpagination och laddar verifierad serverdata.
+Actor visas Verifierad owner. Fel, pending, fokus och success-only revalidation
+följer etablerat mönster. Ingen Licensing-route, länk eller UI skapas i F2D1B.
+Dashboard förblir separat och får endast konsumera framtida modulägd summary.
+
 ## Syfte
 
 Denna standard definierar ett konsekvent, effektivt och återanvändbart gränssnitt för SweDox Control Center.

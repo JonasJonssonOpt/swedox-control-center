@@ -142,6 +142,152 @@ export type Database = {
           },
         ];
       };
+      license_audit_events: {
+        Row: {
+          actor_user_id: string;
+          changed_fields: string[];
+          correlation_id: string | null;
+          event_type: string;
+          id: string;
+          license_id: string;
+          occurred_at: string;
+          revision_after: number;
+          revision_before: number | null;
+        };
+        Insert: {
+          actor_user_id: string;
+          changed_fields: string[];
+          correlation_id?: string | null;
+          event_type: string;
+          id?: string;
+          license_id: string;
+          occurred_at?: string;
+          revision_after: number;
+          revision_before?: number | null;
+        };
+        Update: {
+          actor_user_id?: string;
+          changed_fields?: string[];
+          correlation_id?: string | null;
+          event_type?: string;
+          id?: string;
+          license_id?: string;
+          occurred_at?: string;
+          revision_after?: number;
+          revision_before?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fk_license_audit_events_license_id";
+            columns: ["license_id"];
+            isOneToOne: false;
+            referencedRelation: "licenses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      license_terms_versions: {
+        Row: {
+          introduced_at_revision: number;
+          license_id: string;
+          max_active_users: number;
+          plan_display_label: string;
+          plan_key: string;
+          plan_version: number;
+          valid_from: string;
+          valid_until: string | null;
+          version: number;
+        };
+        Insert: {
+          introduced_at_revision: number;
+          license_id: string;
+          max_active_users: number;
+          plan_display_label: string;
+          plan_key: string;
+          plan_version: number;
+          valid_from: string;
+          valid_until?: string | null;
+          version: number;
+        };
+        Update: {
+          introduced_at_revision?: number;
+          license_id?: string;
+          max_active_users?: number;
+          plan_display_label?: string;
+          plan_key?: string;
+          plan_version?: number;
+          valid_from?: string;
+          valid_until?: string | null;
+          version?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fk_license_terms_versions_audit_revision";
+            columns: ["license_id", "introduced_at_revision"];
+            isOneToOne: true;
+            referencedRelation: "license_audit_events";
+            referencedColumns: ["license_id", "revision_after"];
+          },
+          {
+            foreignKeyName: "fk_license_terms_versions_license_id";
+            columns: ["license_id"];
+            isOneToOne: false;
+            referencedRelation: "licenses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      licenses: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          current_terms_version: number;
+          id: string;
+          revision: number;
+          status: string;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by: string;
+          current_terms_version?: number;
+          id?: string;
+          revision?: number;
+          status?: string;
+          tenant_id: string;
+          updated_at?: string;
+          updated_by: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          current_terms_version?: number;
+          id?: string;
+          revision?: number;
+          status?: string;
+          tenant_id?: string;
+          updated_at?: string;
+          updated_by?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fk_licenses_current_terms";
+            columns: ["id", "current_terms_version"];
+            isOneToOne: false;
+            referencedRelation: "license_terms_versions";
+            referencedColumns: ["license_id", "version"];
+          },
+          {
+            foreignKeyName: "fk_licenses_tenant_id";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       tenant_audit_events: {
         Row: {
           actor_user_id: string;

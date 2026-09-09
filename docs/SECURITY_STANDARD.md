@@ -1,5 +1,35 @@
 # Security Standard
 
+## F2D1B Licensing security contract (ännu ej implementerat)
+
+[License Database Design](LICENSE_DATABASE_DESIGN.md) besvarar de åtta
+AAL2-frågorna med kodreferenser, primärkällor, rollmatris och negativa testkrav.
+
+Befintliga Tenant-/Installation-policies och RPC verifierar singleton-owner
+men inte AAL2. AAL2/equality verkställs i appguarden. En giltig authenticated
+owner-token på AAL1 nekas därför inte av dessa befintliga DB-predikat vid
+direkt Data API-anrop. Detta är en dokumenterad arkitekturgräns; serverguardens
+inkoppling stänger inte i sig den direkta API-vägen. Ingen stängd domän ändras.
+
+För framtida Licensing låses alternativ B: oförändrad requireOwnerIntegrity
+och dessutom kombinerad owner + exakt top-level aal2 i varje Licensing
+SELECT-policy och explicit i varje read-/mutations-RPC, även SECURITY DEFINER.
+Saknad/null/okänd/feltypad claim nekar. auth.jwt() läser verifierad API-kontext;
+user_metadata, klientparametrar och egen AMR-tolkning är inte MFA-bevis.
+Signerad JWT-verifiering sker vid API-gränsen; privilegierad direkt SQL är
+en separat driftgräns. DB-AAL2 ersätter inte aktuell Auth-user/TOTP/equality.
+
+licenses och terms får owner+AAL2 SELECT med RLS/FORCE RLS; audit har noll
+policies och noll direkta grants. Alla direkta writes nekas. Endast avsedda
+authenticated RPC-grants tillåts; inga PUBLIC/anon/service_role-grants.
+Mutation, terms och audit ska vara atomiska. Terms är immutable teknisk
+domänhistorik; audit är metadata-only. Inga secrets, priser, kundpayloads eller
+råa claims/fel loggas. Ingen Service Role eller browser-Supabase i appflödet.
+
+F2D3/F2D9 måste bevisa AAL1-nekande och AAL2-success direkt via Data API, samt
+claimfel, signaturfel, tokenstaleness, ownerfel, grants och definer-gränser.
+Detta avsnitt är ett beslutat framtida kontrakt, inte implementerat skydd.
+
 ## Syfte
 
 Denna standard anger obligatoriska säkerhetsprinciper för SweDox Control Center. Kraven ska tillämpas i analys, implementation, granskning och Security Pass.

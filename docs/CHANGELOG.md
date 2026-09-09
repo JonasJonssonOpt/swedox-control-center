@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-09-09
+
+- Slutförde F2D1B:s Licensing-analys och dokumenterade projektägarens beslut
+  i LICENSE_DATABASE_DESIGN.md: tenantägd licens, en icke-terminerad per tenant,
+  gemensam maxkapacitet, immutable tekniska villkor, lifecycle, renewal och
+  separat metadataaudit. Priser, Billing, modulmatris och usage-motor ingår inte.
+- Låste rekommendation B: framtida Licensing-specifik DB-AAL2 utöver appguard.
+  Dokumenterade befintlig direkt AAL1-owner-API-gräns utan att ändra gemensam
+  ownerhelper eller stängda Tenant-/Installation-kontrakt.
+- Uppdaterade status, roadmap, projektbeslut, security/UI-standard och
+  releasegates. Licensing är analyserad och beslutad men ännu ej implementerad
+  eller runtimeverifierad. Ingen kod, migration, SQL-körning eller produktfunktion
+  infördes; nästa steg är implementationsplanering.
+
 ## 2026-09-01
 
 - Slutförde F2C9H och stängde Installation Management efter verklig
