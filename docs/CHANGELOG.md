@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-09-12
+
+- Åtgärdade därefter den globala typkontrollen med ett avgränsat lokalt
+  genereringsscript och fem explicita nullable-overrides för befintlig
+  `list_installations.Returns`. Två genereringar matchar hela den committade
+  typfilen. Fyra nya tester körs även i CI och säkerställer att orelaterad
+  drift inte döljs. Installationsdomänens funktionalitet och kontrakt bevaras.
+- Verifierade F2D2:s befintliga licensgrund från ren lokal databas: hela
+  migrationskedjan, databaslint och 1 088/1 088 pgTAP passerade. Samtliga
+  158 Node-kontraktstest passerade med repositoryts testladdare.
+- Bekräftade att genererade licenstyper matchar. Global typjämförelse visar
+  befintlig drift i fem nullable-fält för `list_installations`; befintliga
+  typer bevarades och avvikelsen dokumenterades utan ändring i installationer.
+- Rättade aktuell Licensing-status i design, roadmap, modulstatus och
+  releasegates. Det historiska F2D1B-steget nedan är analys; samma commit
+  innehåller även den nu verifierade F2D2-grunden.
+- Resultat och kvarstående avgränsningar finns i
+  [License Foundation Verification](LICENSE_FOUNDATION_VERIFICATION.md).
+
 ## 2026-09-09
 
 - Slutförde F2D1B:s Licensing-analys och dokumenterade projektägarens beslut

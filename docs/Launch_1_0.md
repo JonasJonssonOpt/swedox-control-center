@@ -7,7 +7,8 @@
       [License Database Design](LICENSE_DATABASE_DESIGN.md).
 - [x] Licensing-specifik DB-AAL2 rekommenderas utöver befintlig appguard,
       utan ändring av stängda Tenant-/Installation-kontrakt.
-- [ ] Tre-tabellsgrund, FK-cykler, unik icke-terminerad tenantlicens och typer verifierade.
+- [x] F2D2:s tre-tabellsgrund, FK-cykler, unik icke-terminerad tenantlicens och licenstyper lokalt verifierade 2026-09-12.
+- [x] Global genererad typjämförelse utan drift efter explicit komplettering av fem befintliga nullable RPC-fält, se [verifieringsrapporten](LICENSE_FOUNDATION_VERIFICATION.md).
 - [ ] RLS/FORCE RLS, grants och samtliga read-/RPC-gränser verifierade.
 - [ ] Verklig direkt Data API-åtkomst nekar owner AAL1 och tillåter owner AAL2.
 - [ ] Immutable terms, metadataaudit och full atomisk rollback verifierade.
@@ -18,7 +19,7 @@
 - [ ] Operativ backup/restore och retentionhantering granskade före verkliga kunddata.
 - [ ] Licensing Security Pass och verklig runtime, pagination och cleanup godkända.
 
-Licensing är ännu ej implementerad eller runtimeverifierad. Designbeslut är
+Licensing har en lokalt verifierad databasgrund men är inte komplett eller runtimeverifierad. Designbeslut är
 inte bevis för faktisk usage-enforcement i SweDox; konsumentintegration är separat.
 
 ## Syfte

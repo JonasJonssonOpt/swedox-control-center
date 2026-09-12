@@ -24,7 +24,7 @@
     "supabase:reset": "supabase db reset --local",
     "supabase:lint": "supabase db lint --local --schema public --fail-on error",
     "supabase:test": "supabase test db supabase/tests/database --local",
-    "supabase:types": "supabase gen types typescript --local --schema public | prettier --parser typescript > lib/supabase/database.types.ts"
+    "supabase:types": "node scripts/generate-database-types.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.3",

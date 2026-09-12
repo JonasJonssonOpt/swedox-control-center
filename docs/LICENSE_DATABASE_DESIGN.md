@@ -1,5 +1,22 @@
 # License Database Design
 
+## Aktuell status: F2D2, 2026-09-12
+
+Databasgrunden är implementerad i
+`20260909064727_create_licensing_foundation.sql` med tre tabeller, constraints,
+index, RLS/FORCE RLS och helt stängda appgrants. Fyra pgTAP-filer och
+databastyper ingår. Lokal reset, databaslint och samtliga 1 088 pgTAP-test
+passerar. Licensdelens genererade typer matchar repositoryt.
+
+Global typjämförelse passerar efter en avgränsad korrigering av typgenereringen
+för fem befintliga nullable RPC-fält. Se [verifieringsrapporten](LICENSE_FOUNDATION_VERIFICATION.md).
+F2D2 är lokalt databasverifierad utan kvarstående typdrift.
+Licensing som produkt är inte komplett eller runtimeverifierad; F2D3–F2D9
+återstår. Ingen remoteoperation har genomförts i verifieringen.
+
+F2D1B-avsnitten nedan beskriver det historiska analyssteget och det beslutade
+kontraktet. Deras uppgifter om saknad implementation gäller före F2D2.
+
 ## F2D1B: status, beslut och avgränsning
 
 Datum: 2026-09-09. F2D1B är ett analys-, beslutslås- och dokumentationssteg.

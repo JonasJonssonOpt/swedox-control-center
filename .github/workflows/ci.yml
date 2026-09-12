@@ -43,6 +43,9 @@ jobs:
       - name: Test local database
         run: npm run supabase:test
 
+      - name: Test database type overrides
+        run: node --test tests/database-type-overrides.test.mjs
+
       - name: Verify generated database types
         shell: bash
         run: |

@@ -37,8 +37,11 @@ change-step. Nästa roadmapfas är Fas 4 – Licenser.
 Hantera licensstatus, omfattning och giltighet med tydlig historik och auktorisering.
 
 F2D1B har låst domänkontraktet och säkerhetsrekommendation B i
-[License Database Design](LICENSE_DATABASE_DESIGN.md). Licensing är analyserad
-och beslutad, ännu ej implementerad eller runtimeverifierad.
+[License Database Design](LICENSE_DATABASE_DESIGN.md). F2D2:s databasgrund är
+implementerad och lokalt databasverifierad den 12 september 2026. Global
+typjämförelse passerar efter avgränsad korrigering av typgenereringen; se
+[verifieringsrapporten](LICENSE_FOUNDATION_VERIFICATION.md). Licensing som
+produkt är ännu inte komplett eller runtimeverifierad.
 
 Föreslagen ordning är F2D2 tre-tabellsgrund med stängda grants; F2D3 owner-read
 och Licensing-specifik DB-AAL2; F2D4 audit/terms-integritet; F2D5 atomiska

@@ -164,6 +164,20 @@ Remote deployment är en separat releaseprocess och ska inte ske från en vanlig
 
 ## Aktuell verifieringsbaseline
 
+F2D2 verifierades lokalt 2026-09-12 med ren reset, databaslint utan fel,
+1 088/1 088 pgTAP och 158/158 Node-test. Licenstyperna matchar det genererade
+schemat. Global typdriftkontroll passerar med fem explicita nullable-overrides
+för `list_installations`. Se [F2D2-verifieringen](LICENSE_FOUNDATION_VERIFICATION.md)
+för resultat och begränsningar. Nedanstående F2C9C-resultat är historiska.
+
+`npm run supabase:types` kör den pinnade lokala CLI:n via ett Node-script,
+kompletterar exakt fem nullable-fält i `list_installations.Returns` och
+formaterar resultatet innan filen skrivs. Overrides ligger i
+`scripts/database-type-overrides.mjs` och bevarar det publicerade kontraktet.
+Saknade, valfria eller oväntat typade fält stoppar genereringen. Fel från CLI
+eller ogiltig output lämnar befintlig fil orörd. Övrig typdrift bevaras och
+kontrolleras fortfarande av CI:s fullständiga git-jämförelse.
+
 Efter F2C9C appliceras hela migrationskedjan från ren lokal databas. Senaste
 fulla verifiering gav:
 
