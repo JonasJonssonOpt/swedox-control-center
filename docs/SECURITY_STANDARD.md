@@ -1,5 +1,23 @@
 # Security Standard
 
+## F2D3: implementerad Licensing read security
+
+`licenses` och `license_terms_versions` har varsin authenticated SELECT-policy
+med det kombinerade predikatet `public.is_licensing_owner_aal2()`. Helpern är
+SECURITY INVOKER, STABLE, PARALLEL UNSAFE, postgres-ägd och har låst
+`search_path = pg_catalog`. Endast authenticated har EXECUTE. Befintlig
+ownerhelper och appguard ändras inte. Exakt top-level JSON-sträng aal2 krävs;
+saknad/feltypad claim och malformed JSON/UUID nekar. Endast formatfel fångas,
+inte generella driftfel. Policies innehåller inga affärsregler.
+
+RLS/FORCE RLS består. Audit har noll policies/grants och väntar på senare
+read-RPC. Alla direkta writes förblir stängda. 235 nya säkerhetstest och hela
+sviten med 1 323 pgTAP passerar. [F2D3-verifieringen](LICENSE_OWNER_AAL2_VERIFICATION.md)
+skiljer syntetisk DB-access från signerad Data API-runtime. Ett lokalt
+tokenförsök stoppades av avstängd email-provider; Auth-konfigurationen ändrades
+inte. Signerad runtime/cloud-verifiering kvarstår i F2D9/F2H.
+F2D1B-avsnittet nedan är det historiska beslutet; framtida RPC-skydd återstår.
+
 ## F2D1B Licensing security contract (ännu ej implementerat)
 
 [License Database Design](LICENSE_DATABASE_DESIGN.md) besvarar de åtta

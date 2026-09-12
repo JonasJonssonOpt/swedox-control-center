@@ -1,5 +1,28 @@
 # Changelog
 
+## 2026-09-12: F2D3 Licensing Owner Read / DB-AAL2
+
+- Införde `is_licensing_owner_aal2()` och owner+AAL2 SELECT på licenses/terms
+  med oförändrade shared owner-/Tenant-/Installation-kontrakt. Audit och alla
+  direkta writes är fortsatt stängda; inga produkt-RPC eller UI infördes.
+- Lade till 235 säkerhetstest, anpassade foundationaccess till F2D3 och
+  genererade helperns boolean-signatur. Full lokal regression passerar med
+  1 323 pgTAP, 162 Node-test, databaslint, TypeScript, ESLint och build.
+- Verifierade lokal auth.jwt()-definition och syntetisk claimmatris. Försök
+  med Auth-utfärdade tokens stoppades av `email_provider_disabled`; lokala
+  testanvändare städades. Signerad runtime/cloud är fortfarande en framtida gate.
+- Uppdaterade status och roadmap till nästa steg F2D4; full evidens finns i
+  [F2D3-verifieringen](LICENSE_OWNER_AAL2_VERIFICATION.md).
+
+## 2026-09-12: styrande roadmap till 1.0
+
+- Införde projektägarens kompletta plan i CONTROL_CENTER_ROADMAP_TO_1_0.md
+  med F2D3–F2H6, domängränser, arbetsregler, backlog och slutvillkoret
+  `CONTROL CENTER 1.0: COMPLETE`.
+- Länkade planen från README, befintlig roadmap, modulstatus och releasekrav
+  samt registrerade beslutet. Den nya planen styr 1.0:s leveransordning;
+  framtida exitkrav innebär inte att verifieringen redan är genomförd.
+
 ## 2026-09-12
 
 - Åtgärdade därefter den globala typkontrollen med ett avgränsat lokalt

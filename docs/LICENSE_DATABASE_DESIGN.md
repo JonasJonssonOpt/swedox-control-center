@@ -1,5 +1,20 @@
 # License Database Design
 
+## Aktuell status: F2D3, 2026-09-12
+
+Owner+AAL2 SELECT på `licenses` och `license_terms_versions` är implementerad
+och lokalt verifierad. Den argumentlösa `is_licensing_owner_aal2()` är SECURITY
+INVOKER, STABLE, PARALLEL UNSAFE med `search_path = pg_catalog`; endast
+authenticated har EXECUTE. Den kombinerar oförändrad ownerhelper med exakt
+top-level JSON-sträng aal2. Audit förblir utan policies och direkta grants;
+alla direkta writes är stängda. Inga produkt-RPC, DAL eller UI införs.
+
+Full regression: 1 323 pgTAP och 162 Node-test, databaslint, TypeScript, ESLint
+och production build godkända. Lokal typgenerering är deterministisk.
+Se [F2D3-verifieringen](LICENSE_OWNER_AAL2_VERIFICATION.md) för accessmatris,
+claimmodell och kvarstående signerad runtime/cloud-verifiering. Licensing är
+inte komplett. Nästa steg är F2D4; F2D2/F2D1B nedan är historiska steg.
+
 ## Aktuell status: F2D2, 2026-09-12
 
 Databasgrunden är implementerad i

@@ -1,5 +1,9 @@
 # SweDox Control Center
 
+Styrande utvecklingsplan: [Roadmap till färdig Control Center 1.0](docs/CONTROL_CENTER_ROADMAP_TO_1_0.md).
+Den anger scope, stegordning, arbetsregler och slutkrav. Aktuellt nästa steg
+är F2D4 – Licensing Audit / Terms History Integrity efter lokalt verifierad F2D3.
+
 SweDox Control Center är ett separat internt system. Det är frikopplat från kundernas SweDox-installationer och delar ingen kod med dem.
 
 Kundernas affärsdata får aldrig lagras i Control Center. Control Center får inte ha generell direktåtkomst till kundernas databaser.

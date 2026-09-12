@@ -634,6 +634,7 @@ export type Database = {
       };
       get_owner_integrity_status: { Args: never; Returns: string };
       is_control_center_owner: { Args: never; Returns: boolean };
+      is_licensing_owner_aal2: { Args: never; Returns: boolean };
       is_valid_swedish_organization_number: {
         Args: { value: string };
         Returns: boolean;

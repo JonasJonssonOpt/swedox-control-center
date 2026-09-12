@@ -1,5 +1,14 @@
 # Control Center Roadmap
 
+## Styrande plan för 1.0
+
+[Roadmap till färdig 1.0](CONTROL_CENTER_ROADMAP_TO_1_0.md) är projektägarens
+styrande plan från F2D3 till `CONTROL CENTER 1.0: COMPLETE`. Den ersätter
+nedanstående äldre fasordning för 1.0: Licensing → Provisioning →
+Monitoring/Alerts → Dashboard → slutlig säkerhets-, regressions-, runtime-,
+cloud- och dokumentationsverifiering. Äldre framtidsfaser nedan innebär inte
+ytterligare obligatoriska 1.0-leveranser.
+
 ## Syfte
 
 Roadmapen anger avsedd ordning för analys och framtida implementation. En fas får delas upp i mindre verifierbara leveranser och ska genomgå Security Pass innan den låses.
@@ -35,6 +44,11 @@ change-step. Nästa roadmapfas är Fas 4 – Licenser.
 ### Fas 4 – Licenser
 
 Hantera licensstatus, omfattning och giltighet med tydlig historik och auktorisering.
+
+F2D3 är implementerad och lokalt verifierad med owner+AAL2 SELECT på licenses
+och terms. Audit och alla writes förblir stängda. 1 323 pgTAP och 162 Node-test
+passerar; [verifieringsrapporten](LICENSE_OWNER_AAL2_VERIFICATION.md) anger
+runtime/cloud-begränsningarna. Nästa steg är F2D4; nedan beskrivs tidigare grund.
 
 F2D1B har låst domänkontraktet och säkerhetsrekommendation B i
 [License Database Design](LICENSE_DATABASE_DESIGN.md). F2D2:s databasgrund är

@@ -1,5 +1,25 @@
 # Projektbeslut
 
+## 2026-09-12: F2D3 Licensing Owner Read / DB-AAL2
+
+F2D3 inför en Licensing-lokal argumentlös boolean-helper,
+`is_licensing_owner_aal2()`, som SECURITY INVOKER med befintlig ownerhelper
+och exakt top-level JSON-sträng aal2. Endast authenticated får EXECUTE och
+SELECT på licenses/terms genom två kombinerade policies. Audit förblir helt
+stängd enligt F2D1B; alla direkta writes nekas. Owner, Tenant och Installation
+är oförändrade. Lokal regression passerar; signerad runtime/cloud kvarstår.
+Se [verifieringsrapporten](LICENSE_OWNER_AAL2_VERIFICATION.md). Nästa steg är F2D4.
+
+## 2026-09-12: styrande roadmap till färdig 1.0
+
+Projektägaren har fastställt
+[CONTROL_CENTER_ROADMAP_TO_1_0.md](CONTROL_CENTER_ROADMAP_TO_1_0.md) som styrande
+plan. Efter Licensing följer Provisioning, Monitoring/Alerts, Dashboard och
+F2H1–F2H6:s slutverifiering. Planens uttryckliga backlog blockerar inte 1.0 utan
+nytt beslut. Stängda domäner bevaras och nya moduler kräver analys och beslut
+före implementation. Commit/push görs bara när det uttryckligen efterfrågas.
+Införandet av planen är inte en ny runtime- eller cloud-verifiering.
+
 ## F2D1B Licensing: beslutat kontrakt, ännu ej implementerat
 
 2026-09-09 låser [License Database Design](LICENSE_DATABASE_DESIGN.md)

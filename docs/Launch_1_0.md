@@ -1,7 +1,18 @@
 # Launch 1.0
 
+[Roadmap till färdig 1.0](CONTROL_CENTER_ROADMAP_TO_1_0.md) styr releaseomfattning
+och slutvillkor. F2H1–F2H6 kräver säkerhetsgranskning, ren fullregression,
+runtime- och cloud-verifiering samt dokumentationsstängning innan
+`CONTROL CENTER 1.0: COMPLETE` får anges. Checklistorna här är verifieringsunderlag;
+äldre öppna punkter ska stämmas av mot evidens, inte markeras klara enbart för
+att den nya roadmapen införts.
+
 ## Licensing: F2D1B design och framtida releasegates
 
+- [x] F2D3 owner+AAL2 read security för licenses/terms, boolean-helper och
+      negativa access-/write-tester lokalt verifierade. Audit förblir stängd.
+- [x] F2D3 full lokal regression: 1 323 pgTAP och 162 Node-test; se
+      [verifieringsrapporten](LICENSE_OWNER_AAL2_VERIFICATION.md).
 - [x] Tenant ownership, gemensam kapacitet, paket/Billing-gräns och minimal
       lifecycle är analyserade och beslutade i
       [License Database Design](LICENSE_DATABASE_DESIGN.md).
