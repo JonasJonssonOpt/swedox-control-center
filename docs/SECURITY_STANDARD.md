@@ -1,5 +1,16 @@
 # Security Standard
 
+## F2D4: implementerad historikintegritet
+
+Terms/audit blockerar UPDATE, DELETE och TRUNCATE. En postgres-ägd SECURITY
+DEFINER-trigger validerar endast strukturell slutgraf med låst pg_catalog,
+allowlistad triggerkontext och parentlås FOR NO KEY UPDATE. De två blockerarna
+är SECURITY INVOKER. Ingen av de tre har EXECUTE för approller eller PUBLIC.
+F2D3:s grants och policies bevaras; ingen produkt-RPC öppnas.
+Skyddet gäller vanlig DML, inte administratörer som kan ändra schema, triggers
+eller replikeringsinställningar. F2D5 ansvarar för businessmutationer.
+Se [lokal verifiering och säkerhetsgräns](LICENSE_HISTORY_INTEGRITY_VERIFICATION.md).
+
 ## F2D3: implementerad Licensing read security
 
 `licenses` och `license_terms_versions` har varsin authenticated SELECT-policy

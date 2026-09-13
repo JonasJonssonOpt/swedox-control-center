@@ -1,5 +1,15 @@
 # Projektbeslut
 
+## 2026-09-13: F2D4 append-only och strukturell historikintegritet
+
+Licensing använder tre triggerfunktioner och sju triggers i en atomisk
+migration med fasta tabellås och läsande preflight som avbryter vid korruption.
+Deferred validering läser aktuell parentrad under FOR NO KEY UPDATE och
+verifierar sekvenser samt terms/event-relation. Inga affärsmutationer eller
+nya appbehörigheter införs. Administrativ schema-/triggerbypass ligger utanför
+skyddet. F2D5–F2D9 återstår; Licensing är inte komplett.
+Se [beslutets implementation och evidens](LICENSE_HISTORY_INTEGRITY_VERIFICATION.md).
+
 ## 2026-09-12: F2D3 Licensing Owner Read / DB-AAL2
 
 F2D3 inför en Licensing-lokal argumentlös boolean-helper,

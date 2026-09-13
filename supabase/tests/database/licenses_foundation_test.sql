@@ -24,6 +24,7 @@ create function pg_temp.attempt(statement text) returns text language plpgsql as
 begin
   begin
     execute statement;
+    set constraints fk_licenses_current_terms, fk_license_terms_versions_audit_revision immediate;
     set constraints all immediate;
     raise exception using errcode = 'ZX001', message = 'test success rollback';
   exception

@@ -61,41 +61,58 @@ select col_hasnt_default('public','license_terms_versions','valid_from','valid_f
 select col_type_is('public','license_terms_versions','valid_until','timestamp with time zone','valid_until type');
 select col_is_null('public','license_terms_versions','valid_until','valid_until nullability');
 select col_hasnt_default('public','license_terms_versions','valid_until','valid_until has no default');
-select is(pg_temp.attempt($q$update public.license_terms_versions set plan_key='mini',plan_display_label='Mini',max_active_users=24 where license_id='20000000-0000-4000-8000-000000000001'$q$),'00000','mini snapshot');
-select is(pg_temp.attempt($q$update public.license_terms_versions set plan_key='standard',plan_display_label='Standard',max_active_users=49 where license_id='20000000-0000-4000-8000-000000000001'$q$),'00000','standard snapshot');
-select is(pg_temp.attempt($q$update public.license_terms_versions set plan_key='stor',plan_display_label='Stor',max_active_users=100 where license_id='20000000-0000-4000-8000-000000000001'$q$),'00000','stor snapshot');
-select is(pg_temp.attempt($q$update public.license_terms_versions set version=0 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','version=0');
-select is(pg_temp.attempt($q$update public.license_terms_versions set version=-1 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','version=-1');
-select is(pg_temp.attempt($q$update public.license_terms_versions set introduced_at_revision=0 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','introduced_at_revision=0');
-select is(pg_temp.attempt($q$update public.license_terms_versions set introduced_at_revision=-1 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','introduced_at_revision=-1');
-select is(pg_temp.attempt($q$update public.license_terms_versions set version=2 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','version=2');
-select is(pg_temp.attempt($q$update public.license_terms_versions set plan_version=0 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','plan_version=0');
-select is(pg_temp.attempt($q$update public.license_terms_versions set plan_version=2 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','plan_version=2');
-select is(pg_temp.attempt($q$update public.license_terms_versions set max_active_users=0 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','max_active_users=0');
-select is(pg_temp.attempt($q$update public.license_terms_versions set max_active_users=-1 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','max_active_users=-1');
-select is(pg_temp.attempt($q$update public.license_terms_versions set max_active_users=25 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','max_active_users=25');
-select is(pg_temp.attempt($q$update public.license_terms_versions set plan_key='Mini' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','plan_key=Mini');
-select is(pg_temp.attempt($q$update public.license_terms_versions set plan_key=' mini' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','plan_key= mini');
-select is(pg_temp.attempt($q$update public.license_terms_versions set plan_key='' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','plan_key=');
-select is(pg_temp.attempt($q$update public.license_terms_versions set plan_key='custom' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','plan_key=custom');
-select is(pg_temp.attempt($q$update public.license_terms_versions set plan_display_label='mini' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','plan_display_label=mini');
-select is(pg_temp.attempt($q$update public.license_terms_versions set plan_display_label='Mini ' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','plan_display_label=Mini ');
-select is(pg_temp.attempt($q$update public.license_terms_versions set plan_display_label='' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','plan_display_label=');
-select is(pg_temp.attempt($q$update public.license_terms_versions set plan_key='standard' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','plan_key=standard');
-select is(pg_temp.attempt($q$update public.license_terms_versions set valid_until=valid_from where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','valid_until=valid_from');
-select is(pg_temp.attempt($q$update public.license_terms_versions set valid_until=valid_from-interval '1 second' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','valid_until=valid_from-interval 1 second');
-select is(pg_temp.attempt($q$update public.license_terms_versions set valid_from='infinity' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','valid_from=infinity');
-select is(pg_temp.attempt($q$update public.license_terms_versions set valid_from='-infinity' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','valid_from=-infinity');
-select is(pg_temp.attempt($q$update public.license_terms_versions set valid_until='infinity' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','valid_until=infinity');
-select is(pg_temp.attempt($q$update public.license_terms_versions set valid_until='-infinity' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','valid_until=-infinity');
-select is(pg_temp.attempt($q$update public.license_terms_versions set valid_until=valid_from+interval '1 second' where license_id='20000000-0000-4000-8000-000000000001'$q$),'00000','strictly later end');
-select is(pg_temp.attempt($q$update public.license_terms_versions set introduced_at_revision=2 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23503','missing audit revision');
-select is(pg_temp.attempt($q$insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_before,revision_after,changed_fields) values ('20000000-0000-4000-8000-000000000002','license_renewed','10000000-0000-4000-8000-000000000099',1,2,array['revision']); update public.license_terms_versions set introduced_at_revision=2 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23503','other license audit cannot satisfy FK');
-select is(pg_temp.attempt($q$insert into public.license_terms_versions select * from public.license_terms_versions where license_id='20000000-0000-4000-8000-000000000001'$q$),'23505','terms PK duplicate');
-select is(pg_temp.attempt($q$insert into public.license_terms_versions select license_id,2,2,plan_key,plan_version,plan_display_label,max_active_users,valid_from,valid_until from public.license_terms_versions where license_id='20000000-0000-4000-8000-000000000001'; update public.license_terms_versions set introduced_at_revision=2 where license_id='20000000-0000-4000-8000-000000000001' and version=1$q$),'23505','one terms snapshot per revision');
-select is(pg_temp.attempt($q$update public.license_terms_versions set license_id='20000000-0000-4000-8000-000000000099' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23503','missing license');
-select is(pg_temp.attempt($q$delete from public.license_terms_versions where license_id='20000000-0000-4000-8000-000000000001'$q$),'23503','current terms delete rejected at checkpoint');
 
+create function pg_temp.try_terms(overrides jsonb) returns text language plpgsql as $$
+declare
+  candidate public.license_terms_versions;
+begin
+  begin
+    insert into public.licenses(id,tenant_id,status,created_by,updated_by) values
+      ('20000000-0000-4000-8000-000000000009','10000000-0000-4000-8000-000000000001','terminated','10000000-0000-4000-8000-000000000099','10000000-0000-4000-8000-000000000099');
+    insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_after,changed_fields)
+      values ('20000000-0000-4000-8000-000000000009','license_created','10000000-0000-4000-8000-000000000099',1,array['id']);
+    candidate := jsonb_populate_record(null::public.license_terms_versions,
+      '{"license_id":"20000000-0000-4000-8000-000000000009","version":1,"introduced_at_revision":1,"plan_key":"mini","plan_version":1,"plan_display_label":"Mini","max_active_users":24,"valid_from":"2026-01-01","valid_until":null}'::jsonb || overrides);
+    insert into public.license_terms_versions select candidate.*;
+    set constraints fk_license_terms_versions_audit_revision immediate;
+    set constraints all immediate;
+    raise exception using errcode='ZX001',message='test rollback';
+  exception when sqlstate 'ZX001' then return '00000'; when others then return sqlstate;
+  end;
+end;
+$$;
+select is(pg_temp.try_terms('{}'::jsonb),'00000','mini snapshot');
+select is(pg_temp.try_terms('{"plan_key":"standard","plan_display_label":"Standard","max_active_users":49}'::jsonb),'00000','standard snapshot');
+select is(pg_temp.try_terms('{"plan_key":"stor","plan_display_label":"Stor","max_active_users":100}'::jsonb),'00000','stor snapshot');
+select is(pg_temp.try_terms('{"version":0}'::jsonb),'23514','version 0');
+select is(pg_temp.try_terms('{"introduced_at_revision":0}'::jsonb),'23514','introduced_at_revision 0');
+select is(pg_temp.try_terms('{"plan_version":0}'::jsonb),'23514','plan_version 0');
+select is(pg_temp.try_terms('{"max_active_users":0}'::jsonb),'23514','max_active_users 0');
+select is(pg_temp.try_terms('{"version":-1}'::jsonb),'23514','version -1');
+select is(pg_temp.try_terms('{"introduced_at_revision":-1}'::jsonb),'23514','introduced_at_revision -1');
+select is(pg_temp.try_terms('{"plan_version":-1}'::jsonb),'23514','plan_version -1');
+select is(pg_temp.try_terms('{"max_active_users":-1}'::jsonb),'23514','max_active_users -1');
+select is(pg_temp.try_terms('{"version":2}'::jsonb),'23514','version exceeds introduced revision');
+select is(pg_temp.try_terms('{"plan_version":2}'::jsonb),'23514','unapproved plan version');
+select is(pg_temp.try_terms('{"max_active_users":25}'::jsonb),'23514','capacity override');
+select is(pg_temp.try_terms('{"plan_key":"Mini"}'::jsonb),'23514','invalid plan key');
+select is(pg_temp.try_terms('{"plan_key":" mini"}'::jsonb),'23514','invalid plan key');
+select is(pg_temp.try_terms('{"plan_key":""}'::jsonb),'23514','invalid plan key');
+select is(pg_temp.try_terms('{"plan_key":"custom"}'::jsonb),'23514','invalid plan key');
+select is(pg_temp.try_terms('{"plan_display_label":"mini"}'::jsonb),'23514','invalid label');
+select is(pg_temp.try_terms('{"plan_display_label":"Mini "}'::jsonb),'23514','invalid label');
+select is(pg_temp.try_terms('{"plan_display_label":""}'::jsonb),'23514','invalid label');
+select is(pg_temp.try_terms('{"plan_key":"standard"}'::jsonb),'23514','mixed snapshot');
+select is(pg_temp.try_terms('{"valid_until":"2026-01-01"}'::jsonb),'23514','equal end');
+select is(pg_temp.try_terms('{"valid_until":"2025-12-31"}'::jsonb),'23514','earlier end');
+select is(pg_temp.try_terms('{"valid_from":"infinity"}'::jsonb),'23514','infinite validity');
+select is(pg_temp.try_terms('{"valid_until":"infinity"}'::jsonb),'23514','infinite validity');
+select is(pg_temp.try_terms('{"valid_from":"-infinity"}'::jsonb),'23514','infinite validity');
+select is(pg_temp.try_terms('{"valid_until":"-infinity"}'::jsonb),'23514','infinite validity');
+select is(pg_temp.try_terms('{"valid_until":"2026-01-02"}'::jsonb),'00000','finite end');
+select is(pg_temp.try_terms('{"introduced_at_revision":2}'::jsonb),'23503','missing audit FK');
+select is(pg_temp.try_terms('{"license_id":"20000000-0000-4000-8000-000000000099"}'::jsonb),'23503','missing license FK');
+select is(pg_temp.attempt($q$insert into public.license_terms_versions select * from public.license_terms_versions where license_id='20000000-0000-4000-8000-000000000001'$q$),'23505','terms PK duplicate');
+select is(pg_temp.attempt($q$insert into public.license_terms_versions select license_id,2,3,plan_key,plan_version,plan_display_label,max_active_users,valid_from,valid_until from public.license_terms_versions where license_id='20000000-0000-4000-8000-000000000001'; insert into public.license_terms_versions select license_id,3,3,plan_key,plan_version,plan_display_label,max_active_users,valid_from,valid_until from public.license_terms_versions where license_id='20000000-0000-4000-8000-000000000001' and version=1$q$),'23505','one terms snapshot per introduced revision');
 select * from finish();
 rollback;
-

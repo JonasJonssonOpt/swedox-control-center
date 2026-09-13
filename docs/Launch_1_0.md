@@ -9,6 +9,11 @@ att den nya roadmapen införts.
 
 ## Licensing: F2D1B design och framtida releasegates
 
+- [x] F2D4 append-only och deferred strukturell historikintegritet lokalt
+      verifierade: 1 444 pgTAP, 162 Node och 8 concurrency/preflight-kontroller.
+      Se [F2D4-rapporten](LICENSE_HISTORY_INTEGRITY_VERIFICATION.md).
+- [ ] F2D5–F2D9: återstående Licensing-leverans enligt styrande roadmap.
+
 - [x] F2D3 owner+AAL2 read security för licenses/terms, boolean-helper och
       negativa access-/write-tester lokalt verifierade. Audit förblir stängd.
 - [x] F2D3 full lokal regression: 1 323 pgTAP och 162 Node-test; se

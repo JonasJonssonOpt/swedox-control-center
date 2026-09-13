@@ -1,5 +1,14 @@
 # License Database Design
 
+## Aktuell status: F2D4, 2026-09-13
+
+Terms och audit är append-only för UPDATE/DELETE/TRUNCATE. Tre deferred
+constraint triggers verifierar sammanhängande historik, aktuell termspekare
+och terms/event-relation under parentlås. F2D3:s accessgräns är oförändrad.
+Se [F2D4-verifieringen](LICENSE_HISTORY_INTEGRITY_VERIFICATION.md) för exakt
+modell, adminundantag och 1 444 pgTAP, 162 Node samt 8 concurrencykontroller.
+Licensing är inte komplett. Nästa steg är F2D5; statusavsnitten nedan är historiska.
+
 ## Aktuell status: F2D3, 2026-09-12
 
 Owner+AAL2 SELECT på `licenses` och `license_terms_versions` är implementerad

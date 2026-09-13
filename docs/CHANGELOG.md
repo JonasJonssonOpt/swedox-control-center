@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-09-13: F2D4 Licensing Audit + Terms History Integrity
+
+- Införde atomisk preflight, append-only-skydd och deferred strukturell
+  validering med tre funktioner och sju triggers. F2D3-access bevaras.
+- Lade till tre pgTAP-filer och lokal flersessionsrunner. Anpassade befintliga
+  Licensing-prober till INSERT och en global audit-namnlista i Tenant-test.
+- Lokal regression passerar: 1 444 pgTAP, 162 Node och 8 concurrency/preflight-
+  kontroller; reset, databaslint, deterministiska typer, TypeScript, ESLint
+  och build godkända. Se [verifieringsrapport](LICENSE_HISTORY_INTEGRITY_VERIFICATION.md).
+- Nästa steg är F2D5. Licensing är inte komplett; cloud och signerad runtime återstår.
+
 ## 2026-09-12: F2D3 Licensing Owner Read / DB-AAL2
 
 - Införde `is_licensing_owner_aal2()` och owner+AAL2 SELECT på licenses/terms

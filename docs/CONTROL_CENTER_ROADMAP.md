@@ -48,7 +48,12 @@ Hantera licensstatus, omfattning och giltighet med tydlig historik och auktorise
 F2D3 är implementerad och lokalt verifierad med owner+AAL2 SELECT på licenses
 och terms. Audit och alla writes förblir stängda. 1 323 pgTAP och 162 Node-test
 passerar; [verifieringsrapporten](LICENSE_OWNER_AAL2_VERIFICATION.md) anger
-runtime/cloud-begränsningarna. Nästa steg är F2D4; nedan beskrivs tidigare grund.
+runtime/cloud-begränsningarna.
+
+F2D4 är lokalt verifierad 2026-09-13 med append-only, deferred strukturell
+historikvalidering, 1 444 pgTAP, 162 Node-test och 8 concurrencykontroller.
+Se [F2D4-verifieringen](LICENSE_HISTORY_INTEGRITY_VERIFICATION.md).
+Nästa steg är F2D5. Licensing är inte komplett; nedan beskrivs tidigare grund.
 
 F2D1B har låst domänkontraktet och säkerhetsrekommendation B i
 [License Database Design](LICENSE_DATABASE_DESIGN.md). F2D2:s databasgrund är

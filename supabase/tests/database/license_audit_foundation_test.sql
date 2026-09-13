@@ -61,35 +61,62 @@ select col_hasnt_default('public','license_audit_events','changed_fields','chang
 select col_type_is('public','license_audit_events','correlation_id','uuid','correlation_id type');
 select col_is_null('public','license_audit_events','correlation_id','correlation_id nullability');
 select col_hasnt_default('public','license_audit_events','correlation_id','correlation_id has no default');
-select is(pg_temp.attempt($q$insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_before,revision_after,changed_fields) values ('20000000-0000-4000-8000-000000000001','license_terms_changed','10000000-0000-4000-8000-000000000099',1,2,array['revision'])$q$),'00000','license_terms_changed');
-select is(pg_temp.attempt($q$insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_before,revision_after,changed_fields) values ('20000000-0000-4000-8000-000000000001','license_activated','10000000-0000-4000-8000-000000000099',1,2,array['revision'])$q$),'00000','license_activated');
-select is(pg_temp.attempt($q$insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_before,revision_after,changed_fields) values ('20000000-0000-4000-8000-000000000001','license_suspended','10000000-0000-4000-8000-000000000099',1,2,array['revision'])$q$),'00000','license_suspended');
-select is(pg_temp.attempt($q$insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_before,revision_after,changed_fields) values ('20000000-0000-4000-8000-000000000001','license_renewed','10000000-0000-4000-8000-000000000099',1,2,array['revision'])$q$),'00000','license_renewed');
-select is(pg_temp.attempt($q$insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_before,revision_after,changed_fields) values ('20000000-0000-4000-8000-000000000001','license_terminated','10000000-0000-4000-8000-000000000099',1,2,array['revision'])$q$),'00000','license_terminated');
-select is(pg_temp.attempt($q$update public.license_audit_events set event_type='unknown' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','event_type=unknown');
-select is(pg_temp.attempt($q$update public.license_audit_events set revision_after=0 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','revision_after=0');
-select is(pg_temp.attempt($q$update public.license_audit_events set revision_before=1 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','revision_before=1');
-select is(pg_temp.attempt($q$update public.license_audit_events set revision_after=2 where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','revision_after=2');
-select is(pg_temp.attempt($q$update public.license_audit_events set occurred_at='infinity' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','occurred_at=infinity');
-select is(pg_temp.attempt($q$update public.license_audit_events set occurred_at='-infinity' where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','occurred_at=-infinity');
-select is(pg_temp.attempt($q$insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_before,revision_after,changed_fields) values ('20000000-0000-4000-8000-000000000001','license_renewed','10000000-0000-4000-8000-000000000099',null,2,array['revision'])$q$),'23514','invalid noncreate revisions null,2');
-select is(pg_temp.attempt($q$insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_before,revision_after,changed_fields) values ('20000000-0000-4000-8000-000000000001','license_renewed','10000000-0000-4000-8000-000000000099',0,1,array['revision'])$q$),'23514','invalid noncreate revisions 0,1');
-select is(pg_temp.attempt($q$insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_before,revision_after,changed_fields) values ('20000000-0000-4000-8000-000000000001','license_renewed','10000000-0000-4000-8000-000000000099',1,3,array['revision'])$q$),'23514','invalid noncreate revisions 1,3');
-select is(pg_temp.attempt($q$insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_before,revision_after,changed_fields) values ('20000000-0000-4000-8000-000000000001','license_renewed','10000000-0000-4000-8000-000000000099',2,2,array['revision'])$q$),'23514','invalid noncreate revisions 2,2');
-select is(pg_temp.attempt($q$insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_before,revision_after,changed_fields) values ('20000000-0000-4000-8000-000000000001','license_renewed','10000000-0000-4000-8000-000000000099',-1,1,array['revision'])$q$),'23514','invalid noncreate revisions -1,1');
-select is(pg_temp.attempt($q$update public.license_audit_events set actor_user_id=null where license_id='20000000-0000-4000-8000-000000000001'$q$),'23502','actor mandatory');
-select is(pg_temp.attempt($q$update public.license_audit_events set changed_fields=array[]::text[] where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','invalid field array array[]::text[]');
-select is(pg_temp.attempt($q$update public.license_audit_events set changed_fields=array[null]::text[] where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','invalid field array array[null]::text[]');
-select is(pg_temp.attempt($q$update public.license_audit_events set changed_fields=array['id','id'] where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','invalid field array array[id,id]');
-select is(pg_temp.attempt($q$update public.license_audit_events set changed_fields=array['unknown'] where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','invalid field array array[unknown]');
-select is(pg_temp.attempt($q$update public.license_audit_events set changed_fields=array['revision','id'] where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','invalid field array array[revision,id]');
-select is(pg_temp.attempt($q$update public.license_audit_events set changed_fields=array[['id','revision'],['id','revision']] where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','invalid field array array[[id,revision],[id,revision]]');
-select is(pg_temp.attempt($q$update public.license_audit_events set changed_fields=array['id,tenant_id'] where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','invalid field array array[id,tenant_id]');
-select is(pg_temp.attempt($q$update public.license_audit_events set changed_fields=array[''] where license_id='20000000-0000-4000-8000-000000000001'$q$),'23514','invalid field array array[]');
-select is(pg_temp.attempt($q$update public.license_audit_events set changed_fields=array['id','status','valid_until','updated_by'] where license_id='20000000-0000-4000-8000-000000000001'$q$),'00000','canonical subset');
+
+create function pg_temp.try_audit(overrides jsonb) returns text language plpgsql as $$
+declare
+  candidate public.license_audit_events;
+  later_event boolean;
+begin
+  begin
+    candidate := jsonb_populate_record(null::public.license_audit_events,
+      jsonb_build_object('id',gen_random_uuid(),'license_id','20000000-0000-4000-8000-000000000009','event_type','license_created','actor_user_id','10000000-0000-4000-8000-000000000099','occurred_at',current_timestamp,'revision_before',null,'revision_after',1,'changed_fields',array['id'],'correlation_id',null) || overrides);
+    later_event := candidate.event_type <> 'license_created';
+    insert into public.licenses(id,tenant_id,status,revision,current_terms_version,created_by,updated_by) values
+      ('20000000-0000-4000-8000-000000000009','10000000-0000-4000-8000-000000000001','terminated',case when later_event then 2 else 1 end,
+       case when candidate.event_type in ('license_terms_changed','license_renewed') then 2 else 1 end,'10000000-0000-4000-8000-000000000099','10000000-0000-4000-8000-000000000099');
+    if later_event then
+      insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_after,changed_fields)
+        values ('20000000-0000-4000-8000-000000000009','license_created','10000000-0000-4000-8000-000000000099',1,array['id']);
+    end if;
+    insert into public.license_audit_events select candidate.*;
+    insert into public.license_terms_versions values ('20000000-0000-4000-8000-000000000009',1,1,'mini',1,'Mini',24,'2026-01-01',null);
+    if candidate.event_type in ('license_terms_changed','license_renewed') then
+      insert into public.license_terms_versions values ('20000000-0000-4000-8000-000000000009',2,2,'mini',1,'Mini',24,'2026-01-01',null);
+    end if;
+    set constraints all immediate;
+    raise exception using errcode='ZX001',message='test rollback';
+  exception when sqlstate 'ZX001' then return '00000'; when others then return sqlstate;
+  end;
+end;
+$$;
+select is(pg_temp.try_audit('{}'::jsonb),'00000','create');
+select is(pg_temp.try_audit('{"event_type":"license_terms_changed","revision_before":1,"revision_after":2}'::jsonb),'00000','license_terms_changed');
+select is(pg_temp.try_audit('{"event_type":"license_activated","revision_before":1,"revision_after":2}'::jsonb),'00000','license_activated');
+select is(pg_temp.try_audit('{"event_type":"license_suspended","revision_before":1,"revision_after":2}'::jsonb),'00000','license_suspended');
+select is(pg_temp.try_audit('{"event_type":"license_renewed","revision_before":1,"revision_after":2}'::jsonb),'00000','license_renewed');
+select is(pg_temp.try_audit('{"event_type":"license_terminated","revision_before":1,"revision_after":2}'::jsonb),'00000','license_terminated');
+select is(pg_temp.try_audit('{"event_type":"unknown"}'::jsonb),'23514','unknown event');
+select is(pg_temp.try_audit('{"revision_after":0}'::jsonb),'23514','zero after');
+select is(pg_temp.try_audit('{"revision_before":1}'::jsonb),'23514','create before');
+select is(pg_temp.try_audit('{"revision_after":2}'::jsonb),'23514','create after');
+select is(pg_temp.try_audit('{"occurred_at":"infinity"}'::jsonb),'23514','infinite time');
+select is(pg_temp.try_audit('{"occurred_at":"-infinity"}'::jsonb),'23514','infinite time');
+select is(pg_temp.try_audit('{"event_type":"license_renewed","revision_before":null,"revision_after":2}'::jsonb),'23514','bad revision pair');
+select is(pg_temp.try_audit('{"event_type":"license_renewed","revision_before":0,"revision_after":1}'::jsonb),'23514','bad revision pair');
+select is(pg_temp.try_audit('{"event_type":"license_renewed","revision_before":1,"revision_after":3}'::jsonb),'23514','bad revision pair');
+select is(pg_temp.try_audit('{"event_type":"license_renewed","revision_before":2,"revision_after":2}'::jsonb),'23514','bad revision pair');
+select is(pg_temp.try_audit('{"event_type":"license_renewed","revision_before":-1,"revision_after":1}'::jsonb),'23514','bad revision pair');
+select is(pg_temp.try_audit('{"actor_user_id":null}'::jsonb),'23502','actor required');
+select is(pg_temp.try_audit('{"changed_fields":[]}'::jsonb),'23514','bad changed fields');
+select is(pg_temp.try_audit('{"changed_fields":[null]}'::jsonb),'23514','bad changed fields');
+select is(pg_temp.try_audit('{"changed_fields":["id","id"]}'::jsonb),'23514','bad changed fields');
+select is(pg_temp.try_audit('{"changed_fields":["unknown"]}'::jsonb),'23514','bad changed fields');
+select is(pg_temp.try_audit('{"changed_fields":["revision","id"]}'::jsonb),'23514','bad changed fields');
+select is(pg_temp.try_audit('{"changed_fields":[["id","revision"],["id","revision"]]}'::jsonb),'23514','bad changed fields');
+select is(pg_temp.try_audit('{"changed_fields":["id,tenant_id"]}'::jsonb),'23514','bad changed fields');
+select is(pg_temp.try_audit('{"changed_fields":[""]}'::jsonb),'23514','bad changed fields');
+select is(pg_temp.try_audit('{"changed_fields":["id","status","valid_until","updated_by"]}'::jsonb),'00000','canonical subset');
 select is(pg_temp.attempt($q$insert into public.license_audit_events(license_id,event_type,actor_user_id,revision_after,changed_fields) values ('20000000-0000-4000-8000-000000000001','license_created','10000000-0000-4000-8000-000000000099',1,array['id'])$q$),'23505','audit revision unique');
 select is(pg_temp.attempt($q$delete from public.licenses where id='20000000-0000-4000-8000-000000000001'$q$),'23503','license delete restricted');
-
 select * from finish();
 rollback;
-

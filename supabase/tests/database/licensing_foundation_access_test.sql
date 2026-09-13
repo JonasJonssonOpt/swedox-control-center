@@ -34,7 +34,7 @@ end;
 $$;
 select ok((select relrowsecurity and relforcerowsecurity from pg_class where oid='public.licenses'::regclass),'licenses RLS and FORCE');
 select is((select count(*)::integer from pg_policies where schemaname='public' and tablename='licenses'),1,'licenses one F2D3 read policy');
-select is((select count(*)::integer from pg_trigger where tgrelid='public.licenses'::regclass and not tgisinternal),0,'licenses no product triggers');
+select is((select count(*)::integer from pg_trigger where tgrelid='public.licenses'::regclass and not tgisinternal),1,'licenses F2D4 structural triggers');
 select is((select count(*)::integer from unnest(array['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN']) p where has_table_privilege('public','public.licenses',p)),0,'public no licenses privileges');
 select is((select count(*)::integer from unnest(array['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN']) p where has_table_privilege('anon','public.licenses',p)),0,'anon no licenses privileges');
 select is((select count(*)::integer from unnest(array['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN']) p where has_table_privilege('authenticated','public.licenses',p)),1,'authenticated only SELECT licenses');
@@ -43,7 +43,7 @@ select is((select count(*)::integer from pg_attribute where attrelid='public.lic
 select is((select count(*)::integer from pg_class c cross join lateral aclexplode(c.relacl) a where c.oid='public.licenses'::regclass and a.grantee<>c.relowner and not (a.grantee='authenticated'::regrole and a.privilege_type='SELECT' and not a.is_grantable)),0,'licenses only authenticated SELECT ACL without grant option');
 select ok((select relrowsecurity and relforcerowsecurity from pg_class where oid='public.license_terms_versions'::regclass),'license_terms_versions RLS and FORCE');
 select is((select count(*)::integer from pg_policies where schemaname='public' and tablename='license_terms_versions'),1,'license_terms_versions one F2D3 read policy');
-select is((select count(*)::integer from pg_trigger where tgrelid='public.license_terms_versions'::regclass and not tgisinternal),0,'license_terms_versions no product triggers');
+select is((select count(*)::integer from pg_trigger where tgrelid='public.license_terms_versions'::regclass and not tgisinternal),3,'license_terms_versions F2D4 structural triggers');
 select is((select count(*)::integer from unnest(array['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN']) p where has_table_privilege('public','public.license_terms_versions',p)),0,'public no license_terms_versions privileges');
 select is((select count(*)::integer from unnest(array['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN']) p where has_table_privilege('anon','public.license_terms_versions',p)),0,'anon no license_terms_versions privileges');
 select is((select count(*)::integer from unnest(array['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN']) p where has_table_privilege('authenticated','public.license_terms_versions',p)),1,'authenticated only SELECT license_terms_versions');
@@ -52,7 +52,7 @@ select is((select count(*)::integer from pg_attribute where attrelid='public.lic
 select is((select count(*)::integer from pg_class c cross join lateral aclexplode(c.relacl) a where c.oid='public.license_terms_versions'::regclass and a.grantee<>c.relowner and not (a.grantee='authenticated'::regrole and a.privilege_type='SELECT' and not a.is_grantable)),0,'license_terms_versions only authenticated SELECT ACL without grant option');
 select ok((select relrowsecurity and relforcerowsecurity from pg_class where oid='public.license_audit_events'::regclass),'license_audit_events RLS and FORCE');
 select is((select count(*)::integer from pg_policies where schemaname='public' and tablename='license_audit_events'),0,'license_audit_events zero policies');
-select is((select count(*)::integer from pg_trigger where tgrelid='public.license_audit_events'::regclass and not tgisinternal),0,'license_audit_events no product triggers');
+select is((select count(*)::integer from pg_trigger where tgrelid='public.license_audit_events'::regclass and not tgisinternal),3,'license_audit_events F2D4 structural triggers');
 select is((select count(*)::integer from unnest(array['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN']) p where has_table_privilege('public','public.license_audit_events',p)),0,'public no license_audit_events privileges');
 select is((select count(*)::integer from unnest(array['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN']) p where has_table_privilege('anon','public.license_audit_events',p)),0,'anon no license_audit_events privileges');
 select is((select count(*)::integer from unnest(array['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER','MAINTAIN']) p where has_table_privilege('authenticated','public.license_audit_events',p)),0,'authenticated no license_audit_events privileges');
@@ -82,7 +82,7 @@ select is(pg_get_indexdef('public.idx_license_audit_events_license_occurred'::re
 select is((select count(*)::integer from pg_index where indrelid='public.licenses'::regclass),4,'licenses exact index count');
 select is((select count(*)::integer from pg_index where indrelid='public.license_terms_versions'::regclass),2,'license_terms_versions exact index count');
 select is((select count(*)::integer from pg_index where indrelid='public.license_audit_events'::regclass),3,'license_audit_events exact index count');
-select is((select count(*)::integer from pg_proc where pronamespace='public'::regnamespace and (proname like '%license%' or proname like '%licensing%')),1,'only F2D3 Licensing authorization helper; no read or write RPC');
+select is((select count(*)::integer from pg_proc where pronamespace='public'::regnamespace and (proname like '%license%' or proname like '%licensing%')),4,'F2D3 helper and three F2D4 trigger functions; no product RPC');
 set local role anon;
 select throws_ok($q$select * from public.licenses$q$,'42501',null,'anon denied select licenses');
 select throws_ok($q$insert into public.licenses default values$q$,'42501',null,'anon denied insert licenses');

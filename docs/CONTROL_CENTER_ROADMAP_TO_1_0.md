@@ -183,7 +183,13 @@ dokumentation
 
 Nästa steg:
 
-F2D4 – Licensing Audit / Terms History Integrity.
+F2D5 – Licensing Atomic Mutations.
+
+F2D4 är implementerad och lokalt verifierad 2026-09-13: append-only terms/audit,
+deferred strukturell validering och oförändrad F2D3-access. 1 444 pgTAP,
+162 Node-test och 8 concurrency/preflight-kontroller passerar. Se
+[F2D4-verifieringen](LICENSE_HISTORY_INTEGRITY_VERIFICATION.md).
+Licensing är inte komplett; F2D5–F2D9 och senare releasegates återstår.
 
 F2D3 är implementerad och lokalt verifierad 2026-09-12: kombinerad owner+AAL2
 SELECT på licenses/terms, audit utan direkt åtkomst och samtliga writes stängda.
