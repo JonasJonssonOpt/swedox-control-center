@@ -1,5 +1,16 @@
 # License Database Design
 
+## Aktuell status: F2D5A, 2026-09-13
+
+create_license är implementerad med owner+AAL2, DB-actor, tillgänglig Tenant,
+Tenant FOR NO KEY UPDATE, canonical paket och en post-lock beslutstid.
+Draft license/audit/terms skapas atomiskt under oförändrat F2D4-skydd.
+F2D5 följer och preciserar F2D1B: alla terms changes kräver tillgänglig Tenant,
+även nedgradering; endast suspend/terminate undantas. Datumkontraktet bevaras.
+Se [F2D5A-verifieringen](LICENSE_MUTATION_VERIFICATION.md): 1 531 pgTAP,
+162 Node och 5 concurrencykontroller passerar. Nästa steg är F2D5B.
+F2D5B/C återstår och Licensing är inte komplett. Äldre statusavsnitt är historiska.
+
 ## Aktuell status: F2D4, 2026-09-13
 
 Terms och audit är append-only för UPDATE/DELETE/TRUNCATE. Tre deferred

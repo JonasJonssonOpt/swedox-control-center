@@ -183,7 +183,12 @@ dokumentation
 
 Nästa steg:
 
-F2D5 – Licensing Atomic Mutations.
+F2D5B – Licensing Lifecycle Mutations.
+
+F2D5A Create är implementerad och lokalt verifierad 2026-09-13: 1 531 pgTAP,
+162 Node och 5 concurrencykontroller. Se [F2D5A-verifieringen](LICENSE_MUTATION_VERIFICATION.md).
+F2D5 följer F2D1B:s availability- och datumkontrakt. F2D5B/C återstår;
+hela F2D5 och Licensing är inte kompletta.
 
 F2D4 är implementerad och lokalt verifierad 2026-09-13: append-only terms/audit,
 deferred strukturell validering och oförändrad F2D3-access. 1 444 pgTAP,

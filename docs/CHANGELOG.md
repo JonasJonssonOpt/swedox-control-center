@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-09-13: F2D5A Licensing Create Mutation
+
+- Införde create_license med DB-AAL2/actor, tillgänglig Tenant under radlås,
+  canonical paket, post-lock beslutstid och atomisk draft/audit/terms-graf.
+- Bevarade F2D3/F2D4 samt Tenant/Installation. Anpassade endast två äldre
+  Licensing-katalogförväntningar; genererad typdiff är Functions.create_license.
+- Lokal regression: 1 531 pgTAP, 162 Node och 5 riktiga concurrencykontroller
+  passerar, tillsammans med reset, DB-lint, deterministiska typer, typecheck,
+  ESLint och build. Se [verifieringsrapport](LICENSE_MUTATION_VERIFICATION.md).
+- F2D5 följer F2D1B:s terms-availability och datumkontrakt. F2D5B/C återstår;
+  Licensing och hela F2D5 är inte kompletta. Ingen cloud, commit eller push.
+
 ## 2026-09-13: F2D4 Licensing Audit + Terms History Integrity
 
 - Införde atomisk preflight, append-only-skydd och deferred strukturell

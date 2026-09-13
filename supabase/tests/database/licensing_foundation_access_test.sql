@@ -82,7 +82,7 @@ select is(pg_get_indexdef('public.idx_license_audit_events_license_occurred'::re
 select is((select count(*)::integer from pg_index where indrelid='public.licenses'::regclass),4,'licenses exact index count');
 select is((select count(*)::integer from pg_index where indrelid='public.license_terms_versions'::regclass),2,'license_terms_versions exact index count');
 select is((select count(*)::integer from pg_index where indrelid='public.license_audit_events'::regclass),3,'license_audit_events exact index count');
-select is((select count(*)::integer from pg_proc where pronamespace='public'::regnamespace and (proname like '%license%' or proname like '%licensing%')),4,'F2D3 helper and three F2D4 trigger functions; no product RPC');
+select is((select count(*)::integer from pg_proc where pronamespace='public'::regnamespace and (proname like '%license%' or proname like '%licensing%')),5,'F2D3 helper, three F2D4 triggers and F2D5A create RPC');
 set local role anon;
 select throws_ok($q$select * from public.licenses$q$,'42501',null,'anon denied select licenses');
 select throws_ok($q$insert into public.licenses default values$q$,'42501',null,'anon denied insert licenses');

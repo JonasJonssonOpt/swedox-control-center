@@ -9,6 +9,10 @@ att den nya roadmapen införts.
 
 ## Licensing: F2D1B design och framtida releasegates
 
+- [x] F2D5A Create lokalt verifierad: 1 531 pgTAP, 162 Node och 5 riktiga
+      concurrencykontroller. Se [create-verifieringen](LICENSE_MUTATION_VERIFICATION.md).
+- [ ] F2D5B Lifecycle och F2D5C Terms/Renewal återstår; hela F2D5 är inte klar.
+
 - [x] F2D4 append-only och deferred strukturell historikintegritet lokalt
       verifierade: 1 444 pgTAP, 162 Node och 8 concurrency/preflight-kontroller.
       Se [F2D4-rapporten](LICENSE_HISTORY_INTEGRITY_VERIFICATION.md).

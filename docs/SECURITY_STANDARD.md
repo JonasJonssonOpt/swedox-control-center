@@ -1,5 +1,15 @@
 # Security Standard
 
+## F2D5A: Licensing Create RPC
+
+create_license kontrollerar uttryckligen is_licensing_owner_aal2() före
+domänuppslag och härleder actor från auth.uid(). Funktionen är postgres-ägd
+SECURITY DEFINER med pg_catalog, statiskt schemakvalificerat SQL, VOLATILE
+och PARALLEL UNSAFE. Endast authenticated får EXECUTE; owner/AAL2 omprövas
+inne i RPC. Inga direkta writes eller audit-read öppnas. F2D3/F2D4 består.
+Tenantavailability skyddas med FOR NO KEY UPDATE före grafens inserts.
+Se [F2D5A:s säkerhets- och concurrencyevidens](LICENSE_MUTATION_VERIFICATION.md).
+
 ## F2D4: implementerad historikintegritet
 
 Terms/audit blockerar UPDATE, DELETE och TRUNCATE. En postgres-ägd SECURITY

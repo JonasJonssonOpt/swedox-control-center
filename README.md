@@ -2,7 +2,7 @@
 
 Styrande utvecklingsplan: [Roadmap till färdig Control Center 1.0](docs/CONTROL_CENTER_ROADMAP_TO_1_0.md).
 Den anger scope, stegordning, arbetsregler och slutkrav. Aktuellt nästa steg
-är F2D5 – Licensing Atomic Mutations efter lokalt verifierad F2D4.
+är F2D5B – Licensing Lifecycle Mutations efter lokalt verifierad F2D5A Create.
 
 SweDox Control Center är ett separat internt system. Det är frikopplat från kundernas SweDox-installationer och delar ingen kod med dem.
 

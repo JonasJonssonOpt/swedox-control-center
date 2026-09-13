@@ -563,6 +563,32 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_license: {
+        Args: {
+          p_correlation_id?: string;
+          p_plan_key: string;
+          p_tenant_id: string;
+          p_valid_from?: string;
+          p_valid_until?: string;
+        };
+        Returns: {
+          created_at: string;
+          created_by: string;
+          current_terms_version: number;
+          id: string;
+          revision: number;
+          status: string;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "licenses";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       create_tenant: {
         Args: {
           p_administrative_note?: string;

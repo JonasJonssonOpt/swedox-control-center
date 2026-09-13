@@ -1,5 +1,18 @@
 # Projektbeslut
 
+## 2026-09-13: F2D5 beslutsprecisering och F2D5A Create
+
+F2D5 följer F2D1B: alla terms changes, även paketnedgradering, och renewal
+kräver active/icke-arkiverad Tenant. Endast suspend/terminate undantas.
+Draft får ändra målbild utan backdating; active/suspended bevarar datum vid
+planbyte och använder det begränsade renewal-kontraktet för förlängning.
+Beslutet ersätter inte F2D1B historiskt. Dessa senare RPC:er återstår.
+
+F2D5A implementerar endast create_license. Alla Licensing-mutationer planeras
+låsa Tenant före License med FOR NO KEY UPDATE; create verifierar detta nu.
+Ett clock_timestamp() efter låsning ger gemensam beslutstid. F2D3/F2D4 bevaras.
+Se [kontrakt och lokal evidens](LICENSE_MUTATION_VERIFICATION.md).
+
 ## 2026-09-13: F2D4 append-only och strukturell historikintegritet
 
 Licensing använder tre triggerfunktioner och sju triggers i en atomisk
