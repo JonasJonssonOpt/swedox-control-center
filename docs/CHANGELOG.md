@@ -1,5 +1,60 @@
 # Changelog
 
+## 2026-10-06: F2D6 Licensing Read Model / Pagination / Provisioning Eligibility
+
+- Införde `list_licenses` (filter, bokstavlig sökning, keyset med
+  serverutfärdad utvärderingstid), `get_license`, `list_license_terms_versions`,
+  `list_license_audit_events` och `get_license_provisioning_eligibility`.
+  Alla är owner+AAL2-RPC:er, och giltighet härleds vid DB-tid.
+- Tre nya pgTAP-filer (92 + 33 + 146), uppdaterade katalogförväntningar och en
+  ny lokal read-concurrency-runner (7/7).
+- Lokal regression: 2 071 pgTAP, 168 Node, alla fem Licensing-runners, DB-lint,
+  deterministiska typer, typecheck, ESLint, Prettier och build. Se [F2D6-verifieringen](LICENSE_READ_VERIFICATION.md).
+  Nästa steg är F2D7.
+
+## 2026-10-06: Avstämning av säkerhetsgates
+
+- Tog bort den oanvända browserklienten `lib/supabase/client.ts` och lade till
+  ett kontraktstest som nekar browserklient och Service Role i appkoden.
+- Stämde av Launch_1_0 mot befintlig evidens: equality, fail-closed mismatch,
+  ingen browserklient, owner-bootstrap och end-to-end ownerlogin kryssade med
+  källhänvisning; F2D4/F2D5-gates kryssade på databasnivå med runtime kvar i F2D9.
+- Mobil Microsoft Authenticator-verifiering och backup/restore förblir öppna.
+
+## 2026-10-06: F2D5C Licensing Terms / Renewal Mutations
+
+- Införde change_license_terms (draft: full målbild; active/suspended: endast
+  plan) och renew_license (tidig förlängning, ny period efter utgång) med
+  owner+AAL2, låsordning Tenant → License och atomisk audit/terms-version.
+- Två nya pgTAP-filer (68 + 58), uppdaterade katalogförväntningar och ny lokal
+  concurrency-runner (7/7). Hela F2D5 är komplett på databasnivå.
+- Lokal regression: 1 800 pgTAP, 166 Node, alla fyra Licensing-runners,
+  DB-lint, deterministiska typer, typecheck, ESLint, Prettier och build.
+  Se [verifieringsrapport](LICENSE_MUTATION_VERIFICATION.md). Nästa steg är F2D6.
+
+## 2026-10-06: Granskningsfynd
+
+- Tenantdetail: audit-historik och livscykelkontroller keyas med revisionen så
+  att ny serverdata visas direkt och dialogen stängs efter lyckad åtgärd
+  (samma mönster som F2C9D). Nytt kontraktstest.
+- MFA-audit loggar inte längre owner-UUID utan kategori, resultat, tid och
+  correlation-ID. Tre nya beteendetester.
+- Nytt `npm test`; CI kör hela Node-sviten (166 test) i stället för en fil.
+- Manuell browserverifiering av tenant-livscykeln efter deployment återstår.
+
+## 2026-10-06: F2D5B Licensing Lifecycle Mutations
+
+- Införde activate_license (även reaktivering), suspend_license och
+  terminate_license med owner+AAL2, DB-actor, expected revision, låsordning
+  Tenant → License, post-lock beslutstid och atomisk metadataaudit.
+- Activate kräver tillgänglig Tenant och icke passerat slut; suspend/terminate
+  blockeras aldrig av paused/archived Tenant. Terminated är terminal.
+- Två nya pgTAP-filer (60 + 83), uppdaterade Licensing-katalogförväntningar,
+  ny lokal concurrency-runner (8/8) och delad `local-db-harness.mjs`.
+- Lokal regression: 1 674 pgTAP, 162 Node, befintliga runners 8/8 och 5/5,
+  DB-lint, deterministiska typer, typecheck, ESLint, Prettier och build.
+  Se [verifieringsrapport](LICENSE_MUTATION_VERIFICATION.md). F2D5C återstår.
+
 ## 2026-09-13: F2D5A Licensing Create Mutation
 
 - Införde create_license med DB-AAL2/actor, tillgänglig Tenant under radlås,

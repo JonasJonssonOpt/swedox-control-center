@@ -1,5 +1,67 @@
 # Projektbeslut
 
+## 2026-10-06: F2D6 Read Model och eligibility
+
+Följande preciseringar av F2D1B gäller för läsytorna:
+
+- Utvärderingstiden är `statement_timestamp()`. Den är STABLE och sammanfaller
+  med läs-snapshoten. `clock_timestamp()` används endast i mutationer, där
+  tiden ska tas efter låsväntan.
+- Listcursorn binds i DB till exakt `created_at`, id, tenantfilter och seriens
+  `evaluated_at`. Föränderliga filter får ändra medlemskap mellan sidor; F2D7:s
+  DAL-cursor binder hela filterkontexten.
+- NULL i page size eller `includeTerminated` nekas i stället för att tolkas som standard.
+- Eligibility lämnar licensfälten tomma vid mismatch, otillgänglig tenant och
+  saknad licens. Installationens status påverkar inte resultatet.
+- Nullbara RPC-utdata får inga typöverskrivningar. F2D7 runtime-validerar
+  nullability, på samma sätt som NULL-argument enligt F2D5C.
+
+Se [F2D6-verifieringen](LICENSE_READ_VERIFICATION.md).
+
+## 2026-10-06: F2D5C Terms och renewal
+
+Följande preciseringar av F2D1B gäller för de två sista mutationerna:
+
+- `change_license_terms` på draft tar en fullständig målbild (plan, start,
+  slut) med create-reglerna; NULL start är beslutstid och NULL slut Tills vidare.
+- På active/suspended byter den endast plan. Datum får inte skickas
+  (`validation_error`); datumändring sker uteslutande via renewal.
+- `renew_license` kräver uttryckligt slut där NULL betyder Tills vidare.
+  Förnyelse av Tills vidare ger `invalid_state_transition`; lika eller kortare
+  slut ger `validation_error`.
+- Genererade typer visar NULL-bara RPC-argument som `string`; F2D7 skickar
+  explicit `null` i repositoryt i stället för att utöka typöverskrivningarna.
+
+Se [F2D5C-evidens](LICENSE_MUTATION_VERIFICATION.md).
+
+## 2026-10-06: Change-steps från repositorygranskningen
+
+Projektägaren godkände tre avgränsade change-steps före F2D5C:
+
+1. Tenant Management (stängd domän): tenantdetailens audit-historik och
+   livscykelkontroller keyas med revisionen, motsvarande F2C9D för
+   Installation. Inga service-, action-, databas- eller textändringar.
+2. Owner/Auth (stängd domän): MFA-konsolloggen skriver inte längre owner-UUID.
+   Autentiseringsflöde, guards och redirects är oförändrade.
+3. CI kör hela Node-kontraktssviten via `npm test`, inte bara typöverskrivningstesterna.
+
+Ändringarna är lokalt kontraktsverifierade. Manuell browserverifiering av
+tenant-livscykeln utan F5 återstår efter nästa appdeployment.
+
+## 2026-10-06: F2D5B Lifecycle och gemensam låsordning
+
+Projektägaren godkände att alla Licensing-mutationer, även suspend och
+terminate, låser Tenant före License med FOR NO KEY UPDATE. Det preciserar
+F2D1B:s "endast licenslås": för suspend/terminate är Tenant-låset enbart
+låsordning och Tenant availability kontrolleras inte. En enda ordning
+förenklar deadlockanalysen gentemot create och kommande terms/renewal.
+
+Activate från draft eller suspended (reaktivering) kräver tillgänglig Tenant
+och att aktuell terms-versions `valid_until` inte passerat vid beslutstiden;
+annars `invalid_state_transition`. Framtida start tillåts. Lifecycle-audit
+har `changed_fields = {status,revision,updated_at,updated_by}` och skapar
+ingen terms-version. Se [F2D5B-evidens](LICENSE_MUTATION_VERIFICATION.md).
+
 ## 2026-09-13: F2D5 beslutsprecisering och F2D5A Create
 
 F2D5 följer F2D1B: alla terms changes, även paketnedgradering, och renewal

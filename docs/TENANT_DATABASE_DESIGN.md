@@ -310,8 +310,8 @@ recovery. Låsta domän- och säkerhetsbeslut i `PROJECT_DECISIONS.md` gäller.
 
 - `lib/supabase/server.ts` skapar den cookie-baserade Supabase SSR-klienten och är
   markerad `server-only`.
-- `lib/supabase/client.ts` är en browserklient. Den får inte användas för
-  tenant-CRUD.
+- Ingen browserklient finns. Den tidigare oanvända `lib/supabase/client.ts`
+  togs bort 2026-10-06 och ett kontraktstest nekar återinförande.
 - `lib/server/auth/get-verified-claims.ts` hämtar verifierade claims och exponerar
   subject och AAL.
 - `lib/server/auth/get-owner-authorization.ts` validerar
@@ -719,7 +719,7 @@ Request flow: Server Action/route → `requireFullAccessOwner()` → request-lok
 equalitykontroll → inputvalidering → service → repository/atomisk DB-funktion →
 stabil felmappning → explicit cache invalidation. DB-funktionen äger
 actorbinding, revision och audit. Ingen tenantrepository importeras av
-Client Components eller `lib/supabase/client.ts`. Läsningar är uncached som
+Client Components eller någon browserklient. Läsningar är uncached som
 standard; eventuell framtida cache kräver separat säkerhetsbeslut.
 
 ## Felmodell

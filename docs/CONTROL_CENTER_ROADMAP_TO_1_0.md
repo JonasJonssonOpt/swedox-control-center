@@ -183,7 +183,20 @@ dokumentation
 
 Nästa steg:
 
-F2D5B – Licensing Lifecycle Mutations.
+F2D7 – Licensing Server DAL / Service Layer.
+
+F2D6 Read Model / Pagination / Provisioning Eligibility är implementerad och
+lokalt verifierad 2026-10-06: 2 071 pgTAP, 168 Node och 7 read-
+concurrencykontroller. Se [F2D6-verifieringen](LICENSE_READ_VERIFICATION.md).
+
+F2D5C Terms/Renewal är implementerad och lokalt verifierad 2026-10-06:
+1 800 pgTAP, 166 Node och 7 concurrencykontroller. Hela F2D5 är därmed
+komplett på databasnivå. Se [F2D5C-verifieringen](LICENSE_MUTATION_VERIFICATION.md).
+
+F2D5B Lifecycle (activate/reaktivering, suspend, terminate) är implementerad och
+lokalt verifierad 2026-10-06: 1 674 pgTAP, 162 Node och 8 concurrencykontroller.
+Låsordningen Tenant → License gäller alla Licensing-writes. Se
+[F2D5B-verifieringen](LICENSE_MUTATION_VERIFICATION.md).
 
 F2D5A Create är implementerad och lokalt verifierad 2026-09-13: 1 531 pgTAP,
 162 Node och 5 concurrencykontroller. Se [F2D5A-verifieringen](LICENSE_MUTATION_VERIFICATION.md).

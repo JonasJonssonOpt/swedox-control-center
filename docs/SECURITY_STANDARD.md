@@ -1,5 +1,49 @@
 # Security Standard
 
+## F2D6: Licensing read RPC
+
+Lista, detail, terms history, audit och eligibility kräver owner+AAL2 före
+validering och uppslag, så nekade anrop avslöjar inte om ett id finns. Alla är
+postgres-ägda SECURITY DEFINER med pg_catalog och EXECUTE endast för
+authenticated. Utdata är en metadata-allowlist; audit-tabellen förblir stängd
+och läses endast genom den licensbundna RPC:n. Inga writes eller grants öppnas.
+Elva nekade claimformer, saknad singleton, anon och service_role är testade per
+yta. Se [F2D6-verifieringen](LICENSE_READ_VERIFICATION.md).
+
+## F2D5C: Licensing Terms RPC
+
+change_license_terms och renew_license har samma härdning och accessmodell
+som övriga Licensing-mutationer: owner+AAL2 före uppslag, actor från
+auth.uid(), postgres-ägd SECURITY DEFINER med pg_catalog, EXECUTE endast för
+authenticated. Plan, kapacitet och etikett härleds i databasen från katalogen;
+klienten kan inte skicka kapacitet, terms-version eller snapshotfält. Inga
+direkta terms-/audit-writes eller audit-read öppnas. Se
+[F2D5C-evidensen](LICENSE_MUTATION_VERIFICATION.md).
+
+## 2026-10-06: Ingen browserklient för Supabase
+
+Den oanvända `lib/supabase/client.ts` är borttagen. Appen har endast den
+`server-only` cookiebaserade SSR-klienten och proxyns sessionsuppdatering.
+`tests/supabase-client-boundary.contract.test.mjs` nekar `createBrowserClient`,
+import av en browserklient och Service Role-nycklar i applikationskoden.
+
+## 2026-10-06: MFA-loggning utan owner-UUID
+
+`recordMfaAuditEvent(event)` tar inte längre emot någon identitet. Loggposten
+innehåller endast `event`, `result`, `timestamp` och ett slumpat
+`correlationId`, i linje med regeln att loggar aldrig får innehålla UUID.
+Ett beteendetest fångar loggutskriften och nekar alla UUID utom correlation-ID.
+
+## F2D5B: Licensing Lifecycle RPC
+
+activate_license, suspend_license och terminate_license kontrollerar
+is_licensing_owner_aal2() före varje uppslag, så även okända id maskeras som
+unauthorized utan existensläcka. Actor härleds från auth.uid(). Samma härdning
+som create: postgres-ägd SECURITY DEFINER, pg_catalog, statiskt SQL, VOLATILE,
+PARALLEL UNSAFE och EXECUTE endast för authenticated. Klienten styr aldrig
+target status, eventtyp, revision after eller actor. Inga direkta writes eller
+audit-read öppnas; F2D3/F2D4 består. Se [F2D5B-evidensen](LICENSE_MUTATION_VERIFICATION.md).
+
 ## F2D5A: Licensing Create RPC
 
 create_license kontrollerar uttryckligen is_licensing_owner_aal2() före

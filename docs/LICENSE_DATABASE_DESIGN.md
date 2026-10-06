@@ -1,5 +1,34 @@
 # License Database Design
 
+## Aktuell status: F2D6, 2026-10-06
+
+Read model, keyset och provisioning eligibility är implementerade som fem
+STABLE owner+AAL2-RPC:er: lista, detail, terms history, audit och eligibility.
+Giltighet och eligibility härleds vid DB-tid och lagras inte. Cursorn binds i DB
+till oföränderliga värden; hela filterkontexten binds av DAL i F2D7. Se
+[F2D6-verifieringen](LICENSE_READ_VERIFICATION.md): 2 071 pgTAP, 168 Node och 7 read-concurrencykontroller. Nästa steg är F2D7.
+
+## Aktuell status: F2D5C, 2026-10-06
+
+change_license_terms och renew_license är implementerade. Därmed finns alla
+sex mutationer och F2D5 är komplett på databasnivå. Draft ersätter hela
+målbilden under create-reglerna; active/suspended byter endast plan och
+bevarar datum. Renewal följer kontraktet nedan: tidig förlängning bevarar start,
+utgånget intervall får ny start vid beslutstid och Tills vidare kan inte
+förnyas. Se [F2D5C-verifieringen](LICENSE_MUTATION_VERIFICATION.md):
+1 800 pgTAP, 166 Node och 7 concurrencykontroller. Nästa steg är F2D6.
+
+## Aktuell status: F2D5B, 2026-10-06
+
+activate_license, suspend_license och terminate_license är implementerade med
+owner+AAL2, DB-actor, expected revision, låsordning Tenant → License för alla
+Licensing-writes och en post-lock beslutstid. Activate (även reaktivering)
+kräver tillgänglig Tenant och att slutet inte passerat; suspend/terminate
+kräver ingen tillgänglig Tenant. Utgången licens nekas aktivering med
+invalid_state_transition. Se [F2D5B-verifieringen](LICENSE_MUTATION_VERIFICATION.md):
+1 674 pgTAP, 162 Node och 8 concurrencykontroller. Nästa steg är F2D5C.
+Licensing är inte komplett. Äldre statusavsnitt är historiska.
+
 ## Aktuell status: F2D5A, 2026-09-13
 
 create_license är implementerad med owner+AAL2, DB-actor, tillgänglig Tenant,

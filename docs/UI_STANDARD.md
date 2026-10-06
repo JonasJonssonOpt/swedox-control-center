@@ -261,6 +261,13 @@ Listans application host och hosting region visas som vanlig text `Saknas` när
 värdet är null. Nullable metadata får inte ge tomma celler, texten `null` eller
 en badge/statusindikator.
 
+### Tenant detail freshness efter mutation (2026-10-06)
+
+Samma revisionsmönster som F2C9D gäller tenantdetail. `Händelsehistorik`
+och livscykelkontrollerna keyas med tenantens revision och monteras om från
+serverns nya snapshot efter lyckad mutation. Gamla auditposter, cursor,
+actionresultat och en öppen dialog får inte överleva ett revisionsbyte.
+
 ### Installation audit freshness efter mutation (F2C9D)
 
 Efter en lyckad installationsmutation ska detail och audit renderas från samma

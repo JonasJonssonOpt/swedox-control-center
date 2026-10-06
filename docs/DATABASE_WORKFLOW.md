@@ -146,10 +146,11 @@ CI verifierar:
 2. start och status för lokal stack
 3. att migrationskedjan kan appliceras från en tom databas
 4. databaslint
-5. det infrastrukturella pgTAP-smoketestet
-6. att genererade databastyper inte har drift
-7. befintlig formatkontroll, lint, typecheck och build
-8. cleanup med lokal stop även om ett tidigare steg misslyckas
+5. hela pgTAP-sviten
+6. hela Node-kontraktssviten via `npm test`, inklusive typöverskrivningstesterna
+7. att genererade databastyper inte har drift
+8. befintlig formatkontroll, lint, typecheck och build
+9. cleanup med lokal stop även om ett tidigare steg misslyckas
 
 När tenant- och ownermigrationerna finns ska CI dessutom verifiera:
 

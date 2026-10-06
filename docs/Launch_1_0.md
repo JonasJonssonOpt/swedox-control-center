@@ -11,12 +11,21 @@ att den nya roadmapen införts.
 
 - [x] F2D5A Create lokalt verifierad: 1 531 pgTAP, 162 Node och 5 riktiga
       concurrencykontroller. Se [create-verifieringen](LICENSE_MUTATION_VERIFICATION.md).
-- [ ] F2D5B Lifecycle och F2D5C Terms/Renewal återstår; hela F2D5 är inte klar.
+- [x] F2D5B Lifecycle lokalt verifierad: 1 674 pgTAP, 162 Node och 8 riktiga
+      concurrencykontroller. Se [lifecycle-verifieringen](LICENSE_MUTATION_VERIFICATION.md).
+- [x] F2D5C Terms/Renewal lokalt verifierad: 1 800 pgTAP, 166 Node och 7 riktiga
+      concurrencykontroller. Hela F2D5 är komplett på databasnivå. Se
+      [terms-verifieringen](LICENSE_MUTATION_VERIFICATION.md).
+- [x] Granskningsfynd 2026-10-06: tenant detail freshness, MFA-logg utan
+      owner-UUID och full Node-svit i CI är lokalt kontraktsverifierade.
+- [ ] Tenant-livscykel utan F5 manuellt verifierad efter appdeployment.
 
 - [x] F2D4 append-only och deferred strukturell historikintegritet lokalt
       verifierade: 1 444 pgTAP, 162 Node och 8 concurrency/preflight-kontroller.
       Se [F2D4-rapporten](LICENSE_HISTORY_INTEGRITY_VERIFICATION.md).
-- [ ] F2D5–F2D9: återstående Licensing-leverans enligt styrande roadmap.
+- [x] F2D6 Read/Pagination/Eligibility lokalt verifierad: 2 071 pgTAP, 168 Node
+      och 7 riktiga read-concurrencykontroller. Se [F2D6-verifieringen](LICENSE_READ_VERIFICATION.md).
+- [ ] F2D7–F2D9: återstående Licensing-leverans enligt styrande roadmap.
 
 - [x] F2D3 owner+AAL2 read security för licenses/terms, boolean-helper och
       negativa access-/write-tester lokalt verifierade. Audit förblir stängd.
@@ -29,12 +38,17 @@ att den nya roadmapen införts.
       utan ändring av stängda Tenant-/Installation-kontrakt.
 - [x] F2D2:s tre-tabellsgrund, FK-cykler, unik icke-terminerad tenantlicens och licenstyper lokalt verifierade 2026-09-12.
 - [x] Global genererad typjämförelse utan drift efter explicit komplettering av fem befintliga nullable RPC-fält, se [verifieringsrapporten](LICENSE_FOUNDATION_VERIFICATION.md).
-- [ ] RLS/FORCE RLS, grants och samtliga read-/RPC-gränser verifierade.
+- [x] RLS/FORCE RLS, grants och samtliga read-/RPC-gränser verifierade på
+      databasnivå (F2D3 tabeller, F2D5 mutationer, F2D6 läs-RPC:er). Runtime ingår i F2D9.
 - [ ] Verklig direkt Data API-åtkomst nekar owner AAL1 och tillåter owner AAL2.
-- [ ] Immutable terms, metadataaudit och full atomisk rollback verifierade.
-- [ ] Lifecycle, tidsgränser, renewalavbrott, no-op och parallella writes verifierade.
-- [ ] Tenantavailability och suspend/terminate för otillgänglig tenant verifierade.
+- [x] Immutable terms, metadataaudit och full atomisk rollback verifierade på
+      databasnivå (F2D4/F2D5, lokal pgTAP och concurrency). Runtime ingår i F2D9.
+- [x] Lifecycle, tidsgränser, renewalavbrott, no-op och parallella writes verifierade
+      på databasnivå (F2D5B/F2D5C). Runtime ingår i F2D9.
+- [x] Tenantavailability och suspend/terminate för otillgänglig tenant verifierade
+      på databasnivå (F2D5B/F2D5C). Runtime ingår i F2D9.
 - [ ] Eligibility är härledd, fail-closed och utan tekniska provisioninggates.
+      DB-delen är verifierad i F2D6. Den maskerade grenen för tekniskt läsfel återstår i F2D7.
 - [ ] Service/adapters/UI, historik, keyset och revisionsfreshness verifierade.
 - [ ] Operativ backup/restore och retentionhantering granskade före verkliga kunddata.
 - [ ] Licensing Security Pass och verklig runtime, pagination och cleanup godkända.
@@ -54,21 +68,28 @@ Följande krävs före release av Tenant Management:
 - [x] Anonymous sign-in är manuellt verifierad som avstängd.
 - [x] Den tomma migrationskedjan kan reproduceras från en tom lokal databas.
 - [x] RLS-tester visar att owner tillåts och att anonymous samt annan authenticated user nekas.
-- [ ] Equality-kontrollen verifierar samma owneridentitet i environment och DB-singleton.
-- [ ] Mismatch och unavailable kontroll stoppar Tenant Management fail-closed.
+- [x] Equality-kontrollen verifierar samma owneridentitet i environment och DB-singleton
+      (owner-integrity-kontraktstest och pgTAP; godkänd owner/AAL2-runtime i F2C9H).
+- [x] Mismatch och unavailable kontroll stoppar Tenant Management fail-closed
+      (kontraktsverifierat: mismatch, okänd/null RPC-form och RPC-fel går till security-error).
 - [x] Beständig append-only audit och atomisk användning i tenantmutationer är lokalverifierade.
 - [ ] Backup- och restore-runbook är verifierad.
 - [x] Tomma genererade databastyper är uppdaterade och har CI-kontroll mot lokal databas.
-- [ ] Ingen normal tenant-CRUD använder browserklient eller Service Role.
+- [x] Ingen normal tenant-CRUD använder browserklient eller Service Role. Den oanvända
+      browserklienten är borttagen 2026-10-06 och ett kontraktstest nekar återinförande.
 - [x] Kodfri Security Pass och tenantdatabasdesign är godkända med dokumenterade operativa blockerare.
 - [x] Owner-singletonens schema, constraints, FK, RLS och grants är lokalt verifierade.
 - [x] Den kategoriska owner-integritetsfunktionen är lokalt verifierad utan UUID-läckage.
 - [x] Server-side ownerintegritetsguard och environment-equality är verifierade.
-- [ ] Owner-bootstrap är implementerad och verifierad.
+- [x] Owner-bootstrap är implementerad och verifierad (pgTAP och kontraktstest för
+      mekanismen; den bootstrappade cloudmiljön användes i F2C9H:s godkända runtime).
 - [x] Owner-bootstrapmekanismen nekar saknad Auth-user/mismatch, är idempotent och saknar HTTP- eller API-rollsyta.
-- [ ] Bootstrappad miljö är end-to-end-verifierad med ownerlogin, AAL2 och `/tenants`.
+- [x] Bootstrappad miljö är end-to-end-verifierad med ownerlogin, AAL2 och `/tenants`
+      (F2C9H: owner login, MFA/AAL2, owner-only access, reload och logout/login godkända;
+      MFA-challenge redirectar till `/tenants`).
 - [x] MFA-enrollment renderar Supabase QR/secret, verifierar challenge och kräver AAL2 före `/tenants`.
 - [ ] Microsoft Authenticator-enrollment är manuellt verifierad med en riktig mobil TOTP-kod.
+      Öppen: F2C9H visar godkänd MFA/AAL2 men dokumenterar inte vilken app som användes.
 - [x] Tenanttabell, constraints, organisationsnummervalidering och grundindex är lokalt verifierade.
 - [x] Tenant-RLS, owner-only SELECT, auditgrund och auditintegrerade atomiska mutationer är lokalverifierade.
 - [x] Paginerad ownerkontrollerad tenant-auditläsning är lokalverifierad utan direkt audit-tabellåtkomst.

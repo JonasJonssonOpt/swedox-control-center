@@ -2,7 +2,7 @@
 
 Styrande utvecklingsplan: [Roadmap till färdig Control Center 1.0](docs/CONTROL_CENTER_ROADMAP_TO_1_0.md).
 Den anger scope, stegordning, arbetsregler och slutkrav. Aktuellt nästa steg
-är F2D5B – Licensing Lifecycle Mutations efter lokalt verifierad F2D5A Create.
+är F2D7 – Licensing Server DAL / Service Layer efter lokalt verifierad F2D5 (samtliga sex licensmutationer) och F2D6 (read model, keyset och provisioning eligibility).
 
 SweDox Control Center är ett separat internt system. Det är frikopplat från kundernas SweDox-installationer och delar ingen kod med dem.
 
@@ -52,6 +52,7 @@ databaslint, TypeScript, Prettier, ESLint och Next.js production build.
 npm run format:check
 npm run lint
 npm run typecheck
+npm test
 npm run build
 npm run supabase:reset
 npm run supabase:lint

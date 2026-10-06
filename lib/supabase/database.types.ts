@@ -429,6 +429,30 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      activate_license: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_license_id: string;
+        };
+        Returns: {
+          created_at: string;
+          created_by: string;
+          current_terms_version: number;
+          id: string;
+          revision: number;
+          status: string;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "licenses";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       activate_tenant: {
         Args: {
           p_correlation_id?: string;
@@ -521,6 +545,33 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "tenants";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      change_license_terms: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_license_id: string;
+          p_plan_key: string;
+          p_valid_from?: string;
+          p_valid_until?: string;
+        };
+        Returns: {
+          created_at: string;
+          created_by: string;
+          current_terms_version: number;
+          id: string;
+          revision: number;
+          status: string;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "licenses";
           isOneToOne: true;
           isSetofReturn: false;
         };
@@ -658,6 +709,39 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      get_license: {
+        Args: { p_license_id: string };
+        Returns: {
+          created_at: string;
+          current_terms_version: number;
+          evaluated_at: string;
+          id: string;
+          max_active_users: number;
+          plan_display_label: string;
+          plan_key: string;
+          plan_version: number;
+          revision: number;
+          status: string;
+          tenant_id: string;
+          tenant_legal_name: string;
+          updated_at: string;
+          valid_from: string;
+          valid_until: string;
+          validity: string;
+        }[];
+      };
+      get_license_provisioning_eligibility: {
+        Args: { p_installation_id?: string; p_tenant_id: string };
+        Returns: {
+          eligible: boolean;
+          evaluated_at: string;
+          license_id: string;
+          reason: string;
+          revision: number;
+          terms_version: number;
+          valid_until: string;
+        }[];
+      };
       get_owner_integrity_status: { Args: never; Returns: string };
       is_control_center_owner: { Args: never; Returns: boolean };
       is_licensing_owner_aal2: { Args: never; Returns: boolean };
@@ -714,6 +798,82 @@ export type Database = {
           tenant_id: string;
           tenant_legal_name: string;
           updated_at: string;
+        }[];
+      };
+      list_license_audit_events: {
+        Args: {
+          p_cursor_id?: string;
+          p_cursor_occurred_at?: string;
+          p_license_id: string;
+          p_page_size?: number;
+        };
+        Returns: {
+          actor_user_id: string;
+          changed_fields: string[];
+          correlation_id: string;
+          event_type: string;
+          has_more: boolean;
+          id: string;
+          license_id: string;
+          next_cursor_id: string;
+          next_cursor_occurred_at: string;
+          occurred_at: string;
+          revision_after: number;
+          revision_before: number;
+        }[];
+      };
+      list_license_terms_versions: {
+        Args: {
+          p_cursor_version?: number;
+          p_license_id: string;
+          p_page_size?: number;
+        };
+        Returns: {
+          has_more: boolean;
+          introduced_at: string;
+          introduced_at_revision: number;
+          license_id: string;
+          max_active_users: number;
+          next_cursor_version: number;
+          plan_display_label: string;
+          plan_key: string;
+          plan_version: number;
+          valid_from: string;
+          valid_until: string;
+          version: number;
+        }[];
+      };
+      list_licenses: {
+        Args: {
+          p_cursor_created_at?: string;
+          p_cursor_id?: string;
+          p_evaluated_at?: string;
+          p_include_terminated?: boolean;
+          p_page_size?: number;
+          p_search?: string;
+          p_status?: string;
+          p_tenant_id?: string;
+          p_validity?: string;
+        };
+        Returns: {
+          created_at: string;
+          current_terms_version: number;
+          evaluated_at: string;
+          has_more: boolean;
+          id: string;
+          max_active_users: number;
+          next_cursor_created_at: string;
+          next_cursor_id: string;
+          plan_display_label: string;
+          plan_key: string;
+          revision: number;
+          status: string;
+          tenant_id: string;
+          tenant_legal_name: string;
+          updated_at: string;
+          valid_from: string;
+          valid_until: string;
+          validity: string;
         }[];
       };
       list_tenant_audit_events: {
@@ -802,6 +962,31 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      renew_license: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_license_id: string;
+          p_valid_until: string;
+        };
+        Returns: {
+          created_at: string;
+          created_by: string;
+          current_terms_version: number;
+          id: string;
+          revision: number;
+          status: string;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "licenses";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       restore_installation: {
         Args: {
           p_correlation_id?: string;
@@ -862,6 +1047,54 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "tenants";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      suspend_license: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_license_id: string;
+        };
+        Returns: {
+          created_at: string;
+          created_by: string;
+          current_terms_version: number;
+          id: string;
+          revision: number;
+          status: string;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "licenses";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      terminate_license: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_license_id: string;
+        };
+        Returns: {
+          created_at: string;
+          created_by: string;
+          current_terms_version: number;
+          id: string;
+          revision: number;
+          status: string;
+          tenant_id: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "licenses";
           isOneToOne: true;
           isSetofReturn: false;
         };
