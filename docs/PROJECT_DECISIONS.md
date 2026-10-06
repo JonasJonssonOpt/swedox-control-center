@@ -1,5 +1,22 @@
 # Projektbeslut
 
+## 2026-10-06: F2E2 Provisioning beslutslås
+
+- **Tabeller:** `provisioning_runs` (med resultatfält),
+  `provisioning_run_steps`, `provisioning_step_attempts` och
+  `provisioning_audit_events`.
+- **Läsning:** endast via RPC, utan direkta tabellgrants.
+- **Steg och blockering:** nästa steg härleds i DB. Ett blockerat stegstart
+  registreras som försök och resultat, inte som fel.
+- **Request:** nekas med `installation_not_available`, `tenant_not_available`
+  eller `license_not_eligible`. Avslut och avbrott kräver inga förutsättningar.
+- **Låsning:** Installation → Tenant (`FOR KEY SHARE`) → körning
+  (`FOR NO KEY UPDATE`). Licensen låses inte.
+- **Standardvärden:** tröskel för inaktuellt steg 24 timmar och notering
+  1–500 tecken. Ägaren kan ändra dem före F2E3.
+
+Se [Provisioning Domain Design](PROVISIONING_DOMAIN_DESIGN.md).
+
 ## 2026-10-06: F2E1 Provisioning-domänen
 
 Ägarens beslut:

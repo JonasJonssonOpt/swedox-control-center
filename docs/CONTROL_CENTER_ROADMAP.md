@@ -62,7 +62,8 @@ Read/Pagination/Eligibility är lokalt verifierad 2026-10-06 med 2 071 pgTAP.
 F2D7 Server DAL är lokalt verifierad 2026-10-06 med 188 Node. F2D8 UI är
 kontraktsverifierad 2026-10-06 med 197 Node. F2D9 stängde Licensing 2026-10-06
 (Security Pass, signerad Data API-gate och lokal webbläsarkontroll). F2E1
-Provisioning-analysen är klar 2026-10-06 ([Provisioning Domain Design](PROVISIONING_DOMAIN_DESIGN.md)). Nästa steg är F2E2. Nedan
+Provisioning-analysen är klar 2026-10-06 och F2E2 har låst datamodell och plan
+([Provisioning Domain Design](PROVISIONING_DOMAIN_DESIGN.md)). Nästa steg är F2E3. Nedan
 beskrivs Licensings tidigare grund.
 
 F2D1B har låst domänkontraktet och säkerhetsrekommendation B i

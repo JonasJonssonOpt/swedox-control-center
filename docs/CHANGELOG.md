@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-06: F2E2 Provisioning Decision Lock / Implementation Plan
+
+- Låste exakt datamodell, katalog v1, statusar, felmodell, RPC-kontrakt,
+  låsmodell, integritetsregler, grants och testplan per steg i [Provisioning Domain Design](PROVISIONING_DOMAIN_DESIGN.md).
+- Ingen kod eller migration. Nästa steg är F2E3.
+
 ## 2026-10-06: F2E1 Provisioning Domain Analysis
 
 - Ny analys: [Provisioning Domain Design](PROVISIONING_DOMAIN_DESIGN.md). Innehåller:

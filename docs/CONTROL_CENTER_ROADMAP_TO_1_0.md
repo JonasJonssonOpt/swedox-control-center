@@ -183,7 +183,16 @@ dokumentation
 
 Nästa steg:
 
-F2E2 – Provisioning Decision Lock / Implementation Plan.
+F2E3 – Provisioning Database Foundation.
+
+F2E2 Decision Lock är klar 2026-10-06. Låst:
+
+- fyra tabeller: körningar, steg, försök och audit
+- stegkatalog v1, statusar och felmodell
+- fem mutations- och fyra läs-RPC:er, enbart RPC-läsning
+- låsordning Installation → Tenant → körning, deferred integritet och testplan
+
+Se [Provisioning Domain Design](PROVISIONING_DOMAIN_DESIGN.md).
 
 F2E1 Provisioning Domain Analysis är klar 2026-10-06. Ägarens beslut:
 

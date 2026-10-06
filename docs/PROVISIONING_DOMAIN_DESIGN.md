@@ -1,8 +1,341 @@
 # Provisioning Domain Design
 
+## F2E2: beslutslås och implementationsplan, 2026-10-06
+
+F2E2 låser den exakta 1.0-modellen utifrån F2E1:s beslut nedan. Steget är
+dokumentation; inga migrationer eller kod. Standardvärden som F2E1 lämnade
+öppna är markerade **(standardvärde)** och kan ändras av ägaren före F2E3.
+
+### Huvudval
+
+- **Tabeller:** fyra tabeller i `public` – `provisioning_runs`,
+  `provisioning_run_steps`, `provisioning_step_attempts` och
+  `provisioning_audit_events`. Resultatreferenserna är kolumner på körningen,
+  inte en egen tabell.
+- **Läsning:** endast via RPC. Inga direkta tabellgrants, inte ens SELECT.
+  Det är en smalare yta än Licensing, där owner fick SELECT via policy.
+- **Klienten väljer aldrig steg.** Nästa steg härleds alltid i DB.
+- **Ett blockerat steg är ett lyckat anrop.** Det registrerar försöket och
+  orsaken i stället för att kasta fel; annars skulle historiken rullas tillbaka.
+- **Tenant dupliceras inte.** Den härleds via installationens immutable relation.
+
+### provisioning_runs
+
+| Fält                        | Typ         | Null/default           | Ansvar                                                      |
+| --------------------------- | ----------- | ---------------------- | ----------------------------------------------------------- |
+| id                          | uuid        | NOT NULL, DB-genererad | PK; immutable                                               |
+| installation_id             | uuid        | NOT NULL               | FK installations(id), RESTRICT; immutable                   |
+| catalog_version             | integer     | NOT NULL, 1            | Stegkatalogens version; endast 1 i 1.0                      |
+| status                      | text        | NOT NULL, pending      | pending, in_progress, blocked, failed, succeeded, cancelled |
+| blocked_reason              | text        | NULL                   | Satt exakt när status är blocked                            |
+| result_supabase_project_ref | text        | NULL                   | Sätts en gång när steg 1 lyckas                             |
+| result_hosting_region       | text        | NULL                   | Sätts en gång när steg 1 lyckas                             |
+| result_application_url      | text        | NULL                   | Sätts en gång när steg 3 lyckas                             |
+| revision                    | bigint      | NOT NULL, 1            | Positiv concurrencyrevision                                 |
+| created_at                  | timestamptz | NOT NULL, DB-tid       | Immutable                                                   |
+| created_by                  | uuid        | NOT NULL               | auth.uid(), ingen Auth-FK                                   |
+| updated_at                  | timestamptz | NOT NULL, DB-tid       | Senaste mutation                                            |
+| updated_by                  | uuid        | NOT NULL               | auth.uid(), ingen Auth-FK                                   |
+| finished_at                 | timestamptz | NULL                   | Satt exakt när status är succeeded eller cancelled          |
+
+**Constraints:**
+
+- statusallowlisten och `revision > 0`
+- finita tidsfält och `updated_at >= created_at`
+- `blocked_reason` är satt om och endast om status är `blocked`
+- `finished_at` är satt om och endast om status är terminal
+- `succeeded` kräver att alla tre resultatfält är satta
+- resultatfälten följer exakt samma format som Installation:
+  - project ref: `^[a-z0-9]{1,64}$`
+  - region: lowercase segment med bindestreck, högst 64 tecken
+  - URL: absolut HTTPS, 9–2048 tecken, utan credentials, fragment eller blanksteg
+
+**`blocked_reason`:**
+
+- `installation_not_available`
+- `tenant_not_available`
+- `license_missing`
+- `license_draft`
+- `license_suspended`
+- `license_terminated`
+- `license_not_started`
+- `license_expired`
+
+**Index:**
+
+- PK
+- unikt `installation_id` där status inte är `succeeded` eller `cancelled`
+  (högst en icke-avslutad körning per installation)
+- `(installation_id, created_at DESC, id DESC)`
+- `(created_at DESC, id DESC)` för listan
+
+### provisioning_run_steps
+
+| Fält          | Typ         | Null/default | Ansvar                                  |
+| ------------- | ----------- | ------------ | --------------------------------------- |
+| run_id        | uuid        | NOT NULL     | FK provisioning_runs(id), RESTRICT      |
+| step_key      | text        | NOT NULL     | Stegnyckel enligt katalog v1            |
+| position      | smallint    | NOT NULL     | 1–4, låst mot step_key                  |
+| status        | text        | NOT NULL     | pending, in_progress, succeeded, failed |
+| attempt_count | integer     | NOT NULL, 0  | Antal startade eller blockerade försök  |
+| completed_at  | timestamptz | NULL         | Satt exakt när status är succeeded      |
+
+Katalog v1, låst par för `step_key` och `position`:
+
+| Position | step_key                    | Svensk etikett         | Resultat som krävs vid lyckat steg |
+| -------- | --------------------------- | ---------------------- | ---------------------------------- |
+| 1        | `supabase_project`          | Skapa Supabase-projekt | project ref och region             |
+| 2        | `database_schema`           | Kör SweDox-migrationer | inga                               |
+| 3        | `application_deployment`    | Deploya SweDox-app     | application URL                    |
+| 4        | `installation_verification` | Verifiera installation | inga                               |
+
+PK `(run_id, step_key)`; unikt `(run_id, position)`. Alla fyra rader skapas
+atomiskt med körningen. Stegrader är muterbara endast via RPC:erna, och
+körningens revision täcker varje stegändring.
+
+### provisioning_step_attempts
+
+| Fält              | Typ         | Null/default           | Ansvar                                              |
+| ----------------- | ----------- | ---------------------- | --------------------------------------------------- |
+| id                | uuid        | NOT NULL, DB-genererad | PK                                                  |
+| run_id            | uuid        | NOT NULL               | FK (run_id, step_key) → provisioning_run_steps      |
+| step_key          | text        | NOT NULL               | Stegets nyckel                                      |
+| attempt_number    | integer     | NOT NULL               | 1, 2, 3 … per steg, utan luckor                     |
+| started_at        | timestamptz | NOT NULL, DB-tid       | Beslutstid för start eller blockering               |
+| started_revision  | bigint      | NOT NULL               | Körningens revision som skapade försöket            |
+| outcome           | text        | NULL                   | NULL = pågår; succeeded, failed, blocked, cancelled |
+| finished_at       | timestamptz | NULL                   | Satt exakt när outcome är satt                      |
+| finished_revision | bigint      | NULL                   | Satt exakt när outcome är satt                      |
+| failure_category  | text        | NULL                   | Satt exakt när outcome är failed                    |
+| blocked_reason    | text        | NULL                   | Satt exakt när outcome är blocked; samma allowlist  |
+| note              | text        | NULL                   | Valfri operatörsnotering vid succeeded eller failed |
+
+`failure_category`:
+
+- `provider_error`
+- `configuration_error`
+- `permission_error`
+- `quota_or_billing`
+- `timeout`
+- `verification_failed`
+- `other`
+
+**Notering:** 1–500 kodpunkter, trimmad, utan andra kontrolltecken än
+radbrytning **(standardvärde)**. UI:t varnar att den inte får innehålla
+hemligheter. Den visas bara i försökshistoriken, aldrig i listor, loggar eller
+audit.
+
+**Regler:**
+
+- unikt `(run_id, step_key, attempt_number)`
+- högst ett pågående försök per körning (partiellt unikt på `run_id` där
+  outcome är NULL)
+- ett blockerat försök skapas direkt med outcome, med samma `started_at` och
+  `finished_at` och samma start- och slutrevision
+- försöket är append-only med ett enda tillåtet avslut: NULL-fälten
+  (outcome, slut, kategori och notering) får sättas exakt en gång. Allt annat
+  är immutable, vilket en skyddstrigger verkställer. DELETE och TRUNCATE är
+  blockerade.
+
+### provisioning_audit_events
+
+| Fält            | Typ         | Null/default            | Ansvar                                     |
+| --------------- | ----------- | ----------------------- | ------------------------------------------ |
+| id              | uuid        | NOT NULL, DB-genererad  | PK                                         |
+| run_id          | uuid        | NOT NULL                | FK provisioning_runs(id), RESTRICT         |
+| event_type      | text        | NOT NULL                | Fasta event nedan                          |
+| step_key        | text        | NULL                    | Satt för stegevent, NULL för körningsevent |
+| attempt_number  | integer     | NULL                    | Satt för stegevent                         |
+| actor_user_id   | uuid        | NOT NULL                | auth.uid(), ingen Auth-FK                  |
+| occurred_at     | timestamptz | NOT NULL, DB-tid        | Finit beslutstid                           |
+| revision_before | bigint      | NULL endast vid request | Föregående revision                        |
+| revision_after  | bigint      | NOT NULL                | Ny revision                                |
+| correlation_id  | uuid        | NULL                    | Servergenererad korrelation                |
+
+**Event:**
+
+- `run_requested` – revision 1
+- `step_started`
+- `step_blocked`
+- `step_succeeded`
+- `step_failed`
+- `run_succeeded` – sista steget lyckades
+- `run_cancelled`
+
+**Regler:**
+
+- unikt `(run_id, revision_after)` och index `(run_id, occurred_at DESC, id DESC)`
+- metadata-only: inga resultatvärden, noteringar, felkategorier eller payloads.
+  Kategorin finns i försöket.
+- append-only, RLS och FORCE RLS, noll policies och noll grants
+
+F2E2 ersätter F2E1:s `changed_fields`-formulering. Provisioning-event
+beskriver steg och försök, inte fältändringar, så `step_key` och
+`attempt_number` ger mer information utan värden.
+
+### Mutations-RPC:er
+
+Alla är SECURITY DEFINER, ägda av postgres, med `search_path=pg_catalog`,
+VOLATILE och EXECUTE endast för `authenticated`. Varje RPC gör följande, i ordning:
+
+1. Prövar owner+AAL2 på nytt.
+2. Binder actor till `auth.uid()`.
+3. Låser enligt låsmodellen nedan.
+4. Tar ett `clock_timestamp()` efter låsen.
+5. Jämför expected revision före state.
+6. Skriver exakt en auditpost.
+
+Klienten anger aldrig actor, status, steg, revision efter, försöksnummer eller tider.
+
+| RPC                                                          | Tillstånd                                                        | Resultat                                                                                                                 |
+| ------------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `request_provisioning_run(installation_id, corr)`            | Förutsättningar uppfyllda och ingen icke-avslutad körning finns  | pending, revision 1, fyra pending-steg, `run_requested`                                                                  |
+| `start_provisioning_step(run_id, rev, corr)`                 | pending, blocked, failed, eller in_progress utan pågående försök | Nästa ej lyckade steg startas, eller ett blockerat försök registreras; `step_started` eller `step_blocked`               |
+| `complete_provisioning_step(run_id, rev, refs…, note, corr)` | Pågående försök finns                                            | Försök och steg lyckade; sista steget ger körning succeeded och `run_succeeded`, annars in_progress och `step_succeeded` |
+| `fail_provisioning_step(run_id, rev, category, note, corr)`  | Pågående försök finns                                            | Försök och steg failed, körning failed, `step_failed`                                                                    |
+| `cancel_provisioning_run(run_id, rev, corr)`                 | Inte terminal                                                    | Pågående försök får outcome cancelled; körning cancelled; `run_cancelled`                                                |
+
+**Förutsättningar** gäller vid request och vid varje stegstart, inklusive
+retry: installationen ska vara `planned` eller `active` och inte arkiverad,
+tenanten tillgänglig och `get_license_provisioning_eligibility` ge `eligible`
+i samma transaktion.
+
+**Vid request** ger ett brott fel och ingen körning skapas. Felkoderna är
+`installation_not_available`, `tenant_not_available` eller
+`license_not_eligible`.
+
+**Vid stegstart** blir det i stället ett blockerat försök. Körningen blir
+`blocked`, revisionen ökar och anropet lyckas.
+
+**Avslut och avbrott** – complete, fail och cancel – kräver inga
+förutsättningar, eftersom de registrerar något som redan hänt. De får göras
+även om licens eller tenant ändrats under steget.
+
+**Resultat vid complete:**
+
+- Steg 1 kräver giltig project ref och region.
+- Steg 3 kräver giltig URL.
+- Övriga steg får inte ta emot resultat (`validation_error`).
+
+En retry som återanvänder en befintlig resurs registrerar samma värden.
+
+### Läs-RPC:er
+
+STABLE, owner+AAL2 före validering och uppslag. `statement_timestamp()` som
+utvärderingstid, som i Licensing F2D6.
+
+- **`list_provisioning_runs`:**
+  - filter för installation, tenant och status, plus `includeClosed`
+    (false som standard döljer `succeeded` och `cancelled`)
+  - sortering `created_at DESC, id DESC`, keyset, 50/max 100
+  - visar installationens visningsnamn, tenantens juridiska namn och nästa steg
+- **`get_provisioning_run`:**
+  - körningen med alla fyra steg och resultatfält, samt installationens och
+    tenantens namn
+  - `evaluated_at` och härlett `is_stale` för pågående försök äldre än
+    **24 timmar (standardvärde)**
+- **`list_provisioning_step_attempts`:** körningsbunden, `started_at DESC,
+id DESC`, 25/max 100. Noteringen ingår.
+- **`list_provisioning_audit_events`:** körningsbunden, `occurred_at DESC,
+id DESC`, 25/max 100.
+
+Provisionings läsytor returnerar inte installationens administrativa
+URL/ref/region. Sida-vid-sida-visningen hämtar dem via den befintliga
+installationsservicen.
+
+### Felmodell
+
+P0001 med stabila meddelanden:
+
+- `unauthorized`
+- `not_found`
+- `conflict`
+- `invalid_state_transition`
+- `installation_not_available`
+- `tenant_not_available`
+- `license_not_eligible`
+- `duplicate_run`
+- `audit_failure`
+
+Övriga:
+
+- 22023 `validation_error`
+- 23514 för integritetsbrott, som maskeras som `unexpected_error` i serverlagret
+
+`blocked` är ett resultat, inte ett fel.
+
+### Låsmodell
+
+Varje mutation låser i ordningen Installation → Tenant → körning:
+
+1. Installation `FOR KEY SHARE`, slås upp via körningen utan lås för befintliga
+   körningar.
+2. Tenant `FOR KEY SHARE`.
+3. Körning `FOR NO KEY UPDATE`.
+
+Detta är samma ordning som Installation-mutationerna, som låser installationen
+`FOR UPDATE` och sedan tenanten `FOR KEY SHARE`. Därför uppstår ingen
+deadlockcykel.
+
+- **Mot Installation-mutationer:** `FOR KEY SHARE` på installationen
+  serialiserar mot dem, så en samtidig arkivering eller avveckling ses
+  korrekt vid stegstart.
+- **Mot Tenant-mutationer:** de låser tenanten `FOR UPDATE`, vilket
+  serialiseras på samma sätt.
+- **Licensen låses inte:** eligibility är ingen reservation.
+- **Dubbla körningar:** en request-kollision ger `duplicate_run` via det
+  partiella unika indexet.
+
+### Integritet (F2E3)
+
+En deferred constraint-trigger kontrollerar vid commit, som F2D4 i Licensing:
+
+- `revision` är lika med antalet auditposter, i en sammanhängande kedja 1…n
+- exakt fyra steg finns enligt katalogen
+- försöksnumren är sammanhängande och `attempt_count` stämmer
+- högst ett pågående försök finns, och dess steg är `in_progress`
+- stegordningen respekteras: inget steg lyckat före ett tidigare
+- körningens status stämmer med stegen och det senaste försöket
+- resultatfälten är satta exakt när motsvarande steg lyckats
+
+Brott ger 23514.
+
+### Säkerhet och grants
+
+- RLS och FORCE RLS på alla fyra tabeller.
+- Inga grants till PUBLIC, anon, authenticated eller service_role, och inga
+  policies.
+- En ny hjälpfunktion, `is_provisioning_owner_aal2()`, med samma predikat som
+  Licensings, så att domänerna förblir oberoende.
+- Elva nekade claimformer, saknad singleton, anon och service_role testas per
+  RPC. Signerade tokens mot Data API ingår i F2E10.
+
+### Testplan per steg
+
+| Steg  | Bevis                                                                                                                                                                           |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F2E3  | Katalog, constraints, index, append-only, slutvillkor för försök, deferred integritet med mutationsprober, stängda grants                                                       |
+| F2E4  | Läs-RPC:er, keyset, filter, `is_stale`, säkerhetsmatris                                                                                                                         |
+| F2E5  | Alla övergångar och nekade övergångar, blockerade försök för varje orsak, licensomprövning, idempotens, riktiga parallella transaktioner mot Installation, Tenant och Licensing |
+| F2E6  | Provider-abstraktion och `manual`-adapter, server-only, inga nätverksanrop                                                                                                      |
+| F2E7  | Inaktuella steg, halvgjorda steg (retry med samma referens), avbrott under pågående försök                                                                                      |
+| F2E8  | Service, mapper och actions enligt Licensing F2D7, inklusive fältfel per steg                                                                                                   |
+| F2E9  | UI: lista, detail, stegvisning, start, registrera utfall, retry, avbryt, historik, sida-vid-sida med Installation                                                               |
+| F2E10 | Security Pass, signerade tokens, manuell webbläsarkontroll, slutregression                                                                                                      |
+
+### Inte i 1.0
+
+- provider-API-anrop och bakgrundskörning
+- deprovisioning och synk till Installation
+- att hoppa över steg
+- byte av katalogversion
+- retention och export
+
+F2E2 classification: READY FOR DATABASE FOUNDATION (F2E3)
+
 ## F2E1: domänanalys och låsta beslut, 2026-10-06
 
-F2E1 är ett analys- och beslutssteg. Inga migrationer, ingen kod, inga routes
+Vid konflikt gäller F2E2 ovan. F2E1 är ett analys- och beslutssteg. Inga migrationer, ingen kod, inga routes
 och ingen UI ingår. Tabeller, statuskoder, felmodell och idempotensnycklar låses
 i detalj i F2E2. Användaren fattade fyra produktbeslut 2026-10-06:
 
