@@ -64,7 +64,8 @@ kontraktsverifierad 2026-10-06 med 197 Node. F2D9 stängde Licensing 2026-10-06
 (Security Pass, signerad Data API-gate och lokal webbläsarkontroll). F2E1
 Provisioning-analysen är klar 2026-10-06 och F2E2 har låst datamodell och plan
 ([Provisioning Domain Design](PROVISIONING_DOMAIN_DESIGN.md)). F2E3 databasgrund
-är lokalt verifierad 2026-10-06 ([F2E3-verifieringen](PROVISIONING_FOUNDATION_VERIFICATION.md)). Nästa steg är F2E4. Nedan
+är lokalt verifierad 2026-10-06 ([F2E3-verifieringen](PROVISIONING_FOUNDATION_VERIFICATION.md)). F2E4 läsytor är lokalt
+verifierade 2026-10-06 ([F2E4-verifieringen](PROVISIONING_READ_VERIFICATION.md)). Nästa steg är F2E5. Nedan
 beskrivs Licensings tidigare grund.
 
 F2D1B har låst domänkontraktet och säkerhetsrekommendation B i

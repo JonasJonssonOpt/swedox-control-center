@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-06: F2E4 Provisioning Security / Owner Read
+
+- Migration `20261006210000_create_provisioning_read_api.sql`:
+  `is_provisioning_owner_aal2()` samt `list_provisioning_runs`,
+  `get_provisioning_run`, `list_provisioning_step_attempts` och
+  `list_provisioning_audit_events`.
+- Två nya pgTAP-filer (53 + 118) och uppdaterade katalogkontroller.
+  2 442 pgTAP, sex Licensing-runners, 197 Node och build passerar. Se [F2E4-verifieringen](PROVISIONING_READ_VERIFICATION.md).
+  Nästa steg är F2E5.
+
 ## 2026-10-06: F2E3 Provisioning Database Foundation
 
 - Migration `20261006200000_create_provisioning_foundation.sql`:

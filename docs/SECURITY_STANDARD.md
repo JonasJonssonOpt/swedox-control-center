@@ -1,5 +1,17 @@
 # Security Standard
 
+## F2E4: Provisioning-läsytor
+
+- **RPC:er:** fyra STABLE SECURITY DEFINER-RPC:er med owner+AAL2 före
+  validering och uppslag, EXECUTE endast för `authenticated`. Nekade anrop
+  avslöjar inte om ett id finns.
+- **Behörighetsfunktion:** `is_provisioning_owner_aal2()` är en domänegen kopia
+  av Licensings predikat, utan API-grant.
+- **Tabeller:** fortfarande utan grants. Även owner med AAL2 nekas direkt
+  läsning.
+
+Se [F2E4-verifieringen](PROVISIONING_READ_VERIFICATION.md).
+
 ## F2E3: Provisioning-tabeller stängda
 
 - **Åtkomst:** de fyra Provisioning-tabellerna har RLS och FORCE RLS, noll

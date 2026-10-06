@@ -937,8 +937,40 @@ export type Database = {
         }[];
       };
       get_owner_integrity_status: { Args: never; Returns: string };
+      get_provisioning_run: {
+        Args: { p_run_id: string };
+        Returns: {
+          blocked_reason: string;
+          catalog_version: number;
+          created_at: string;
+          evaluated_at: string;
+          finished_at: string;
+          id: string;
+          installation_code: string;
+          installation_display_name: string;
+          installation_environment: string;
+          installation_id: string;
+          is_stale: boolean;
+          open_attempt_number: number;
+          open_attempt_started_at: string;
+          result_application_url: string;
+          result_hosting_region: string;
+          result_supabase_project_ref: string;
+          revision: number;
+          status: string;
+          step_attempt_count: number;
+          step_completed_at: string;
+          step_key: string;
+          step_position: number;
+          step_status: string;
+          tenant_id: string;
+          tenant_legal_name: string;
+          updated_at: string;
+        }[];
+      };
       is_control_center_owner: { Args: never; Returns: boolean };
       is_licensing_owner_aal2: { Args: never; Returns: boolean };
+      is_provisioning_owner_aal2: { Args: never; Returns: boolean };
       is_valid_swedish_organization_number: {
         Args: { value: string };
         Returns: boolean;
@@ -1068,6 +1100,83 @@ export type Database = {
           valid_from: string;
           valid_until: string;
           validity: string;
+        }[];
+      };
+      list_provisioning_audit_events: {
+        Args: {
+          p_cursor_id?: string;
+          p_cursor_occurred_at?: string;
+          p_page_size?: number;
+          p_run_id: string;
+        };
+        Returns: {
+          actor_user_id: string;
+          attempt_number: number;
+          correlation_id: string;
+          event_type: string;
+          has_more: boolean;
+          id: string;
+          next_cursor_id: string;
+          next_cursor_occurred_at: string;
+          occurred_at: string;
+          revision_after: number;
+          revision_before: number;
+          run_id: string;
+          step_key: string;
+        }[];
+      };
+      list_provisioning_runs: {
+        Args: {
+          p_cursor_created_at?: string;
+          p_cursor_id?: string;
+          p_include_closed?: boolean;
+          p_installation_id?: string;
+          p_page_size?: number;
+          p_status?: string;
+          p_tenant_id?: string;
+        };
+        Returns: {
+          blocked_reason: string;
+          created_at: string;
+          finished_at: string;
+          has_more: boolean;
+          id: string;
+          installation_code: string;
+          installation_display_name: string;
+          installation_id: string;
+          next_cursor_created_at: string;
+          next_cursor_id: string;
+          next_step_key: string;
+          revision: number;
+          status: string;
+          tenant_id: string;
+          tenant_legal_name: string;
+          updated_at: string;
+        }[];
+      };
+      list_provisioning_step_attempts: {
+        Args: {
+          p_cursor_id?: string;
+          p_cursor_started_at?: string;
+          p_page_size?: number;
+          p_run_id: string;
+        };
+        Returns: {
+          attempt_number: number;
+          blocked_reason: string;
+          failure_category: string;
+          finished_at: string;
+          finished_revision: number;
+          has_more: boolean;
+          id: string;
+          next_cursor_id: string;
+          next_cursor_started_at: string;
+          note: string;
+          outcome: string;
+          run_id: string;
+          started_at: string;
+          started_revision: number;
+          step_key: string;
         }[];
       };
       list_tenant_audit_events: {

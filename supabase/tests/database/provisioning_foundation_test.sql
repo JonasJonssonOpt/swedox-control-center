@@ -34,11 +34,12 @@ from provisioning_tables t cross join unnest(array['anon','authenticated','servi
 -- Functions: postgres-owned, pinned search_path, no execute for API roles.
 select set_eq($q$select proname::text from pg_proc where pronamespace='public'::regnamespace and proname like '%provisioning%' and proname not like '%license%'$q$,
   $q$values ('guard_provisioning_run_modification'),('guard_provisioning_run_step_modification'),('guard_provisioning_step_attempt_modification'),
-  ('prevent_provisioning_audit_event_modification'),('enforce_provisioning_run_integrity')$q$,'only F2E3 structural functions, no RPCs yet');
+  ('prevent_provisioning_audit_event_modification'),('enforce_provisioning_run_integrity'),('is_provisioning_owner_aal2'),
+  ('list_provisioning_runs'),('get_provisioning_run'),('list_provisioning_step_attempts'),('list_provisioning_audit_events')$q$,'F2E3 structural functions plus F2E4 helper and read RPCs');
 select ok(p.proowner='postgres'::regrole and p.proconfig=array['search_path=pg_catalog'] and p.prorettype='trigger'::regtype,p.proname||' hardened trigger function')
-from pg_proc p where p.pronamespace='public'::regnamespace and p.proname like '%provisioning%' and proname not like '%license%';
+from pg_proc p where p.pronamespace='public'::regnamespace and p.proname ~ '^(guard|prevent|enforce)_provisioning';
 select is((select count(*)::integer from pg_proc p cross join lateral aclexplode(p.proacl) a where p.oid=f.oid and a.grantee<>p.proowner),0,f.proname||' no non-owner EXECUTE')
-from pg_proc f where f.pronamespace='public'::regnamespace and f.proname like '%provisioning%' and proname not like '%license%';
+from pg_proc f where f.pronamespace='public'::regnamespace and f.proname ~ '^(guard|prevent|enforce)_provisioning';
 select ok(prosecdef,'integrity check is security definer') from pg_proc where proname='enforce_provisioning_run_integrity';
 select ok(not prosecdef,proname||' guard is security invoker') from pg_proc where pronamespace='public'::regnamespace and proname like 'guard_provisioning%' or proname='prevent_provisioning_audit_event_modification';
 

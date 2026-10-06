@@ -1,5 +1,16 @@
 # Provisioning Domain Design
 
+## Aktuell status: F2E4, 2026-10-06
+
+Läsytorna är implementerade och lokalt verifierade:
+
+- intern behörighetsfunktion `is_provisioning_owner_aal2()`
+- fyra owner+AAL2-RPC:er: lista, detail med härlett inaktuellt steg, försök
+  och audit
+- tabellerna har fortfarande inga grants
+
+Se [F2E4-verifieringen](PROVISIONING_READ_VERIFICATION.md): 2 442 pgTAP. Nästa steg är F2E5.
+
 ## Aktuell status: F2E3, 2026-10-06
 
 Databasgrunden är implementerad och lokalt verifierad:
