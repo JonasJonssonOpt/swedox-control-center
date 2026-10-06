@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-06: F2E7 Provisioning Reconciliation / Retry / Failure Handling
+
+- Migration `20261006235000_add_provisioning_list_staleness.sql`: listan visar
+  öppet steg och härlett inaktuellt försök, och har filtret `p_only_stale`.
+- Ny återhämtningssvit i pgTAP, ny kapplöpningsrunner (5/5) och en
+  operatörsguide.
+- 2 771 pgTAP, åtta runners, 202 Node och build passerar. Se [Provisioning Recovery](PROVISIONING_RECOVERY.md).
+  Nästa steg är F2E8.
+
 ## 2026-10-06: F2E6 Provisioning Provider Integration Layer
 
 - Nytt `lib/server/provisioning/providers`: typer, `manual`-koppling med

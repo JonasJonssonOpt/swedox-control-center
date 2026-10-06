@@ -1,5 +1,19 @@
 # Provisioning Domain Design
 
+## Aktuell status: F2E7, 2026-10-06
+
+Återhämtningen är verifierad:
+
+- inaktuella körningar syns i listan och kan filtreras fram
+- sen avstämning fungerar
+- halvfärdiga steg kan registreras med befintlig resurs vid omförsök
+- utfall kan alltid registreras, även om licens eller tenant ändrats under steget
+- avbrott och nya körningar fungerar
+- kapplöpningar mellan sena utfall ger aldrig två utfall
+
+Operatörsguide och evidens finns i [Provisioning Recovery](PROVISIONING_RECOVERY.md): 2 771 pgTAP och runners 8/8 + 5/5.
+Nästa steg är F2E8.
+
 ## Aktuell status: F2E6, 2026-10-06
 
 **Provider-lagret** finns i `lib/server/provisioning/providers`. Det är

@@ -22,10 +22,10 @@ set constraints all deferred;
 
 create temp table read_functions(name text, signature regprocedure, call text, input_names text[], defaults integer, result text);
 insert into read_functions values
-('list_provisioning_runs','public.list_provisioning_runs(integer,timestamptz,uuid,uuid,uuid,text,boolean)',
+('list_provisioning_runs','public.list_provisioning_runs(integer,timestamptz,uuid,uuid,uuid,text,boolean,boolean)',
   'select count(*) from public.list_provisioning_runs(p_installation_id=>$1)',
-  array['p_page_size','p_cursor_created_at','p_cursor_id','p_installation_id','p_tenant_id','p_status','p_include_closed'],7,
-  'TABLE(id uuid, installation_id uuid, installation_display_name text, installation_code text, tenant_id uuid, tenant_legal_name text, status text, blocked_reason text, next_step_key text, revision bigint, created_at timestamp with time zone, updated_at timestamp with time zone, finished_at timestamp with time zone, has_more boolean, next_cursor_created_at timestamp with time zone, next_cursor_id uuid)'),
+  array['p_page_size','p_cursor_created_at','p_cursor_id','p_installation_id','p_tenant_id','p_status','p_include_closed','p_only_stale'],8,
+  'TABLE(id uuid, installation_id uuid, installation_display_name text, installation_code text, tenant_id uuid, tenant_legal_name text, status text, blocked_reason text, next_step_key text, open_step_key text, open_attempt_started_at timestamp with time zone, is_stale boolean, revision bigint, created_at timestamp with time zone, updated_at timestamp with time zone, finished_at timestamp with time zone, evaluated_at timestamp with time zone, has_more boolean, next_cursor_created_at timestamp with time zone, next_cursor_id uuid)'),
 ('get_provisioning_run','public.get_provisioning_run(uuid)',
   'select count(*) from public.get_provisioning_run($1)',array['p_run_id'],0,
   'TABLE(id uuid, installation_id uuid, installation_display_name text, installation_code text, installation_environment text, tenant_id uuid, tenant_legal_name text, catalog_version integer, status text, blocked_reason text, result_supabase_project_ref text, result_hosting_region text, result_application_url text, revision bigint, created_at timestamp with time zone, updated_at timestamp with time zone, finished_at timestamp with time zone, step_key text, step_position smallint, step_status text, step_attempt_count integer, step_completed_at timestamp with time zone, open_attempt_number integer, open_attempt_started_at timestamp with time zone, is_stale boolean, evaluated_at timestamp with time zone)'),

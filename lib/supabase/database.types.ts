@@ -1224,6 +1224,7 @@ export type Database = {
           p_cursor_id?: string;
           p_include_closed?: boolean;
           p_installation_id?: string;
+          p_only_stale?: boolean;
           p_page_size?: number;
           p_status?: string;
           p_tenant_id?: string;
@@ -1231,15 +1232,19 @@ export type Database = {
         Returns: {
           blocked_reason: string;
           created_at: string;
+          evaluated_at: string;
           finished_at: string;
           has_more: boolean;
           id: string;
           installation_code: string;
           installation_display_name: string;
           installation_id: string;
+          is_stale: boolean;
           next_cursor_created_at: string;
           next_cursor_id: string;
           next_step_key: string;
+          open_attempt_started_at: string;
+          open_step_key: string;
           revision: number;
           status: string;
           tenant_id: string;

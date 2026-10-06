@@ -116,6 +116,10 @@ select is(pg_temp.seq($q$public.list_provisioning_runs(p_tenant_id=>'10000000-00
 select is(pg_temp.seq($q$public.list_provisioning_runs(p_status=>'failed')$q$),'04','status filter');
 select is(pg_temp.seq($q$public.list_provisioning_runs(p_status=>'succeeded',p_include_closed=>true)$q$),'01','closed status with includeClosed');
 select is(pg_temp.seq($q$public.list_provisioning_runs(p_tenant_id=>'10000000-0000-4000-8000-0000000000ff')$q$),'','unknown tenant filter is empty');
+select results_eq($q$select right(id::text,2),open_step_key,is_stale from public.list_provisioning_runs(p_include_closed=>true) where open_step_key is not null order by created_at$q$,
+  $q$values ('03'::text,'supabase_project'::text,true),('07','supabase_project',false)$q$,'list shows open step and derived staleness');
+select is(pg_temp.seq('public.list_provisioning_runs(p_only_stale=>true)'),'03','stale-only filter');
+select is((select count(distinct evaluated_at)::integer from public.list_provisioning_runs()),1,'one evaluation time per list page');
 
 -- Keyset pagination.
 select is(pg_temp.seq('public.list_provisioning_runs(2)'),'07,06','first page');
@@ -131,6 +135,7 @@ select throws_ok(q,'22023','validation_error',label) from (values
   ('select * from public.list_provisioning_runs(101)','page size 101'),
   ('select * from public.list_provisioning_runs(null)','null page size'),
   ('select * from public.list_provisioning_runs(p_include_closed=>null)','null includeClosed'),
+  ('select * from public.list_provisioning_runs(p_only_stale=>null)','null onlyStale'),
   ($q$select * from public.list_provisioning_runs(p_status=>'done')$q$,'unknown status'),
   ($q$select * from public.list_provisioning_runs(p_status=>'cancelled')$q$,'closed status without includeClosed'),
   ($q$select * from public.list_provisioning_runs(2,'2026-01-06',null)$q$,'cursor time without id'),

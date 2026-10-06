@@ -2,7 +2,7 @@
 
 Styrande utvecklingsplan: [Roadmap till färdig Control Center 1.0](docs/CONTROL_CENTER_ROADMAP_TO_1_0.md).
 Den anger scope, stegordning, arbetsregler och slutkrav. Aktuellt nästa steg
-är F2E7 – Provisioning Reconciliation / Retry / Failure Handling efter lokalt verifierade F2E3–F2E6 (databas, läsytor, mutationer och provider-lager). Licensing är stängd efter F2D9 (Security Pass, signerad Data API-gate och lokal webbläsarkontroll); cloud-verifiering sker i F2H4.
+är F2E8 – Provisioning DAL / API / Server Actions efter lokalt verifierade F2E3–F2E7 (databas, läsytor, mutationer, provider-lager och återhämtning). Licensing är stängd efter F2D9 (Security Pass, signerad Data API-gate och lokal webbläsarkontroll); cloud-verifiering sker i F2H4.
 
 SweDox Control Center är ett separat internt system. Det är frikopplat från kundernas SweDox-installationer och delar ingen kod med dem.
 

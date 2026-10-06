@@ -183,7 +183,10 @@ dokumentation
 
 Nästa steg:
 
-F2E7 – Reconciliation / Retry / Failure Handling.
+F2E8 – Provisioning DAL / API / Server Actions.
+
+F2E7 Reconciliation / Retry / Failure Handling är klar 2026-10-06:
+2 771 pgTAP, recovery-runner 5/5 och tre fångade mutationsprober. Se [Provisioning Recovery](PROVISIONING_RECOVERY.md).
 
 F2E6 Provider Integration Layer är klar 2026-10-06:
 
