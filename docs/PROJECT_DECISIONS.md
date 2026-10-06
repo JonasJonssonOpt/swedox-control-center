@@ -1,5 +1,21 @@
 # Projektbeslut
 
+## 2026-10-06: Eget Supabase-projekt per kund och första administratör
+
+- Efter genomgång av SweDox huvudsystem behålls ett eget Supabase-projekt per
+  kund. Det är redan låst i SweDox (AD-001/AD-003), SweDox är byggt för ett
+  företag per databas, och fysisk isolering är den garanti ägaren kräver.
+- Provisioning-katalog v1 får steget "Skapa första administratör och skicka
+  inbjudan" före verifieringen.
+- Control Center håller aldrig kunders service role-nycklar. Inbjudan och
+  statuskontroll sker via ett signerat, skyddat server-API i kundens SweDox.
+- Ägarens mål: affär → registrering i Control Center → inbjudan till kundens
+  administratör → igång, samt statusrapporter per kund. Det nås i ordningen:
+  change-step, F2E5–F2E10, SweDox-API, Monitoring/Dashboard. Automation av
+  projekt och deploy sker därefter i etapper.
+
+Se [change-steget](PROVISIONING_DOMAIN_DESIGN.md#change-step-första-administratör-2026-10-06).
+
 ## 2026-10-06: F2E2 Provisioning beslutslås
 
 - **Tabeller:** `provisioning_runs` (med resultatfält),

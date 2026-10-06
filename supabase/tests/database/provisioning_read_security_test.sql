@@ -13,7 +13,8 @@ insert into public.provisioning_runs(id,installation_id,created_by,updated_by)
 values('30000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000051','00000000-0000-4000-8000-000000000051');
 insert into public.provisioning_run_steps(run_id,step_key,position) values
 ('30000000-0000-4000-8000-000000000001','supabase_project',1),('30000000-0000-4000-8000-000000000001','database_schema',2),
-('30000000-0000-4000-8000-000000000001','application_deployment',3),('30000000-0000-4000-8000-000000000001','installation_verification',4);
+('30000000-0000-4000-8000-000000000001','application_deployment',3),('30000000-0000-4000-8000-000000000001','initial_administrator',4),
+('30000000-0000-4000-8000-000000000001','installation_verification',5);
 insert into public.provisioning_audit_events(run_id,event_type,actor_user_id,revision_after)
 values('30000000-0000-4000-8000-000000000001','run_requested','00000000-0000-4000-8000-000000000051',1);
 set constraints all immediate;
@@ -88,7 +89,7 @@ select is((select count(*)::integer from pg_proc p cross join lateral aclexplode
 
 set local role authenticated;
 select is(pg_temp.call(f.call,'{"sub":"00000000-0000-4000-8000-000000000051","aal":"aal2"}',pg_temp.target(f.name)),
-  'allowed:'||case f.name when 'get_provisioning_run' then '4' when 'list_provisioning_step_attempts' then '0' else '1' end,f.name||' owner AAL2 reads')
+  'allowed:'||case f.name when 'get_provisioning_run' then '5' when 'list_provisioning_step_attempts' then '0' else '1' end,f.name||' owner AAL2 reads')
 from read_functions f;
 select is(pg_temp.call(f.call,d.claims,pg_temp.target(f.name)),'P0001:unauthorized',f.name||' denies '||d.label)
 from read_functions f cross join denied_claims d;

@@ -185,6 +185,11 @@ Nästa steg:
 
 F2E5 – Provisioning Mutations / State Machine.
 
+Change-step 2026-10-06: katalog v1 har fem steg med "Skapa första
+administratör och skicka inbjudan" före verifieringen. Ägaren låste ordningen
+F2E5–F2E10, därefter SweDox bootstrap- och status-API, därefter Monitoring och
+Dashboard. Se [change-steget](PROVISIONING_DOMAIN_DESIGN.md#change-step-första-administratör-2026-10-06).
+
 F2E4 Security / Owner Read är implementerad och lokalt verifierad 2026-10-06:
 2 442 pgTAP (171 nya) och sex fångade mutationsprober. Se [F2E4-verifieringen](PROVISIONING_READ_VERIFICATION.md).
 

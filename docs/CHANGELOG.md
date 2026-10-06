@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-06: Change-step – första administratör i Provisioning
+
+- Läste SweDox huvudsystem utan ändringar och bekräftade ett eget
+  Supabase-projekt per kund.
+- Migration `20261006220000_add_provisioning_initial_administrator_step.sql`:
+  steget "Skapa första administratör och skicka inbjudan" på position 4, med
+  skydd mot befintlig historik.
+- Tester uppdaterade till fem steg. 2 445 pgTAP, 197 Node och build passerar.
+  Se [change-steget](PROVISIONING_DOMAIN_DESIGN.md#change-step-första-administratör-2026-10-06).
+
 ## 2026-10-06: F2E4 Provisioning Security / Owner Read
 
 - Migration `20261006210000_create_provisioning_read_api.sql`:

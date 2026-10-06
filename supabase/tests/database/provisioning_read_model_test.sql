@@ -27,7 +27,7 @@ begin
   insert into public.provisioning_runs(id,installation_id,created_at,created_by,updated_at,updated_by)
   values(pg_temp.r(n),pg_temp.i(inst),created,'00000000-0000-4000-8000-000000000051',created,'00000000-0000-4000-8000-000000000051');
   insert into public.provisioning_run_steps(run_id,step_key,position) values
-    (pg_temp.r(n),'supabase_project',1),(pg_temp.r(n),'database_schema',2),(pg_temp.r(n),'application_deployment',3),(pg_temp.r(n),'installation_verification',4);
+    (pg_temp.r(n),'supabase_project',1),(pg_temp.r(n),'database_schema',2),(pg_temp.r(n),'application_deployment',3),(pg_temp.r(n),'initial_administrator',4),(pg_temp.r(n),'installation_verification',5);
   insert into public.provisioning_audit_events(run_id,event_type,actor_user_id,occurred_at,revision_after) values(pg_temp.r(n),'run_requested','00000000-0000-4000-8000-000000000051',created,1);
 end $$;
 create function pg_temp.start(n int, step text, started timestamptz default null) returns void language plpgsql as $$
@@ -84,6 +84,7 @@ select pg_temp.new_run(1,1,'2026-01-01');
 select pg_temp.start(1,'supabase_project'); select pg_temp.finish(1,'supabase_project','succeeded',ref=>'proj1',region=>'eu-north-1');
 select pg_temp.start(1,'database_schema'); select pg_temp.finish(1,'database_schema','succeeded');
 select pg_temp.start(1,'application_deployment'); select pg_temp.finish(1,'application_deployment','succeeded',url=>'https://app1.example.se');
+select pg_temp.start(1,'initial_administrator'); select pg_temp.finish(1,'initial_administrator','succeeded');
 select pg_temp.start(1,'installation_verification'); select pg_temp.finish(1,'installation_verification','succeeded');
 select pg_temp.new_run(2,2,'2026-01-02'); select pg_temp.cancel(2);
 select pg_temp.new_run(3,3,'2026-01-03'); select pg_temp.start(3,'supabase_project',clock_timestamp()-interval '25 hours');
@@ -103,7 +104,7 @@ select is(pg_temp.seq('public.list_provisioning_runs()'),'07,06,05,04,03','defau
 select is(pg_temp.seq('public.list_provisioning_runs(p_include_closed=>true)'),'07,06,05,04,03,02,01','includeClosed shows history');
 select results_eq($q$select right(id::text,2),installation_display_name,installation_code,tenant_legal_name,status,blocked_reason,next_step_key,revision
   from public.list_provisioning_runs(p_include_closed=>true) order by created_at$q$,
-  $q$values ('01'::text,'Read 1'::text,'read-1'::text,'Alfa AB'::text,'succeeded'::text,null::text,null::text,9::bigint),
+  $q$values ('01'::text,'Read 1'::text,'read-1'::text,'Alfa AB'::text,'succeeded'::text,null::text,null::text,11::bigint),
   ('02','Read 2','read-2','Alfa AB','cancelled',null,'supabase_project',2),
   ('03','Read 3','read-3','Alfa AB','in_progress',null,'supabase_project',2),
   ('04','Read 4','read-4','Alfa AB','failed',null,'database_schema',5),
@@ -144,7 +145,7 @@ select throws_ok(q,'22023','validation_error',label) from (values
 -- Detail: one row per step, results, staleness.
 select results_eq(format('select step_key,step_position::integer,step_status,step_attempt_count,open_attempt_number,is_stale from public.get_provisioning_run(%L)',pg_temp.r(4)),
   $q$values ('supabase_project'::text,1,'succeeded'::text,1,null::integer,false),('database_schema',2,'failed',1,null,false),
-  ('application_deployment',3,'pending',0,null,false),('installation_verification',4,'pending',0,null,false)$q$,'detail lists the four steps in order');
+  ('application_deployment',3,'pending',0,null,false),('initial_administrator',4,'pending',0,null,false),('installation_verification',5,'pending',0,null,false)$q$,'detail lists the five steps in order');
 select results_eq(format('select distinct status,result_supabase_project_ref,result_hosting_region,result_application_url,revision,installation_environment,tenant_legal_name,catalog_version from public.get_provisioning_run(%L)',pg_temp.r(4)),
   $q$values ('failed'::text,'proj4'::text,'eu-north-1'::text,null::text,5::bigint,'production'::text,'Alfa AB'::text,1)$q$,'detail run fields and recorded results');
 select results_eq(format('select step_key,open_attempt_number,is_stale from public.get_provisioning_run(%L) where open_attempt_number is not null',pg_temp.r(3)),
@@ -152,7 +153,7 @@ select results_eq(format('select step_key,open_attempt_number,is_stale from publ
 select results_eq(format('select step_key,is_stale from public.get_provisioning_run(%L) where open_attempt_number is not null',pg_temp.r(7)),
   $q$values ('supabase_project'::text,false)$q$,'fresh open attempt is not stale');
 select is((select count(distinct evaluated_at)::integer from public.get_provisioning_run(pg_temp.r(1))),1,'one evaluation time');
-select is((select string_agg(step_status,',' order by step_position) from public.get_provisioning_run(pg_temp.r(1))),'succeeded,succeeded,succeeded,succeeded','succeeded run readable');
+select is((select string_agg(step_status,',' order by step_position) from public.get_provisioning_run(pg_temp.r(1))),'succeeded,succeeded,succeeded,succeeded,succeeded','succeeded run readable');
 select throws_ok($q$select * from public.get_provisioning_run('30000000-0000-4000-8000-0000000000ff')$q$,'P0001','not_found','unknown run');
 select throws_ok('select * from public.get_provisioning_run(null)','22023','validation_error','null run');
 
@@ -191,7 +192,7 @@ select throws_ok(q,code::char(5),msg,label) from (values
 
 -- Reads never write.
 reset role;
-select results_eq($q$select count(*)::integer,sum(revision)::integer from public.provisioning_runs$q$,$q$values (7,23)$q$,'reads changed no run');
-select is((select count(*)::integer from public.provisioning_audit_events),23,'reads wrote no audit');
+select results_eq($q$select count(*)::integer,sum(revision)::integer from public.provisioning_runs$q$,$q$values (7,25)$q$,'reads changed no run');
+select is((select count(*)::integer from public.provisioning_audit_events),25,'reads wrote no audit');
 select * from finish();
 rollback;

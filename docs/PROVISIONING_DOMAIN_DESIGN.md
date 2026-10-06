@@ -1,5 +1,60 @@
 # Provisioning Domain Design
 
+## Change-step: första administratör, 2026-10-06
+
+**Beslut:** ägaren beslutade efter en genomgång av SweDox huvudsystem
+(`C:\Users\Jonas\affarssystem`, endast läst) att ett eget Supabase-projekt per
+kund behålls. Stegkatalog v1 får ett femte steg på position 4, före
+verifieringen: `initial_administrator`, "Skapa första administratör och skicka
+inbjudan".
+
+**Underlag från SweDox:**
+
+- SweDox har ett låst beslut om en Supabase-instans per kund (AD-001/AD-003).
+  Schemat saknar kund- och företagskolumner.
+- Appen binds till sitt projekt via miljövariabler, alltså en installation per kund.
+- Ett inbjudningsflöde finns, men onboarding av den första administratören
+  återstår.
+- Row Level Security och privat Storage är inte klara. Det gör en gemensam
+  databas olämplig, och den fysiska isoleringen ger den garanti ägaren kräver.
+
+**Integrationsprincip:** SweDox säkerhetsstandard tillåter inte att kundens
+service role-nyckel lämnar kundinstallationen. Därför ska Control Center
+aldrig hålla kunders nycklar. Steget "första administratör" och den framtida
+statuskontrollen anropar i stället ett litet, skyddat server-API i kundens
+SweDox. Anropen signeras med Control Centers privata nyckel, och varje
+installation verifierar med Control Centers publika nyckel. Det byggs i
+SweDox-repot och analyseras i F2E6. Inga inloggningsuppgifter eller
+inbjudningslänkar lagras i Control Center.
+
+**Ordning (ägarens beslut):**
+
+1. detta change-step
+2. F2E5–F2E10
+3. SweDox bootstrap- och status-API när Provisioning-UI:t närmar sig
+4. Monitoring och Dashboard (F2F/F2G)
+
+**Före första verkliga kund** ska SweDox egen Security Pass vara klar:
+RLS på alla tabeller och privat Storage.
+
+**Implementation:** migration
+`20261006220000_add_provisioning_initial_administrator_step.sql`.
+
+- Den låser alla fyra tabeller och vägrar köra om någon Provisioning-historik
+  finns. Katalog v1 hade aldrig släppts, så versionen behålls som 1.
+- Den byter katalog- och audit-constraints och ersätter integritetskontrollen
+  med krav på fem steg.
+
+**Verifiering:**
+
+- 2 445/2 445 pgTAP, inklusive nya tester för katalogordning, position och
+  att `run_succeeded` bara gäller verifieringen.
+- Migrationens exakta preflight passerar tom historik och ger 55000 med en
+  befintlig körning (transaktion som rullades tillbaka).
+- Med F2E3:s gamla kontroll för fyra steg återinförd fallerar 42 tester.
+- DB-lint utan fynd och ingen typdrift. 197 Node, typecheck, ESLint,
+  Prettier och build passerar.
+
 ## Aktuell status: F2E4, 2026-10-06
 
 Läsytorna är implementerade och lokalt verifierade:
@@ -97,21 +152,22 @@ dokumentation; inga migrationer eller kod. Standardvärden som F2E1 lämnade
 | ------------- | ----------- | ------------ | --------------------------------------- |
 | run_id        | uuid        | NOT NULL     | FK provisioning_runs(id), RESTRICT      |
 | step_key      | text        | NOT NULL     | Stegnyckel enligt katalog v1            |
-| position      | smallint    | NOT NULL     | 1–4, låst mot step_key                  |
+| position      | smallint    | NOT NULL     | 1–5, låst mot step_key                  |
 | status        | text        | NOT NULL     | pending, in_progress, succeeded, failed |
 | attempt_count | integer     | NOT NULL, 0  | Antal startade eller blockerade försök  |
 | completed_at  | timestamptz | NULL         | Satt exakt när status är succeeded      |
 
 Katalog v1, låst par för `step_key` och `position`:
 
-| Position | step_key                    | Svensk etikett         | Resultat som krävs vid lyckat steg |
-| -------- | --------------------------- | ---------------------- | ---------------------------------- |
-| 1        | `supabase_project`          | Skapa Supabase-projekt | project ref och region             |
-| 2        | `database_schema`           | Kör SweDox-migrationer | inga                               |
-| 3        | `application_deployment`    | Deploya SweDox-app     | application URL                    |
-| 4        | `installation_verification` | Verifiera installation | inga                               |
+| Position | step_key                    | Svensk etikett                                 | Resultat som krävs vid lyckat steg |
+| -------- | --------------------------- | ---------------------------------------------- | ---------------------------------- |
+| 1        | `supabase_project`          | Skapa Supabase-projekt                         | project ref och region             |
+| 2        | `database_schema`           | Kör SweDox-migrationer                         | inga                               |
+| 3        | `application_deployment`    | Deploya SweDox-app                             | application URL                    |
+| 4        | `initial_administrator`     | Skapa första administratör och skicka inbjudan | inga                               |
+| 5        | `installation_verification` | Verifiera installation                         | inga                               |
 
-PK `(run_id, step_key)`; unikt `(run_id, position)`. Alla fyra rader skapas
+PK `(run_id, step_key)`; unikt `(run_id, position)`. Alla fem rader skapas
 atomiskt med körningen. Stegrader är muterbara endast via RPC:erna, och
 körningens revision täcker varje stegändring.
 
@@ -211,7 +267,7 @@ Klienten anger aldrig actor, status, steg, revision efter, försöksnummer eller
 
 | RPC                                                          | Tillstånd                                                        | Resultat                                                                                                                 |
 | ------------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `request_provisioning_run(installation_id, corr)`            | Förutsättningar uppfyllda och ingen icke-avslutad körning finns  | pending, revision 1, fyra pending-steg, `run_requested`                                                                  |
+| `request_provisioning_run(installation_id, corr)`            | Förutsättningar uppfyllda och ingen icke-avslutad körning finns  | pending, revision 1, fem pending-steg, `run_requested`                                                                   |
 | `start_provisioning_step(run_id, rev, corr)`                 | pending, blocked, failed, eller in_progress utan pågående försök | Nästa ej lyckade steg startas, eller ett blockerat försök registreras; `step_started` eller `step_blocked`               |
 | `complete_provisioning_step(run_id, rev, refs…, note, corr)` | Pågående försök finns                                            | Försök och steg lyckade; sista steget ger körning succeeded och `run_succeeded`, annars in_progress och `step_succeeded` |
 | `fail_provisioning_step(run_id, rev, category, note, corr)`  | Pågående försök finns                                            | Försök och steg failed, körning failed, `step_failed`                                                                    |
@@ -252,7 +308,7 @@ utvärderingstid, som i Licensing F2D6.
   - sortering `created_at DESC, id DESC`, keyset, 50/max 100
   - visar installationens visningsnamn, tenantens juridiska namn och nästa steg
 - **`get_provisioning_run`:**
-  - körningen med alla fyra steg och resultatfält, samt installationens och
+  - körningen med alla fem steg och resultatfält, samt installationens och
     tenantens namn
   - `evaluated_at` och härlett `is_stale` för pågående försök äldre än
     **24 timmar (standardvärde)**
@@ -313,7 +369,7 @@ deadlockcykel.
 En deferred constraint-trigger kontrollerar vid commit, som F2D4 i Licensing:
 
 - `revision` är lika med antalet auditposter, i en sammanhängande kedja 1…n
-- exakt fyra steg finns enligt katalogen
+- exakt fem steg finns enligt katalogen
 - försöksnumren är sammanhängande och `attempt_count` stämmer
 - högst ett pågående försök finns, och dess steg är `in_progress`
 - stegordningen respekteras: inget steg lyckat före ett tidigare
