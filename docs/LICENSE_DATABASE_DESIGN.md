@@ -1,5 +1,11 @@
 # License Database Design
 
+## Aktuell status: F2D8, 2026-10-06
+
+Licensing-UI är implementerat och kontraktsverifierat: lista, skapa, detail,
+villkorsändring, livscykeldialoger, förnyelse samt villkors- och
+händelsehistorik. Se [F2D8-verifieringen](LICENSE_UI_VERIFICATION.md): 197 Node. Nästa steg är F2D9 Security + Runtime.
+
 ## Aktuell status: F2D7, 2026-10-06
 
 Serverlagret `lib/server/licenses` är implementerat med service, strikt mapper,

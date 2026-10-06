@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-06: F2D8 Licensing UI
+
+- Nya sidor `/licenses`, `/licenses/new`, `/licenses/[licenseId]` och
+  `/licenses/[licenseId]/edit`, samt sex Server Actions.
+- Lista med URL-filter och keyset. Detail med livscykeldialoger, förnyelse,
+  villkorshistorik och händelsehistorik keyade på revision.
+- Licenses är klickbar i navigationen.
+- 8 nya UI-kontraktstester och uppdaterade navigations- och adapterkontrakt.
+  Node 197/197 och build passerar. Se [F2D8-verifieringen](LICENSE_UI_VERIFICATION.md). Nästa steg är F2D9.
+
 ## 2026-10-06: F2D7 Licensing Server DAL / Service Layer
 
 - Nytt `lib/server/licenses`:

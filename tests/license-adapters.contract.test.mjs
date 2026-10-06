@@ -504,7 +504,7 @@ test("action service errors map to masked Swedish messages and redirects pass th
   );
 });
 
-test("licensing HTTP surface is exactly four no-store GET read routes; no eligibility route or actions yet", async () => {
+test("licensing HTTP surface is exactly four no-store GET read routes; no eligibility route; actions are the six server actions", async () => {
   const root = new URL("../app/api/licenses/", import.meta.url);
   const files = (await readdir(root, { recursive: true }))
     .filter((name) => name.endsWith(".ts"))
@@ -527,7 +527,23 @@ test("licensing HTTP surface is exactly four no-store GET read routes; no eligib
     );
     assert.doesNotMatch(source, /eligibility|POST|PUT|PATCH|DELETE/i);
   }
-  await assert.rejects(readdir(new URL("../app/licenses/", import.meta.url)), {
-    code: "ENOENT",
-  });
+  const actions = await readFile(
+    new URL("../app/licenses/actions.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(actions, /^"use server";\n\nimport "server-only";/);
+  assert.match(actions, /createCorrelationId: randomUUID/);
+  assert.match(actions, /rethrowControlFlow: unstable_rethrow/);
+  assert.deepEqual(
+    [...actions.matchAll(/export async function (\w+)/g)].map((m) => m[1]),
+    [
+      "createLicenseAction",
+      "changeLicenseTermsAction",
+      "activateLicenseAction",
+      "suspendLicenseAction",
+      "terminateLicenseAction",
+      "renewLicenseAction",
+    ],
+  );
+  assert.doesNotMatch(actions, /Eligibility|createSupabase|\.rpc\(/);
 });

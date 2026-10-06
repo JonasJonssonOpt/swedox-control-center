@@ -27,7 +27,7 @@ test("control center shell owns the permanent semantic application frame", async
   );
 });
 
-test("Tenants and Installations are actionable and support active module state", async () => {
+test("Tenants, Installations and Licenses are actionable and support active module state", async () => {
   const shell = await source("../components/layout/control-center-shell.tsx");
 
   for (const label of [
@@ -42,10 +42,14 @@ test("Tenants and Installations are actionable and support active module state",
     assert.match(shell, new RegExp(`label: "${label}"`));
   }
 
-  assert.equal((shell.match(/href:/g) ?? []).length, 2);
+  assert.equal((shell.match(/href:/g) ?? []).length, 3);
   assert.match(shell, /href: "\/tenants"/);
   assert.match(shell, /href: "\/installations"/);
-  assert.match(shell, /activeModule: "installations" \| "tenants"/);
+  assert.match(shell, /href: "\/licenses"/);
+  assert.match(
+    shell,
+    /activeModule: "installations" \| "licenses" \| "tenants"/,
+  );
   assert.match(shell, /aria-current=/);
   assert.match(shell, /\? "page" : undefined/);
   assert.match(shell, /Kommer senare/);
@@ -85,10 +89,26 @@ test("installation routes consume the shared shell without changing root", async
   assert.match(root, /redirect\("\/tenants"\)/);
 });
 
+test("license routes consume the shared shell without nested main landmarks", async () => {
+  const layout = await source("../app/licenses/layout.tsx");
+  assert.match(layout, /ControlCenterShell activeModule="licenses"/);
+  for (const path of [
+    "../app/licenses/page.tsx",
+    "../app/licenses/new/page.tsx",
+    "../app/licenses/[licenseId]/page.tsx",
+    "../app/licenses/[licenseId]/edit/page.tsx",
+    "../app/licenses/loading.tsx",
+    "../app/licenses/error.tsx",
+    "../app/licenses/[licenseId]/loading.tsx",
+    "../app/licenses/[licenseId]/not-found.tsx",
+  ]) {
+    assert.doesNotMatch(await source(path), /<main/);
+  }
+});
+
 test("future modules have no routes or placeholder pages", async () => {
   for (const moduleName of [
     "dashboard",
-    "licenses",
     "provisioning",
     "monitoring",
     "settings",

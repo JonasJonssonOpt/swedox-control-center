@@ -8,7 +8,7 @@ const MODULES = [
     id: "installations",
     label: "Installations",
   },
-  { label: "Licenses" },
+  { href: "/licenses", id: "licenses", label: "Licenses" },
   { label: "Provisioning" },
   { label: "Monitoring" },
   { label: "Settings" },
@@ -18,7 +18,7 @@ export function ControlCenterShell({
   activeModule,
   children,
 }: Readonly<{
-  activeModule: "installations" | "tenants";
+  activeModule: "installations" | "licenses" | "tenants";
   children: React.ReactNode;
 }>) {
   return (

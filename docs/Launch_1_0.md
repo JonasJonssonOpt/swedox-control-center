@@ -27,7 +27,8 @@ att den nya roadmapen införts.
       och 7 riktiga read-concurrencykontroller. Se [F2D6-verifieringen](LICENSE_READ_VERIFICATION.md).
 - [x] F2D7 Server DAL/Service lokalt verifierad: 188 Node och 7 kontroller mot
       riktig DB-utdata. Se [F2D7-verifieringen](LICENSE_SERVER_VERIFICATION.md).
-- [ ] F2D8–F2D9: återstående Licensing-leverans enligt styrande roadmap.
+- [x] F2D8 Licensing UI kontraktsverifierad: 197 Node och build. Se [F2D8-verifieringen](LICENSE_UI_VERIFICATION.md).
+- [ ] F2D9: Licensing Security Pass, manuell webbläsarkontroll och runtime.
 
 - [x] F2D3 owner+AAL2 read security för licenses/terms, boolean-helper och
       negativa access-/write-tester lokalt verifierade. Audit förblir stängd.
@@ -52,6 +53,7 @@ att den nya roadmapen införts.
 - [x] Eligibility är härledd, fail-closed och utan tekniska provisioninggates
       (DB i F2D6; separat maskerad `technical_read_error`-gren i F2D7). Runtime ingår i F2D9.
 - [ ] Service/adapters/UI, historik, keyset och revisionsfreshness verifierade.
+      Kontraktsverifierat i F2D7/F2D8; manuell webbläsarkontroll återstår i F2D9.
 - [ ] Operativ backup/restore och retentionhantering granskade före verkliga kunddata.
 - [ ] Licensing Security Pass och verklig runtime, pagination och cleanup godkända.
 

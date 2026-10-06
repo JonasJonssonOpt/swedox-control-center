@@ -183,7 +183,11 @@ dokumentation
 
 Nästa steg:
 
-F2D8 – Licensing UI.
+F2D9 – Licensing Security Pass / Runtime Verification / Closure.
+
+F2D8 Licensing UI är implementerad och kontraktsverifierad 2026-10-06:
+197 Node och production build. Manuell webbläsarkontroll med riktig owner/MFA
+ingår i F2D9. Se [F2D8-verifieringen](LICENSE_UI_VERIFICATION.md).
 
 F2D7 Server DAL / Service Layer är implementerad och lokalt verifierad
 2026-10-06: 188 Node och 7 kontroller mot riktig DB-utdata. Den tunna

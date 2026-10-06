@@ -1,6 +1,29 @@
 # UI Standard
 
-## F2D1B Licensing UI-kontrakt (ännu ej implementerat)
+## Licensing UI (F2D8, implementerad 2026-10-06)
+
+Licensing-UI:t finns på `/licenses`, `/licenses/new`, `/licenses/[licenseId]`
+och `/licenses/[licenseId]/edit`. Licenses är nu klickbar i den globala
+navigationen. Mönstren följer Installation:
+
+- **Datahämtning:** serverrenderad initial data, URL-filter och keyset med
+  "Nästa sida".
+- **Formulär och dialoger:** native dialoger med samma fokus- och pending-mönster,
+  och `useActionState`-formulär med fältfel.
+- **Historik:** villkors- och händelsehistorik med "Ladda fler" via läsroutes.
+- **Freshness:** åtgärder och historik keyas på revision.
+
+Tillägg för Licensing:
+
+- Listans tidpunkt för giltighetsbedömning visas.
+- En ogiltig eller inaktuell cursor ger "Läs in första sidan".
+- Endast åtgärder som är tillåtna i aktuell status och giltighet renderas.
+- Förnyelse kräver ny sluttid eller Tills vidare.
+- Formulärtider är svensk lokal tid.
+
+Se [F2D8-verifieringen](LICENSE_UI_VERIFICATION.md).
+
+## F2D1B Licensing UI-kontrakt
 
 Licensing följer [License Database Design](LICENSE_DATABASE_DESIGN.md).
 Framtida lista visar tenant, plan, administrativ status, härledd giltighet,

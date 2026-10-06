@@ -1,5 +1,20 @@
 # Projektbeslut
 
+## 2026-10-06: F2D8 Licensing UI
+
+- Licenses blir klickbar i den globala navigationen. Rotens redirect till
+  `/tenants` är oförändrad.
+- Villkorsändring sker på `/licenses/[licenseId]/edit`. Livscykel och förnyelse
+  sker i native dialoger på detail. Ingen separat förnyelseroute finns.
+- Åtgärder som inte är tillåtna renderas inte. Utgången licens kan inte
+  (åter)aktiveras och Tills vidare kan inte förnyas; texten förklarar varför.
+- Startfältet för ett utkast vars start redan passerats lämnas tomt och
+  betyder "när ändringen sparas", eftersom bakåtdatering nekas.
+- Initial auditdata kopieras genom en allowlist-parser, så actor och
+  correlation aldrig når klienten.
+
+Se [F2D8-verifieringen](LICENSE_UI_VERIFICATION.md).
+
 ## 2026-10-06: F2D7 Licensing serverlager
 
 - Licensing återanvänder `requireOwnerIntegrity`, som kräver MFA/AAL2 och
