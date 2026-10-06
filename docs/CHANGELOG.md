@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-06: F2D7 Licensing Server DAL / Service Layer
+
+- Nytt `lib/server/licenses`:
+  - service, repository och strikt mapper med mikrosekundsprecision
+  - opak listcursor bunden till filtret
+  - eligibility med separat gren för tekniskt läsfel
+  - Server Action-kärna med svensk lokal tid
+- Fyra no-store-läsroutes under `/api/licenses`.
+- 20 nya Node-kontraktstester, tio fångade mutationsprober och en ny
+  lokal runner mot riktig DB-utdata (7/7).
+- Regression: 2 071 pgTAP, 188 Node, typecheck, ESLint, Prettier och build.
+  Se [F2D7-verifieringen](LICENSE_SERVER_VERIFICATION.md). Nästa steg är F2D8.
+
 ## 2026-10-06: F2D6 Licensing Read Model / Pagination / Provisioning Eligibility
 
 - Införde `list_licenses` (filter, bokstavlig sökning, keyset med

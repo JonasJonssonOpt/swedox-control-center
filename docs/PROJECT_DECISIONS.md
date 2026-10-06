@@ -1,5 +1,24 @@
 # Projektbeslut
 
+## 2026-10-06: F2D7 Licensing serverlager
+
+- Licensing återanvänder `requireOwnerIntegrity`, som kräver MFA/AAL2 och
+  owner-equality, före validering och repository.
+- Listcursorn är en opak base64url-token med position, seriens `evaluatedAt`
+  och hela filtret. Den är inte signerad, eftersom DB validerar position och
+  tid igen och token inte ger någon behörighet. Ändrat filter ger
+  `validation_error`, och UI läser då om från första sidan.
+- Eligibility returnerar antingen `evaluated` eller `technical_read_error`,
+  utan `eligible`-fält i den senare. Ingen HTTP-route finns för eligibility.
+- Formulärtider anges i svensk lokal tid och omvandlas till exakt UTC. Tider
+  vid sommartidsbyte som saknas eller är tvetydiga nekas. Renewal kräver
+  uttryckligt val mellan ny sluttid och Tills vidare.
+- UUID:er måste vara gemener, som PostgreSQL returnerar dem.
+- Den tunna `"use server"`-filen skapas i F2D8 tillsammans med sidorna den
+  revaliderar.
+
+Se [F2D7-verifieringen](LICENSE_SERVER_VERIFICATION.md).
+
 ## 2026-10-06: F2D6 Read Model och eligibility
 
 Följande preciseringar av F2D1B gäller för läsytorna:

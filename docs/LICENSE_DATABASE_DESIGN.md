@@ -1,5 +1,13 @@
 # License Database Design
 
+## Aktuell status: F2D7, 2026-10-06
+
+Serverlagret `lib/server/licenses` är implementerat med service, strikt mapper,
+opak listcursor, eligibility med separat gren för tekniskt läsfel, fyra
+no-store-läsroutes och en Server Action-kärna. Owner-integritet med MFA/AAL2
+körs före all indatahantering. Se [F2D7-verifieringen](LICENSE_SERVER_VERIFICATION.md): 188 Node och 7 kontroller mot riktig
+DB-utdata. Nästa steg är F2D8.
+
 ## Aktuell status: F2D6, 2026-10-06
 
 Read model, keyset och provisioning eligibility är implementerade som fem

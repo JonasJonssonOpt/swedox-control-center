@@ -1,5 +1,15 @@
 # Security Standard
 
+## F2D7: Licensing serverlager
+
+Varje Licensing-operation kör `requireOwnerIntegrity` (MFA/AAL2 och
+owner-equality) före validering och repository. Repositoryt anropar endast de
+elva Licensing-RPC:erna via den requestlokala SSR-klienten, utan tabellanrop,
+browserklient eller Service Role. All utdata runtime-valideras innan den blir
+DTO. Loggar innehåller endast kategori, händelse, tid och correlation. Routes är
+GET-only och `private, no-store`. Actions läser allowlistad FormData och
+genererar correlation på servern. Se [F2D7-verifieringen](LICENSE_SERVER_VERIFICATION.md).
+
 ## F2D6: Licensing read RPC
 
 Lista, detail, terms history, audit och eligibility kräver owner+AAL2 före

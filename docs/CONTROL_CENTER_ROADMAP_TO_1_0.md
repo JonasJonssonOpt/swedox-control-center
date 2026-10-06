@@ -183,7 +183,11 @@ dokumentation
 
 Nästa steg:
 
-F2D7 – Licensing Server DAL / Service Layer.
+F2D8 – Licensing UI.
+
+F2D7 Server DAL / Service Layer är implementerad och lokalt verifierad
+2026-10-06: 188 Node och 7 kontroller mot riktig DB-utdata. Den tunna
+"use server"-filen följer med F2D8. Se [F2D7-verifieringen](LICENSE_SERVER_VERIFICATION.md).
 
 F2D6 Read Model / Pagination / Provisioning Eligibility är implementerad och
 lokalt verifierad 2026-10-06: 2 071 pgTAP, 168 Node och 7 read-
