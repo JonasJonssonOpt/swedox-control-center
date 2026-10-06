@@ -183,7 +183,17 @@ dokumentation
 
 Nästa steg:
 
-F2D9 – Licensing Security Pass / Runtime Verification / Closure.
+F2E1 – Provisioning Domain Analysis.
+
+F2D9 är godkänd 2026-10-06 och Licensing är stängd:
+
+- Tekniskt komplett: Ja.
+- Manuellt runtimeverifierat: Ja, lokalt.
+- Säkerhetsverifierat: Ja.
+- Verksamhetsklart: Ja i funktion; produktion kräver F2H4.
+- Låst: Ja.
+
+Se [F2D9-stängningen](LICENSE_RUNTIME_VERIFICATION.md).
 
 F2D8 Licensing UI är implementerad och kontraktsverifierad 2026-10-06:
 197 Node och production build. Manuell webbläsarkontroll med riktig owner/MFA

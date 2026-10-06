@@ -100,7 +100,9 @@ Verifierade standardportar:
 
 Lokalt gäller:
 
-- signup och e-postsignup är avstängda
+- självregistrering är avstängd (`[auth] enable_signup = false`)
+- e-postprovidern är påslagen lokalt (`[auth.email] enable_signup = true`), så
+  e-post/lösenordsinloggning fungerar; CLI:t stänger annars providern helt
 - anonymous sign-in och manual linking är avstängda
 - externa providers är avstängda
 - TOTP enrollment och verification är aktiverade

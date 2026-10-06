@@ -60,7 +60,8 @@ och 8 concurrencykontroller. F2D5C Terms/Renewal är lokalt verifierad
 2026-10-06 med 1 800 pgTAP; hela F2D5 är komplett på databasnivå. F2D6
 Read/Pagination/Eligibility är lokalt verifierad 2026-10-06 med 2 071 pgTAP.
 F2D7 Server DAL är lokalt verifierad 2026-10-06 med 188 Node. F2D8 UI är
-kontraktsverifierad 2026-10-06 med 197 Node. Nästa steg är F2D9. Hela F2D5 och Licensing är inte klara;
+kontraktsverifierad 2026-10-06 med 197 Node. F2D9 stängde Licensing 2026-10-06
+(Security Pass, signerad Data API-gate och lokal webbläsarkontroll). Nästa steg är F2E1. Hela F2D5 och Licensing är inte klara;
 nedan beskrivs tidigare grund.
 
 F2D1B har låst domänkontraktet och säkerhetsrekommendation B i

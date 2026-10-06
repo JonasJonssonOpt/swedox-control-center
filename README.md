@@ -2,7 +2,7 @@
 
 Styrande utvecklingsplan: [Roadmap till färdig Control Center 1.0](docs/CONTROL_CENTER_ROADMAP_TO_1_0.md).
 Den anger scope, stegordning, arbetsregler och slutkrav. Aktuellt nästa steg
-är F2D9 – Licensing Security Pass / Runtime Verification efter lokalt verifierad F2D5–F2D7 (databas och serverlager) och kontraktsverifierad F2D8 (UI på `/licenses`).
+är F2E1 – Provisioning Domain Analysis. Licensing är stängd efter F2D9 (Security Pass, signerad Data API-gate och lokal webbläsarkontroll); cloud-verifiering sker i F2H4.
 
 SweDox Control Center är ett separat internt system. Det är frikopplat från kundernas SweDox-installationer och delar ingen kod med dem.
 

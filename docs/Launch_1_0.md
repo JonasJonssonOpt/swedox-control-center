@@ -28,7 +28,9 @@ att den nya roadmapen införts.
 - [x] F2D7 Server DAL/Service lokalt verifierad: 188 Node och 7 kontroller mot
       riktig DB-utdata. Se [F2D7-verifieringen](LICENSE_SERVER_VERIFICATION.md).
 - [x] F2D8 Licensing UI kontraktsverifierad: 197 Node och build. Se [F2D8-verifieringen](LICENSE_UI_VERIFICATION.md).
-- [ ] F2D9: Licensing Security Pass, manuell webbläsarkontroll och runtime.
+- [x] F2D9 Licensing Security Pass, signerad Data API-gate (11/11) och manuell
+      webbläsarkontroll lokalt godkända; Licensing är stängd. Se [F2D9-stängningen](LICENSE_RUNTIME_VERIFICATION.md).
+- [ ] Licensing cloud-deployment och samma checklista i molnet (F2H4).
 
 - [x] F2D3 owner+AAL2 read security för licenses/terms, boolean-helper och
       negativa access-/write-tester lokalt verifierade. Audit förblir stängd.
@@ -42,22 +44,25 @@ att den nya roadmapen införts.
 - [x] F2D2:s tre-tabellsgrund, FK-cykler, unik icke-terminerad tenantlicens och licenstyper lokalt verifierade 2026-09-12.
 - [x] Global genererad typjämförelse utan drift efter explicit komplettering av fem befintliga nullable RPC-fält, se [verifieringsrapporten](LICENSE_FOUNDATION_VERIFICATION.md).
 - [x] RLS/FORCE RLS, grants och samtliga read-/RPC-gränser verifierade på
-      databasnivå (F2D3 tabeller, F2D5 mutationer, F2D6 läs-RPC:er). Runtime ingår i F2D9.
-- [ ] Verklig direkt Data API-åtkomst nekar owner AAL1 och tillåter owner AAL2.
+      databasnivå (F2D3 tabeller, F2D5 mutationer, F2D6 läs-RPC:er). Runtime godkänd i F2D9.
+- [x] Verklig direkt Data API-åtkomst nekar owner AAL1 och tillåter owner AAL2
+      (lokalt med riktiga ES256-signerade tokens och TOTP step-up; se [F2D9-stängningen](LICENSE_RUNTIME_VERIFICATION.md)).
 - [x] Immutable terms, metadataaudit och full atomisk rollback verifierade på
-      databasnivå (F2D4/F2D5, lokal pgTAP och concurrency). Runtime ingår i F2D9.
+      databasnivå (F2D4/F2D5, lokal pgTAP och concurrency). Runtime godkänd i F2D9.
 - [x] Lifecycle, tidsgränser, renewalavbrott, no-op och parallella writes verifierade
-      på databasnivå (F2D5B/F2D5C). Runtime ingår i F2D9.
+      på databasnivå (F2D5B/F2D5C). Runtime godkänd i F2D9.
 - [x] Tenantavailability och suspend/terminate för otillgänglig tenant verifierade
-      på databasnivå (F2D5B/F2D5C). Runtime ingår i F2D9.
+      på databasnivå (F2D5B/F2D5C). Runtime godkänd i F2D9.
 - [x] Eligibility är härledd, fail-closed och utan tekniska provisioninggates
-      (DB i F2D6; separat maskerad `technical_read_error`-gren i F2D7). Runtime ingår i F2D9.
-- [ ] Service/adapters/UI, historik, keyset och revisionsfreshness verifierade.
-      Kontraktsverifierat i F2D7/F2D8; manuell webbläsarkontroll återstår i F2D9.
+      (DB i F2D6; separat maskerad `technical_read_error`-gren i F2D7). Runtime godkänd i F2D9.
+- [x] Service/adapters/UI, historik, keyset och revisionsfreshness verifierade
+      (kontrakt i F2D7/F2D8; manuell webbläsarkontroll godkänd i F2D9).
 - [ ] Operativ backup/restore och retentionhantering granskade före verkliga kunddata.
-- [ ] Licensing Security Pass och verklig runtime, pagination och cleanup godkända.
+- [x] Licensing Security Pass och verklig runtime, pagination och cleanup godkända
+      (lokalt; cloud i F2H4).
 
-Licensing har en lokalt verifierad databasgrund men är inte komplett eller runtimeverifierad. Designbeslut är
+Licensing är tekniskt komplett, säkerhetsverifierad och lokalt runtimeverifierad (F2D9). Cloud-verifiering
+återstår i F2H4. Designbeslut är
 inte bevis för faktisk usage-enforcement i SweDox; konsumentintegration är separat.
 
 ## Syfte

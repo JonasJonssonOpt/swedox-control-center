@@ -1,5 +1,21 @@
 # Projektbeslut
 
+## 2026-10-06: F2D9 Licensing stängd
+
+- Licensing är stängd och låst efter Security Pass, signerad Data API-gate och
+  manuell webbläsarkontroll. Ändringar kräver ett analyserat change-step.
+- Användaren valde lokal webbläsarkontroll nu och cloud-deployment med samma
+  checklista i F2H4.
+- Användaren godkände lokal `[auth.email] enable_signup = true`. CLI:t mappar
+  den till själva e-postprovidern; global `enable_signup = false` blockerar
+  fortfarande självregistrering, vilket runnern bevisar. Molnets
+  auth-inställningar ändras inte.
+- Fynd inför F2H1/F2H4: den äldre HS256-JWT-hemligheten kan skapa giltiga
+  AAL2-tokens. Den ska behandlas som kritisk, och avstängning av äldre nycklar
+  i molnet ska utredas.
+
+Se [F2D9-stängningen](LICENSE_RUNTIME_VERIFICATION.md).
+
 ## 2026-10-06: F2D8 Licensing UI
 
 - Licenses blir klickbar i den globala navigationen. Rotens redirect till

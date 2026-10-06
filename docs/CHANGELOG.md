@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-06: F2D9 Licensing Security Pass / Runtime / Closure
+
+- Ny runner `verify-licensing-data-api.mjs` med riktiga lokala ES256-tokens,
+  TOTP step-up och direkta Data API-anrop: 11/11.
+- Lokal `[auth.email] enable_signup = true` (endast e-postprovidern).
+  Självregistrering förblir blockerad.
+- Katalogrevision och manuell webbläsarkontroll (sju punkter) godkända.
+  Fixtures städade.
+- Slutregression: 2 071 pgTAP, 197 Node, sju runners, lint, typer och build.
+  Licensing är stängd. Se [F2D9-stängningen](LICENSE_RUNTIME_VERIFICATION.md). Nästa steg är F2E1.
+
 ## 2026-10-06: F2D8 Licensing UI
 
 - Nya sidor `/licenses`, `/licenses/new`, `/licenses/[licenseId]` och

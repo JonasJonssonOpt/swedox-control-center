@@ -1,5 +1,23 @@
 # Security Standard
 
+## F2D9: Licensing Security Pass
+
+**Godkänd 2026-10-06.**
+
+- **Katalogrevision:** RLS och FORCE, exakta grants och policies, endast
+  authenticated EXECUTE och hårdade SECURITY DEFINER-funktioner. Ingen
+  funktion i `public` är körbar för anon, och alla historiktriggers är aktiva.
+- **Riktiga signerade tokens mot Data API (11/11):**
+  - Owner AAL1 nekas på alla ytor.
+  - `aal2` i metadata och gammal AAL1-token efter step-up nekas.
+  - Non-owner AAL2 nekas utan att avslöja om ett id finns.
+  - Anon nekas.
+  - Manipulerad signatur, fel hemlighet och utgången token nekas.
+  - Även owner AAL2 kan inte läsa audit eller skriva direkt.
+
+Restrisk: den äldre HS256-hemligheten kan skapa giltiga tokens och måste
+skyddas som kritisk hemlighet. Se [F2D9-stängningen](LICENSE_RUNTIME_VERIFICATION.md).
+
 ## F2D7: Licensing serverlager
 
 Varje Licensing-operation kör `requireOwnerIntegrity` (MFA/AAL2 och

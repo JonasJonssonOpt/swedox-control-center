@@ -1,5 +1,12 @@
 # License Database Design
 
+## Aktuell status: F2D9 stängd, 2026-10-06
+
+Licensing är tekniskt komplett, säkerhetsverifierad och lokalt
+runtimeverifierad: Security Pass, 11/11 med riktiga signerade tokens mot
+Data API och godkänd manuell webbläsarkontroll. Domänen är låst och ändras
+endast via analyserat change-step. Cloud-verifiering sker i F2H4. Se [F2D9-stängningen](LICENSE_RUNTIME_VERIFICATION.md).
+
 ## Aktuell status: F2D8, 2026-10-06
 
 Licensing-UI är implementerat och kontraktsverifierat: lista, skapa, detail,
