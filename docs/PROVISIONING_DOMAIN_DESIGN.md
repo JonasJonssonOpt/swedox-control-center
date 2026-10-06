@@ -1,5 +1,16 @@
 # Provisioning Domain Design
 
+## Aktuell status: F2E3, 2026-10-06
+
+Databasgrunden är implementerad och lokalt verifierad:
+
+- fyra stängda tabeller med skyddstriggers
+- avslut av försök exakt en gång
+- deferred integritetskontroll
+
+Se [F2E3-verifieringen](PROVISIONING_FOUNDATION_VERIFICATION.md): 2 271 pgTAP och 197 Node. Nästa steg är F2E4. Provisioning är inte
+komplett.
+
 ## F2E2: beslutslås och implementationsplan, 2026-10-06
 
 F2E2 låser den exakta 1.0-modellen utifrån F2E1:s beslut nedan. Steget är

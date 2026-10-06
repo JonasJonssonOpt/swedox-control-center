@@ -183,7 +183,10 @@ dokumentation
 
 Nästa steg:
 
-F2E3 – Provisioning Database Foundation.
+F2E4 – Provisioning Security / Owner Read.
+
+F2E3 Database Foundation är implementerad och lokalt verifierad 2026-10-06:
+2 271 pgTAP (200 nya) och åtta fångade mutationsprober. Se [F2E3-verifieringen](PROVISIONING_FOUNDATION_VERIFICATION.md).
 
 F2E2 Decision Lock är klar 2026-10-06. Låst:
 

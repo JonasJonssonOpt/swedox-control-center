@@ -1,5 +1,17 @@
 # Security Standard
 
+## F2E3: Provisioning-tabeller stängda
+
+- **Åtkomst:** de fyra Provisioning-tabellerna har RLS och FORCE RLS, noll
+  policies och inga privilegier för PUBLIC, anon, authenticated eller
+  service_role, inte heller SELECT. Läsning öppnas endast via RPC i F2E4.
+- **Skydd:** skyddstriggers stoppar radering, truncate och identitetsändring
+  även för privilegierad DML. Försök är append-only och avslutas exakt en gång.
+- **Integritet:** en deferred kontroll verkställer revisionskedja, stegordning
+  och koppling mellan försök och audit.
+
+Se [F2E3-verifieringen](PROVISIONING_FOUNDATION_VERIFICATION.md).
+
 ## F2D9: Licensing Security Pass
 
 **Godkänd 2026-10-06.**

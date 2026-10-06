@@ -288,6 +288,200 @@ export type Database = {
           },
         ];
       };
+      provisioning_audit_events: {
+        Row: {
+          actor_user_id: string;
+          attempt_number: number | null;
+          correlation_id: string | null;
+          event_type: string;
+          id: string;
+          occurred_at: string;
+          revision_after: number;
+          revision_before: number | null;
+          run_id: string;
+          step_key: string | null;
+        };
+        Insert: {
+          actor_user_id: string;
+          attempt_number?: number | null;
+          correlation_id?: string | null;
+          event_type: string;
+          id?: string;
+          occurred_at?: string;
+          revision_after: number;
+          revision_before?: number | null;
+          run_id: string;
+          step_key?: string | null;
+        };
+        Update: {
+          actor_user_id?: string;
+          attempt_number?: number | null;
+          correlation_id?: string | null;
+          event_type?: string;
+          id?: string;
+          occurred_at?: string;
+          revision_after?: number;
+          revision_before?: number | null;
+          run_id?: string;
+          step_key?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fk_provisioning_audit_events_run_id";
+            columns: ["run_id"];
+            isOneToOne: false;
+            referencedRelation: "provisioning_runs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      provisioning_run_steps: {
+        Row: {
+          attempt_count: number;
+          completed_at: string | null;
+          position: number;
+          run_id: string;
+          status: string;
+          step_key: string;
+        };
+        Insert: {
+          attempt_count?: number;
+          completed_at?: string | null;
+          position: number;
+          run_id: string;
+          status?: string;
+          step_key: string;
+        };
+        Update: {
+          attempt_count?: number;
+          completed_at?: string | null;
+          position?: number;
+          run_id?: string;
+          status?: string;
+          step_key?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fk_provisioning_run_steps_run_id";
+            columns: ["run_id"];
+            isOneToOne: false;
+            referencedRelation: "provisioning_runs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      provisioning_runs: {
+        Row: {
+          blocked_reason: string | null;
+          catalog_version: number;
+          created_at: string;
+          created_by: string;
+          finished_at: string | null;
+          id: string;
+          installation_id: string;
+          result_application_url: string | null;
+          result_hosting_region: string | null;
+          result_supabase_project_ref: string | null;
+          revision: number;
+          status: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        Insert: {
+          blocked_reason?: string | null;
+          catalog_version?: number;
+          created_at?: string;
+          created_by: string;
+          finished_at?: string | null;
+          id?: string;
+          installation_id: string;
+          result_application_url?: string | null;
+          result_hosting_region?: string | null;
+          result_supabase_project_ref?: string | null;
+          revision?: number;
+          status?: string;
+          updated_at?: string;
+          updated_by: string;
+        };
+        Update: {
+          blocked_reason?: string | null;
+          catalog_version?: number;
+          created_at?: string;
+          created_by?: string;
+          finished_at?: string | null;
+          id?: string;
+          installation_id?: string;
+          result_application_url?: string | null;
+          result_hosting_region?: string | null;
+          result_supabase_project_ref?: string | null;
+          revision?: number;
+          status?: string;
+          updated_at?: string;
+          updated_by?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fk_provisioning_runs_installation_id";
+            columns: ["installation_id"];
+            isOneToOne: false;
+            referencedRelation: "installations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      provisioning_step_attempts: {
+        Row: {
+          attempt_number: number;
+          blocked_reason: string | null;
+          failure_category: string | null;
+          finished_at: string | null;
+          finished_revision: number | null;
+          id: string;
+          note: string | null;
+          outcome: string | null;
+          run_id: string;
+          started_at: string;
+          started_revision: number;
+          step_key: string;
+        };
+        Insert: {
+          attempt_number: number;
+          blocked_reason?: string | null;
+          failure_category?: string | null;
+          finished_at?: string | null;
+          finished_revision?: number | null;
+          id?: string;
+          note?: string | null;
+          outcome?: string | null;
+          run_id: string;
+          started_at?: string;
+          started_revision: number;
+          step_key: string;
+        };
+        Update: {
+          attempt_number?: number;
+          blocked_reason?: string | null;
+          failure_category?: string | null;
+          finished_at?: string | null;
+          finished_revision?: number | null;
+          id?: string;
+          note?: string | null;
+          outcome?: string | null;
+          run_id?: string;
+          started_at?: string;
+          started_revision?: number;
+          step_key?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "fk_provisioning_step_attempts_step";
+            columns: ["run_id", "step_key"];
+            isOneToOne: false;
+            referencedRelation: "provisioning_run_steps";
+            referencedColumns: ["run_id", "step_key"];
+          },
+        ];
+      };
       tenant_audit_events: {
         Row: {
           actor_user_id: string;

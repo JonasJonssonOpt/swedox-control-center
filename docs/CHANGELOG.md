@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-06: F2E3 Provisioning Database Foundation
+
+- Migration `20261006200000_create_provisioning_foundation.sql`:
+  - fyra stängda tabeller
+  - skyddstriggers och avslut av försök exakt en gång
+  - deferred integritetskontroll
+- Två nya pgTAP-filer (125 + 75) och utökad allowlist för auditfunktioner.
+  2 271 pgTAP, DB-lint, typer, 197 Node och build passerar.
+- En intermittent avbrott i F2D5A-runnern (Windows) noterad för F2H2. Se [F2E3-verifieringen](PROVISIONING_FOUNDATION_VERIFICATION.md).
+  Nästa steg är F2E4.
+
 ## 2026-10-06: F2E2 Provisioning Decision Lock / Implementation Plan
 
 - Låste exakt datamodell, katalog v1, statusar, felmodell, RPC-kontrakt,
