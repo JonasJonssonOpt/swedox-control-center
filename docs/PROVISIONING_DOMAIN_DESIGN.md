@@ -1,5 +1,15 @@
 # Provisioning Domain Design
 
+## Aktuell status: F2E5, 2026-10-06
+
+De fem mutations-RPC:erna är implementerade och lokalt verifierade:
+
+- begär, starta steg, registrera lyckat eller misslyckat utfall, avbryt
+- förutsättningar prövas på nytt vid varje stegstart, och blockerade försök
+  registreras
+
+Se [F2E5-verifieringen](PROVISIONING_MUTATION_VERIFICATION.md): 2 724 pgTAP och 8/8 riktiga concurrencykontroller. Nästa steg är F2E6.
+
 ## Change-step: första administratör, 2026-10-06
 
 **Beslut:** ägaren beslutade efter en genomgång av SweDox huvudsystem

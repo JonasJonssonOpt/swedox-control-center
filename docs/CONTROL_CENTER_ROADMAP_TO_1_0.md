@@ -183,7 +183,11 @@ dokumentation
 
 Nästa steg:
 
-F2E5 – Provisioning Mutations / State Machine.
+F2E6 – Provider Integration Layer.
+
+F2E5 Mutations / State Machine är implementerad och lokalt verifierad
+2026-10-06: 2 724 pgTAP (279 nya), sex fångade mutationsprober och 8/8
+concurrency. Se [F2E5-verifieringen](PROVISIONING_MUTATION_VERIFICATION.md).
 
 Change-step 2026-10-06: katalog v1 har fem steg med "Skapa första
 administratör och skicka inbjudan" före verifieringen. Ägaren låste ordningen

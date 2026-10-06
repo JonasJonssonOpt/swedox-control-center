@@ -743,6 +743,35 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      cancel_provisioning_run: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_run_id: string;
+        };
+        Returns: {
+          blocked_reason: string | null;
+          catalog_version: number;
+          created_at: string;
+          created_by: string;
+          finished_at: string | null;
+          id: string;
+          installation_id: string;
+          result_application_url: string | null;
+          result_hosting_region: string | null;
+          result_supabase_project_ref: string | null;
+          revision: number;
+          status: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "provisioning_runs";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       change_license_terms: {
         Args: {
           p_correlation_id?: string;
@@ -766,6 +795,39 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "licenses";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      complete_provisioning_step: {
+        Args: {
+          p_application_url?: string;
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_hosting_region?: string;
+          p_note?: string;
+          p_run_id: string;
+          p_supabase_project_ref?: string;
+        };
+        Returns: {
+          blocked_reason: string | null;
+          catalog_version: number;
+          created_at: string;
+          created_by: string;
+          finished_at: string | null;
+          id: string;
+          installation_id: string;
+          result_application_url: string | null;
+          result_hosting_region: string | null;
+          result_supabase_project_ref: string | null;
+          revision: number;
+          status: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "provisioning_runs";
           isOneToOne: true;
           isSetofReturn: false;
         };
@@ -899,6 +961,37 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "installations";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      fail_provisioning_step: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_failure_category: string;
+          p_note?: string;
+          p_run_id: string;
+        };
+        Returns: {
+          blocked_reason: string | null;
+          catalog_version: number;
+          created_at: string;
+          created_by: string;
+          finished_at: string | null;
+          id: string;
+          installation_id: string;
+          result_application_url: string | null;
+          result_hosting_region: string | null;
+          result_supabase_project_ref: string | null;
+          revision: number;
+          status: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "provisioning_runs";
           isOneToOne: true;
           isSetofReturn: false;
         };
@@ -1265,6 +1358,13 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      provisioning_block_reason: {
+        Args: {
+          p_installation: Database["public"]["Tables"]["installations"]["Row"];
+          p_tenant: Database["public"]["Tables"]["tenants"]["Row"];
+        };
+        Returns: string;
+      };
       renew_license: {
         Args: {
           p_correlation_id?: string;
@@ -1286,6 +1386,31 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "licenses";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      request_provisioning_run: {
+        Args: { p_correlation_id?: string; p_installation_id: string };
+        Returns: {
+          blocked_reason: string | null;
+          catalog_version: number;
+          created_at: string;
+          created_by: string;
+          finished_at: string | null;
+          id: string;
+          installation_id: string;
+          result_application_url: string | null;
+          result_hosting_region: string | null;
+          result_supabase_project_ref: string | null;
+          revision: number;
+          status: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "provisioning_runs";
           isOneToOne: true;
           isSetofReturn: false;
         };
@@ -1350,6 +1475,35 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "tenants";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      start_provisioning_step: {
+        Args: {
+          p_correlation_id?: string;
+          p_expected_revision: number;
+          p_run_id: string;
+        };
+        Returns: {
+          blocked_reason: string | null;
+          catalog_version: number;
+          created_at: string;
+          created_by: string;
+          finished_at: string | null;
+          id: string;
+          installation_id: string;
+          result_application_url: string | null;
+          result_hosting_region: string | null;
+          result_supabase_project_ref: string | null;
+          revision: number;
+          status: string;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "provisioning_runs";
           isOneToOne: true;
           isSetofReturn: false;
         };

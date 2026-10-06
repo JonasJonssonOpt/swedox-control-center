@@ -1,5 +1,20 @@
 # Security Standard
 
+## F2E5: Provisioning-mutationer
+
+- **RPC:er:** fem SECURITY DEFINER-mutationer med owner+AAL2 före validering
+  och uppslag. Actor kommer från `auth.uid()`. Klienten anger aldrig status,
+  steg eller revision efter ändringen.
+- **Låsning:** Installation → Tenant (`FOR KEY SHARE`) → körning
+  (`FOR NO KEY UPDATE`), expected revision och exakt en auditpost.
+- **Licens:** omprövas via Licensings kontrakt vid varje stegstart, utan
+  reservation.
+- **Intern hjälpfunktion:** `provisioning_block_reason` saknar API-grant.
+- **Testat:** elva nekade claimformer, saknad singleton, anon och service_role
+  per RPC.
+
+Se [F2E5-verifieringen](PROVISIONING_MUTATION_VERIFICATION.md).
+
 ## F2E4: Provisioning-läsytor
 
 - **RPC:er:** fyra STABLE SECURITY DEFINER-RPC:er med owner+AAL2 före

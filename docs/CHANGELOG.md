@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-06: F2E5 Provisioning Mutations / State Machine
+
+- Migration `20261006230000_create_provisioning_mutations.sql`:
+  `request_provisioning_run`, `start_provisioning_step`,
+  `complete_provisioning_step`, `fail_provisioning_step`,
+  `cancel_provisioning_run` och den interna `provisioning_block_reason`.
+- Två nya pgTAP-filer (279 tester) och en ny concurrency-runner (8/8).
+  2 724 pgTAP, alla sju runners, 197 Node och build passerar. Se [F2E5-verifieringen](PROVISIONING_MUTATION_VERIFICATION.md).
+  Nästa steg är F2E6.
+
 ## 2026-10-06: Change-step – första administratör i Provisioning
 
 - Läste SweDox huvudsystem utan ändringar och bekräftade ett eget

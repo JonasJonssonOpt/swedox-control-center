@@ -35,7 +35,9 @@ from provisioning_tables t cross join unnest(array['anon','authenticated','servi
 select set_eq($q$select proname::text from pg_proc where pronamespace='public'::regnamespace and proname like '%provisioning%' and proname not like '%license%'$q$,
   $q$values ('guard_provisioning_run_modification'),('guard_provisioning_run_step_modification'),('guard_provisioning_step_attempt_modification'),
   ('prevent_provisioning_audit_event_modification'),('enforce_provisioning_run_integrity'),('is_provisioning_owner_aal2'),
-  ('list_provisioning_runs'),('get_provisioning_run'),('list_provisioning_step_attempts'),('list_provisioning_audit_events')$q$,'F2E3 structural functions plus F2E4 helper and read RPCs');
+  ('list_provisioning_runs'),('get_provisioning_run'),('list_provisioning_step_attempts'),('list_provisioning_audit_events'),
+  ('provisioning_block_reason'),('request_provisioning_run'),('start_provisioning_step'),('complete_provisioning_step'),('fail_provisioning_step'),('cancel_provisioning_run')$q$,
+  'F2E3 structural functions, F2E4 reads and F2E5 mutations');
 select ok(p.proowner='postgres'::regrole and p.proconfig=array['search_path=pg_catalog'] and p.prorettype='trigger'::regtype,p.proname||' hardened trigger function')
 from pg_proc p where p.pronamespace='public'::regnamespace and p.proname ~ '^(guard|prevent|enforce)_provisioning';
 select is((select count(*)::integer from pg_proc p cross join lateral aclexplode(p.proacl) a where p.oid=f.oid and a.grantee<>p.proowner),0,f.proname||' no non-owner EXECUTE')
