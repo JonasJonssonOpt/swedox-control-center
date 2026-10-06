@@ -102,28 +102,28 @@ export async function verifyMfaChallenge(
   _previousState: ChallengeVerificationState,
   formData: FormData,
 ): Promise<ChallengeVerificationState> {
-  const owner = await requireChallengeState();
+  await requireChallengeState();
 
   const codeValue = formData.get("code");
 
   if (typeof codeValue !== "string" || !/^\d{6}$/.test(codeValue.trim())) {
-    recordMfaAuditEvent("challenge_failed", owner.userId);
+    recordMfaAuditEvent("challenge_failed");
     return { error: GENERIC_VERIFICATION_ERROR };
   }
 
-  recordMfaAuditEvent("challenge_started", owner.userId);
+  recordMfaAuditEvent("challenge_started");
   const result = await performChallengeVerification(codeValue.trim());
 
   if (result.status === "security_error") {
-    recordMfaAuditEvent("challenge_failed", owner.userId);
+    recordMfaAuditEvent("challenge_failed");
     redirect("/auth/security-error");
   }
 
   if (result.status === "verification_failed") {
-    recordMfaAuditEvent("challenge_failed", owner.userId);
+    recordMfaAuditEvent("challenge_failed");
     return { error: GENERIC_VERIFICATION_ERROR };
   }
 
-  recordMfaAuditEvent("challenge_completed", owner.userId);
+  recordMfaAuditEvent("challenge_completed");
   redirect("/tenants");
 }

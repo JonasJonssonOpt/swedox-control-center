@@ -49,17 +49,17 @@ export async function verifyMfaEnrollment(
   _previousState: EnrollmentVerificationState,
   formData: FormData,
 ): Promise<EnrollmentVerificationState> {
-  const owner = await requireMfaEnrollmentState();
+  await requireMfaEnrollmentState();
   const codeValue = formData.get("code");
 
   if (typeof codeValue !== "string" || !/^\d{6}$/.test(codeValue.trim())) {
-    recordMfaAuditEvent("enrollment_failed", owner.userId);
+    recordMfaAuditEvent("enrollment_failed");
     return { error: GENERIC_VERIFICATION_ERROR };
   }
 
   const factorId = await getPendingMfaFactorId();
   if (!factorId) {
-    recordMfaAuditEvent("enrollment_failed", owner.userId);
+    recordMfaAuditEvent("enrollment_failed");
     return { error: GENERIC_VERIFICATION_ERROR };
   }
 
@@ -68,11 +68,11 @@ export async function verifyMfaEnrollment(
     codeValue.trim(),
   );
   if (result.status !== "success") {
-    recordMfaAuditEvent("enrollment_failed", owner.userId);
+    recordMfaAuditEvent("enrollment_failed");
     return { error: GENERIC_VERIFICATION_ERROR };
   }
 
   await clearPendingMfaFactorId();
-  recordMfaAuditEvent("enrollment_completed", owner.userId);
+  recordMfaAuditEvent("enrollment_completed");
   redirect("/tenants");
 }

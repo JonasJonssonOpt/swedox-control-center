@@ -76,7 +76,11 @@ export default async function TenantDetailPage({
 
       <TenantDetail tenant={tenant} />
       <div className="mt-5">
-        <TenantAuditHistory initialPage={auditPage} tenantId={tenantId} />
+        <TenantAuditHistory
+          initialPage={auditPage}
+          key={`tenant-audit-revision-${tenant.revision}`}
+          tenantId={tenantId}
+        />
       </div>
     </div>
   );

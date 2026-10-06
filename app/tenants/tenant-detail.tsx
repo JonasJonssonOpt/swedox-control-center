@@ -133,6 +133,7 @@ export function TenantDetail({ tenant }: Readonly<{ tenant: Tenant }>) {
       <TenantLifecycleControls
         archived={isArchived}
         expectedRevision={tenant.revision}
+        key={`tenant-lifecycle-revision-${tenant.revision}`}
         operationalStatus={tenant.operationalStatus}
         tenantId={tenant.id}
       />

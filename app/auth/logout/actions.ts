@@ -32,7 +32,7 @@ async function clearLocalAuthCookies(): Promise<void> {
 }
 
 export async function logout(): Promise<never> {
-  const owner = await requireAuthorizedOwner();
+  await requireAuthorizedOwner();
   let remoteSignOutSucceeded = false;
   let localCookiesCleared = false;
 
@@ -55,7 +55,6 @@ export async function logout(): Promise<never> {
     remoteSignOutSucceeded && localCookiesCleared
       ? "logout_completed"
       : "logout_failed",
-    owner.userId,
   );
 
   redirect("/login");

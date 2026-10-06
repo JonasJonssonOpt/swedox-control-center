@@ -1,5 +1,7 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
+
 export type MfaAuditEvent =
   | "enrollment_started"
   | "enrollment_completed"
@@ -27,17 +29,15 @@ const EVENT_RESULTS: Readonly<Record<MfaAuditEvent, MfaAuditResult>> = {
   logout_failed: "failure",
 };
 
-export function recordMfaAuditEvent(
-  event: MfaAuditEvent,
-  userId: string,
-): void {
+// Only a safe category, result, time and correlation ID; never the owner UUID.
+export function recordMfaAuditEvent(event: MfaAuditEvent): void {
   try {
     console.info(
       JSON.stringify({
+        correlationId: randomUUID(),
         event,
         result: EVENT_RESULTS[event],
         timestamp: new Date().toISOString(),
-        userId,
       }),
     );
   } catch {

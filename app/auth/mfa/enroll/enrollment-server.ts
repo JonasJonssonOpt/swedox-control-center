@@ -42,8 +42,8 @@ export async function requireMfaEnrollmentState() {
 }
 
 export async function initializeMfaEnrollment(): Promise<EnrollmentState> {
-  const owner = await requireMfaEnrollmentState();
-  recordMfaAuditEvent("enrollment_started", owner.userId);
+  await requireMfaEnrollmentState();
+  recordMfaAuditEvent("enrollment_started");
 
   try {
     const supabase = await createSupabaseServerClient();
@@ -59,7 +59,7 @@ export async function initializeMfaEnrollment(): Promise<EnrollmentState> {
       };
     }
 
-    recordMfaAuditEvent("enrollment_failed", owner.userId);
+    recordMfaAuditEvent("enrollment_failed");
     return {
       error:
         result.status === "enrollment_in_progress"
@@ -68,7 +68,7 @@ export async function initializeMfaEnrollment(): Promise<EnrollmentState> {
       status: "error",
     };
   } catch {
-    recordMfaAuditEvent("enrollment_failed", owner.userId);
+    recordMfaAuditEvent("enrollment_failed");
     return { error: GENERIC_ENROLLMENT_ERROR, status: "error" };
   }
 }

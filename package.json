@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "build": "next build",
+    "test": "node --import ./tests/register-server-only.mjs --test \"tests/*.test.mjs\"",
     "supabase:version": "supabase --version",
     "supabase:start": "node scripts/supabase-local.mjs start",
     "supabase:stop": "node scripts/supabase-local.mjs stop",

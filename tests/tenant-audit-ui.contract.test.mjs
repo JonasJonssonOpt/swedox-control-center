@@ -212,6 +212,24 @@ test("audit UI renders accessible metadata-only states without identifiers or ba
   );
 });
 
+test("a new tenant revision remounts audit history and lifecycle controls", async () => {
+  const [pageSource, detail, history] = await Promise.all([
+    source("../app/tenants/[tenantId]/page.tsx"),
+    source("../app/tenants/tenant-detail.tsx"),
+    source("../app/tenants/[tenantId]/tenant-audit-history.tsx"),
+  ]);
+  assert.match(
+    pageSource,
+    /key=\{`tenant-audit-revision-\$\{tenant\.revision\}`\}/,
+  );
+  assert.match(
+    detail,
+    /key=\{`tenant-lifecycle-revision-\$\{tenant\.revision\}`\}/,
+  );
+  assert.match(history, /useState\(initialPage\.items\)/);
+  assert.match(history, /useState\(initialPage\.nextCursor\)/);
+});
+
 test("audit architecture uses direct service initially and no database access", async () => {
   const pageSource = await source("../app/tenants/[tenantId]/page.tsx");
   assert.match(pageSource, /await listTenantAuditEvents\(/);

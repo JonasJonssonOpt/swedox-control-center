@@ -34,9 +34,8 @@ export type OwnerMfaState =
 
 function auditedMfaFailure(
   status: "auth_unavailable" | "invalid_mfa_state",
-  userId: string,
 ): OwnerMfaState {
-  recordMfaAuditEvent(status, userId);
+  recordMfaAuditEvent(status);
   return { status };
 }
 
@@ -55,7 +54,7 @@ export async function getOwnerMfaState(): Promise<OwnerMfaState> {
     ]);
 
     if (factorsResult.error || assuranceResult.error) {
-      return auditedMfaFailure("auth_unavailable", ownerAuthorization.userId);
+      return auditedMfaFailure("auth_unavailable");
     }
 
     const { all, totp } = factorsResult.data;
@@ -65,7 +64,7 @@ export async function getOwnerMfaState(): Promise<OwnerMfaState> {
     );
 
     if (hasUnsupportedFactor || totp.length > 1) {
-      return auditedMfaFailure("invalid_mfa_state", ownerAuthorization.userId);
+      return auditedMfaFailure("invalid_mfa_state");
     }
 
     const owner = {
@@ -110,8 +109,8 @@ export async function getOwnerMfaState(): Promise<OwnerMfaState> {
       });
     }
 
-    return auditedMfaFailure("invalid_mfa_state", ownerAuthorization.userId);
+    return auditedMfaFailure("invalid_mfa_state");
   } catch {
-    return auditedMfaFailure("auth_unavailable", ownerAuthorization.userId);
+    return auditedMfaFailure("auth_unavailable");
   }
 }
