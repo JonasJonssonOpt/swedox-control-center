@@ -183,7 +183,16 @@ dokumentation
 
 Nästa steg:
 
-F2E1 – Provisioning Domain Analysis.
+F2E2 – Provisioning Decision Lock / Implementation Plan.
+
+F2E1 Provisioning Domain Analysis är klar 2026-10-06. Ägarens beslut:
+
+- spårad runbook med owner-drivna steg
+- egna resultatreferenser, ingen skrivning till Installation
+- ingen bakgrundskörning i 1.0
+- provider-hemligheter endast som hostingens serverhemligheter
+
+Se [Provisioning Domain Design](PROVISIONING_DOMAIN_DESIGN.md).
 
 F2D9 är godkänd 2026-10-06 och Licensing är stängd:
 

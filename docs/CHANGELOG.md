@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-06: F2E1 Provisioning Domain Analysis
+
+- Ny analys: [Provisioning Domain Design](PROVISIONING_DOMAIN_DESIGN.md). Innehåller:
+  - ansvar och ownership
+  - konsumerade kontrakt
+  - körning, steg och försök med state machine
+  - licens- och förutsättningskontroll vid varje stegstart
+  - owner-driven retry och avstämning
+  - provider- och secret-gräns, audit, låsordning, idempotens och risker
+- Ägarens fyra beslut är låsta. Inga migrationer eller kod. Nästa steg är F2E2.
+
 ## 2026-10-06: F2D9 Licensing Security Pass / Runtime / Closure
 
 - Ny runner `verify-licensing-data-api.mjs` med riktiga lokala ES256-tokens,

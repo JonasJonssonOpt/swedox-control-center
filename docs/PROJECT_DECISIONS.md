@@ -1,5 +1,23 @@
 # Projektbeslut
 
+## 2026-10-06: F2E1 Provisioning-domänen
+
+Ägarens beslut:
+
+- **Omfattning:** Provisioning i 1.0 är en spårad runbook. En fast stegkatalog
+  utförs och registreras av owner: Supabase-projekt, migrationer, appdeploy och
+  verifiering. Licensen omprövas vid varje stegstart. Inga provider-API-anrop.
+- **Resultatreferenser:** project ref, region och URL ägs av Provisioning.
+  Installation återöppnas inte; skillnader visas sida vid sida.
+- **Körning:** stegen drivs av owner. Ingen bakgrundsprocess, kö, cron eller
+  polling.
+- **Hemligheter:** framtida provider-hemligheter ligger endast som
+  server-only miljövariabler i Control Centers hosting.
+- **Arkitektur:** eget Supabase-projekt per kundinstallation bekräftas
+  (befintligt systemgränsbeslut).
+
+Se [Provisioning Domain Design](PROVISIONING_DOMAIN_DESIGN.md).
+
 ## 2026-10-06: F2D9 Licensing stängd
 
 - Licensing är stängd och låst efter Security Pass, signerad Data API-gate och
