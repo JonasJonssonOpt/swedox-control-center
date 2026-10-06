@@ -1,5 +1,19 @@
 # Provisioning Domain Design
 
+## Aktuell status: F2E6, 2026-10-06
+
+**Provider-lagret** finns i `lib/server/provisioning/providers`. Det är
+server-only och har en `manual`-koppling för vart och ett av de fem stegen. Den
+innehåller runbook-text och resultatfält, och resultatvalidering med samma
+format som databasen. Lagret gör inga nätverksanrop och läser inga hemligheter.
+Registret speglar databasens katalog exakt och stoppar vid avvikelse.
+
+**Kontraktet för SweDox signerade server-API** (första administratör och
+status) är analyserat och föreslaget i [SweDox Integration Contract](SWEDOX_INTEGRATION_CONTRACT.md). Det implementeras i SweDox efter
+F2E10.
+
+Nästa steg är F2E7.
+
 ## Aktuell status: F2E5, 2026-10-06
 
 De fem mutations-RPC:erna är implementerade och lokalt verifierade:

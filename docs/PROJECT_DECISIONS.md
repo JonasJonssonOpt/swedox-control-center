@@ -1,5 +1,18 @@
 # Projektbeslut
 
+## 2026-10-06: F2E6 Provider-lager och SweDox-kontrakt
+
+- Alla fem steg är manuella i 1.0 via en server-only provider-abstraktion utan
+  nätverksanrop eller hemligheter. Automatiska kopplingar är egna change-steps.
+- Anrop till kundens SweDox är signerade med Ed25519:
+  - Control Centers privata nyckel ligger endast i Control Centers hostingmiljö.
+  - SweDox har den publika nyckeln och sitt eget installations-id.
+  - Varje anrop binds till mottagarens id, ett tidsfönster och en engångs-nonce.
+- Första administratör i SweDox är idempotent och svarar aldrig med länkar
+  eller tokens.
+
+Se [SweDox Integration Contract](SWEDOX_INTEGRATION_CONTRACT.md).
+
 ## 2026-10-06: Eget Supabase-projekt per kund och första administratör
 
 - Efter genomgång av SweDox huvudsystem behålls ett eget Supabase-projekt per

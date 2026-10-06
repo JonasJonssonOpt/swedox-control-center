@@ -1,5 +1,17 @@
 # Security Standard
 
+## F2E6: Provider-gräns och signerade SweDox-anrop
+
+- **Provider-lagret** är server-only. Det gör inga nätverksanrop, läser inga
+  miljövariabler och använder ingen Supabase-klient eller service role. Ett
+  kontraktstest verkställer detta.
+- **Framtida anrop till kunders SweDox** signeras med Control Centers privata
+  Ed25519-nyckel, som är serverhemlighet i hostingen. Anropen binds till
+  mottagarens installations-id, ett tidsfönster på ±300 s och en engångs-nonce.
+  Kundnycklar lämnar aldrig kundens installation.
+
+Se [SweDox Integration Contract](SWEDOX_INTEGRATION_CONTRACT.md).
+
 ## F2E5: Provisioning-mutationer
 
 - **RPC:er:** fem SECURITY DEFINER-mutationer med owner+AAL2 före validering

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-06: F2E6 Provisioning Provider Integration Layer
+
+- Nytt `lib/server/provisioning/providers`: typer, `manual`-koppling med
+  runbook och resultatvalidering per steg, samt ett register som speglar
+  databasens katalog.
+- Nytt kontraktstest (5 tester) som också verifierar katalogparitet mot
+  migrationen och att lagret saknar nätverks- och hemlighetsåtkomst.
+- Nytt dokument [SweDox Integration Contract](SWEDOX_INTEGRATION_CONTRACT.md): signerat SweDox-API för första administratör och status.
+- 202 Node, typecheck, ESLint, Prettier och build passerar. Nästa steg är F2E7.
+
 ## 2026-10-06: F2E5 Provisioning Mutations / State Machine
 
 - Migration `20261006230000_create_provisioning_mutations.sql`:

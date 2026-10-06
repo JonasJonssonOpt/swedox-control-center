@@ -183,7 +183,13 @@ dokumentation
 
 Nästa steg:
 
-F2E6 – Provider Integration Layer.
+F2E7 – Reconciliation / Retry / Failure Handling.
+
+F2E6 Provider Integration Layer är klar 2026-10-06:
+
+- server-only abstraktion med `manual`-koppling per steg
+- 5 nya Node-kontraktstester
+- kontraktsförslag för SweDox signerade API, se [SweDox Integration Contract](SWEDOX_INTEGRATION_CONTRACT.md)
 
 F2E5 Mutations / State Machine är implementerad och lokalt verifierad
 2026-10-06: 2 724 pgTAP (279 nya), sex fångade mutationsprober och 8/8
